@@ -1,0 +1,26 @@
+<%= form_with(model: [project, item], class: "contents w-full", remote: false) do |form| %>
+  <div class="flex justify-end my-5">
+    <%= form.submit "Save", class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer" %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label "Type of request" %>
+	  <%= form.select :type, options_for_select(Item.kinds.map {|key, value| [key.titleize, Item.kinds.key(value)]}, item.kind) %>
+  </div>
+
+  <div class="my-5">
+    <%= form.label :points %>
+	  <%= form.select :points, options_for_select([0,1,2,3,5,8], item.points) %>
+  </div>
+
+
+  <div class="my-5">
+    <%= form.label :description %>
+    <%= form.text_area :description, rows: 4, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+  </div>
+<% end %>

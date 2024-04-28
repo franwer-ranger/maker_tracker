@@ -1,0 +1,54 @@
+{
+  "name": "maker_tracker",
+  "dockerComposeFile": "./docker-compose.yml",
+  "workspaceFolder": "/workspace",
+  "service": "ruby",
+
+  // Uncommented after the rails app is created.
+  "onCreateCommand": "bundle install",
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.associations": {
+          "Gemfile": "ruby"
+        },
+        "sorbet.enabled": false,
+        "rubyLsp.rubyVersionManager": "none",
+        "rubyLsp.formatter": "rubocop",
+        "editor.detectIndentation": false,
+        "[javascript][json][jsonc][yaml][yml]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.tabSize": 2,
+          "editor.insertSpaces": true,
+          "editor.formatOnSave": true
+        },
+        "[ruby]": {
+          "editor.defaultFormatter": "Shopify.ruby-lsp",
+          "editor.formatOnSave": true,
+          "editor.tabSize": 2,
+          "editor.insertSpaces": true,
+          "editor.semanticHighlighting.enabled": true,
+          "editor.formatOnType": true
+        }
+      },
+      "extensions": [
+        "github.copilot",
+        "kleber-swf.ocean-dark-extended",
+        "github.copilot-chat",
+        "ms-vsliveshare.vsliveshare",
+        "bradlc.vscode-tailwindcss",
+        "redhat.vscode-yaml",
+        "craigmaslowski.erb",
+        "shopify.ruby-extensions-pack",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "features": {
+    // Meta's Watchman is a Shopify's sorbet dependency.
+    "ghcr.io/vvvrrooomm/watchman/watchman:1": {}
+  }
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
+}
