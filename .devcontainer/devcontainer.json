@@ -11,7 +11,8 @@
     "vscode": {
       "settings": {
         "files.associations": {
-          "Gemfile": "ruby"
+          "Gemfile": "ruby",
+          "*.html.erb": "erb"
         },
         "sorbet.enabled": false,
         "rubyLsp.rubyVersionManager": "none",
@@ -30,6 +31,12 @@
           "editor.insertSpaces": true,
           "editor.semanticHighlighting.enabled": true,
           "editor.formatOnType": true
+        },
+        "[erb]": {
+          "editor.defaultFormatter": "manuelpuyol.erb-linter",
+          "editor.formatOnSave": true,
+          "editor.tabSize": 2,
+          "editor.insertSpaces": true
         }
       },
       "extensions": [
@@ -41,7 +48,8 @@
         "redhat.vscode-yaml",
         "craigmaslowski.erb",
         "shopify.ruby-extensions-pack",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "manuelpuyol.erb-linter"
       ]
     }
   },

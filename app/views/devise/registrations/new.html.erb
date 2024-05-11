@@ -1,0 +1,35 @@
+<div class="flex justify-center items-center w-full h-full">
+  <div class="flex flex-col">
+    <%= image_tag 'slogan.svg', class: 'my-20 h-20' %>
+    <div class="my-20 bg-[#1D1D1D] p-10 rounded-lg">
+      <%= image_tag 'logo.svg', class: 'mb-10 h-10' %>
+      <h2 class="text-3xl my-2">Sign up</h2>
+      <h3 class="my-2 font-light">Relax. it's free!</h3>
+
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: 'my-4 w-[480px]' }) do |f| %>
+        <%= render 'devise/shared/error_messages', resource: %>
+
+        <div class="my-2">
+          <div class="my-1">Email</div>
+          <%= f.email_field :email, autofocus: true, autocomplete: 'email', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true %>
+        </div>
+
+        <div class="my-2">
+          <div class="my-1">Password</div>
+          <%= f.password_field :password, autocomplete: 'new-password', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true, minlength: '8' %>
+        </div>
+
+        <div class="my-2">
+          <div class="my-1">Password confirmation</div>
+          <%= f.password_field :password_confirmation, autocomplete: 'new-password', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true, minlength: '8' %>
+        </div>
+
+        <div class="actions">
+          <%= f.submit 'Get in', class: 'flex justify-center items center p-4 rounded w-full bg-[#FF3F01] text-white my-6' %>
+        </div>
+      <% end %>
+
+      <%= render 'devise/shared/links' %>
+    </div>
+  </div>
+</div>
