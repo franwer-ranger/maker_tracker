@@ -57,9 +57,8 @@ group :development do
   gem 'better_html'
   gem 'erb_lint', require: false
   gem 'hotwire-livereload'
-  gem 'rubocop'
-  gem 'rubocop-rails'
   gem 'ruby-lsp'
+  gem "rubocop-rails-omakase", require: false
   gem 'sorbet'
   gem 'web-console'
 

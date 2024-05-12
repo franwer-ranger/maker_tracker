@@ -6,6 +6,9 @@ html, body {
 	@apply h-full;
 }
 
+input, textarea, select, button {
+  @apply text-gray-800;
+}
 /*
 
 @layer components {

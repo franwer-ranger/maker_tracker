@@ -1,28 +1,3 @@
-Style/FrozenStringLiteralComment:
-  Enabled: false
-Style/Documentation:
-  Enabled: false
-
-Layout/FirstHashElementLineBreak:
-  Enabled: false
-Layout/FirstMethodArgumentLineBreak:
-  Enabled: false
-Layout/FirstMethodParameterLineBreak:
-  Enabled: false
-
-Layout/ArgumentAlignment:
-  Enabled: false
-Layout/HashAlignment:
-  Enabled: false
-
-Style/MultilineMethodCallIndentation:
-  EnforcedStyle: indented
-
-Style/SymbolArray:
-  Enabled: false
-
-Style/ClassAndModuleChildren:
-  Enabled: false
-
-Metrics/MethodLength:
-  Max: 15
+# Omakase Ruby styling for Rails
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
