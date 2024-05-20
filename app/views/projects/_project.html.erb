@@ -1,37 +1,21 @@
-<div id="<%= dom_id project %>">
-  <p class="my-5">
-    <strong class="block font-medium mb-1">Name:</strong>
-    <%= project.name %>
-  </p>
+<div id="<%= dom_id project %>" class="bg-[#1D1D1D] text-white p-4 rounded-lg">
+  <div class="flex justify-between my-2">
+    <%= link_to project, class: 'font-semibold text-lg' do %>
+      <%= project.name %>
+    <% end %>
+    <div class="font-semibold text-lg">
+      <i class="fa-solid fa-gear"></i>
+    </div>
+  </div>
+  <hr>
 
-  <p class="my-5">
-    <strong class="block font-medium mb-1">Description:</strong>
-    <%= project.description %>
-  </p>
+  <div class="flex gap-1 my-4">
+    <div>Velocity</div>
+    <div class="font-semibold"><%= project.velocity %></div>
+  </div>
 
-  <p class="my-5">
-    <strong class="block font-medium mb-1">Start date:</strong>
-    <%= project.start_date %>
-  </p>
-
-  <p class="my-5">
-    <strong class="block font-medium mb-1">Velocity:</strong>
-    <%= project.velocity %>
-  </p>
-
-  <p class="my-5">
-    <strong class="block font-medium mb-1">Volatility:</strong>
-    <%= project.volatility %>
-  </p>
-
-  <p class="my-5">
-    <strong class="block font-medium mb-1">Sprint length:</strong>
-    <%= project.sprint_length %>
-  </p>
-
-  <% if action_name != "show" %>
-    <%= link_to "Show this project", project, class: "rounded-lg py-3 px-5 bg-gray-100 inline-block font-medium" %>
-    <%= link_to "Edit this project", edit_project_path(project), class: "rounded-lg py-3 ml-2 px-5 bg-gray-100 inline-block font-medium" %>
-    <hr class="mt-6">
-  <% end %>
+  <div class="flex gap-1 my-4">
+    <div>Volatility</div>
+    <div class="font-semibold"><%= project.volatility || '0%' %></div>
+  </div>
 </div>

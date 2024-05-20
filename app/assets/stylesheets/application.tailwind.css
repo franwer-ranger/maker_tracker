@@ -2,10 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --header-height: 90px;
+}
+
 html, body {
 	@apply h-full;
 }
 
+input, textarea, select, button {
+  @apply text-gray-800;
+}
+
+.app-header {
+  height: var(--header-height);
+}
+
+.app-container {
+  @apply overflow-y-auto;
+  height: calc(100svh - var(--header-height));
+}
 /*
 
 @layer components {
