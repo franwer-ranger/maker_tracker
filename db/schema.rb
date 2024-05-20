@@ -14,7 +14,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
   create_table "items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.integer "status"
     t.integer "kind"
-    t.boolean "icebox"
+    t.boolean "icebox", default: true
     t.string "name"
     t.text "description"
     t.integer "points"

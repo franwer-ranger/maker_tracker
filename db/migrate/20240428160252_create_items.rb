@@ -3,7 +3,7 @@ class CreateItems < ActiveRecord::Migration[7.1]
     create_table :items do |t|
       t.integer :status
       t.integer :kind
-      t.boolean :icebox
+      t.boolean :icebox, default: true
       t.string :name
       t.text :description
       t.integer :points

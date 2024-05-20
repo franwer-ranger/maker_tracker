@@ -1,7 +1,7 @@
-<%= form_with(model: project, class: "contents") do |form| %>
+<%= form_with(model: project, class: 'contents') do |form| %>
   <% if project.errors.any? %>
     <div id="error_explanation" class="bg-red-50 text-red-500 px-3 py-2 font-medium rounded-lg mt-3">
-      <h2><%= pluralize(project.errors.count, "error") %> prohibited this project from being saved:</h2>
+      <h2><%= pluralize(project.errors.count, 'error') %> prohibited this project from being saved:</h2>
 
       <ul>
         <% project.errors.each do |error| %>
@@ -13,30 +13,30 @@
 
   <div class="my-5">
     <%= form.label :name %>
-    <%= form.text_field :name, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+    <%= form.text_field :name, class: 'block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full' %>
   </div>
 
   <div class="my-5">
     <%= form.label :description %>
-    <%= form.text_area :description, rows: 4, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+    <%= form.text_area :description, rows: 4, class: 'block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full' %>
   </div>
 
   <div class="my-5">
     <%= form.label :start_date %>
-    <%= form.date_field :start_date, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+    <%= form.date_field :start_date, class: 'block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full' %>
   </div>
 
   <div class="my-5">
     <%= form.label :velocity %>
-    <%= form.number_field :velocity, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+    <%= form.number_field :velocity, class: 'block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full' %>
   </div>
 
   <div class="my-5">
     <%= form.label :sprint_length %>
-    <%= form.number_field :sprint_length, class: "block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full" %>
+    <%= form.number_field :sprint_length, class: 'block shadow rounded-md border border-gray-200 outline-none px-3 py-2 mt-2 w-full' %>
   </div>
 
   <div class="inline">
-    <%= form.submit class: "rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer" %>
+    <%= form.submit class: 'rounded-lg py-3 px-5 bg-blue-600 text-white inline-block font-medium cursor-pointer' %>
   </div>
 <% end %>

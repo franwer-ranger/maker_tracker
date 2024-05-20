@@ -1,11 +1,11 @@
 <div class="container mx-auto h-full xl:flex xl:justify-center">
   <div class="flex gap-6 h-full">
-    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
+    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-[28rem] grow-0 shrink-0">
       <div class="">Done</div>
       <% if @project.items.accepted.empty? %>
         <div class="flex-grow flex justify-center items-center">
           <div class="flex flex-col items-center">
-            <%= image_tag 'done_empty.svg' %>
+            <%= image_tag 'done_empty.svg', class: 'h-60' %>
             <div class="text-xs font-thin my-4">
               No items have been completed yet.
             </div>
@@ -13,12 +13,12 @@
         </div>
       <% end %>
     </div>
-    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
+    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-[28rem] grow-0 shrink-0">
       <div class="">Backlog</div>
       <% if @project.items.on_backlog.empty? %>
         <div class="flex-grow flex justify-center items-center">
           <div class="flex flex-col items-center">
-            <%= image_tag 'backlog_empty.svg' %>
+            <%= image_tag 'backlog_empty.svg', class: 'h-60' %>
             <div class="text-xs font-thin my-4">
               No items have been added to the backlog yet.
             </div>
@@ -26,18 +26,27 @@
         </div>
       <% end %>
     </div>
-    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
-      <div class="">Icebox</div>
-      <% if @project.items.on_icebox.empty? %>
-        <div class="flex-grow flex justify-center items-center">
-          <div class="flex flex-col items-center">
-            <%= image_tag 'icebox_empty.svg' %>
-            <div class="text-xs font-thin my-4">
-              No items have been added to the icebox yet.
+    <div class="bg-[#1D1D1D] rounded-lg h-full py-6 px-5 flex flex-col w-[28rem] grow-0 shrink-0 relative">
+      <div class="mb-2 h-[30px]">Icebox</div>
+      <turbo-frame id="new_item" class="flex h-[calc(100%-30px)] w-full items-start">
+        <%= link_to new_project_item_path(@project) do %>
+          <i class="fa-solid fa-plus text-[#FF3F01] text-lg absolute top-7 right-8"></i>
+        <% end %>
+        <% if @project.items.on_icebox.empty? %>
+          <div class="h-full w-full flex justify-center items-center">
+            <div class="flex flex-col items-center">
+              <%= image_tag 'icebox_empty.svg', class: 'h-60' %>
+              <div class="text-xs font-thin my-4">
+                No items have been added to the icebox yet.
+              </div>
             </div>
           </div>
-        </div>
-      <% end %>
+        <% else %>
+          <div class="flex flex-col w-full h-full overflow-y-auto gap-2">
+            <%= render @project.items %>
+          </div>
+        <% end %>
+      </turbo-frame>
     </div>
   </div>
 </div>

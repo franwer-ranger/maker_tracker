@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 class ItemsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_item, only: %i[show edit update destroy]
@@ -25,15 +27,12 @@ class ItemsController < ApplicationController
   def create
     @item = Item.new(item_params)
     @item.project = @project = Project.find(params[:project_id])
+    @item.user = current_user
 
-    respond_to do |format|
-      if @item.save
-        format.html { redirect_to item_url(@item), notice: "Item was successfully created." }
-        format.json { render :show, status: :created, location: @item }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @item.errors, status: :unprocessable_entity }
-      end
+    if @item.save
+      redirect_to @project, notice: "Item was successfully created."
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 

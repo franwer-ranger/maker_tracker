@@ -1,3 +1,5 @@
 <div class="w-full h-full flex justify-center items-center">
-  <%= render 'form', item: @item, project: @project %>
+  <turbo-frame id="new_item">
+    <%= render 'form', item: @item, project: @project %>
+  </turbo-frame>
 </div>
