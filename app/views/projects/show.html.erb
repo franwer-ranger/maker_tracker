@@ -1,41 +1,43 @@
-<div class="container mx-auto flex gap-6 h-full overflow-x-auto w-full">
-  <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
-    <div class="">Done</div>
-    <% if @project.items.accepted.empty? %>
-      <div class="flex-grow flex justify-center items-center">
-        <div class="flex flex-col items-center">
-          <%= image_tag 'done_empty.svg' %>
-          <div class="text-xs font-thin my-4">
-            No items have been completed yet.
+<div class="container mx-auto h-full xl:flex xl:justify-center">
+  <div class="flex gap-6 h-full">
+    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
+      <div class="">Done</div>
+      <% if @project.items.accepted.empty? %>
+        <div class="flex-grow flex justify-center items-center">
+          <div class="flex flex-col items-center">
+            <%= image_tag 'done_empty.svg' %>
+            <div class="text-xs font-thin my-4">
+              No items have been completed yet.
+            </div>
           </div>
         </div>
-      </div>
-    <% end %>
-  </div>
-  <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
-    <div class="">Backlog</div>
-    <% if @project.items.on_backlog.empty? %>
-      <div class="flex-grow flex justify-center items-center">
-        <div class="flex flex-col items-center">
-          <%= image_tag 'backlog_empty.svg' %>
-          <div class="text-xs font-thin my-4">
-            No items have been added to the backlog yet.
+      <% end %>
+    </div>
+    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
+      <div class="">Backlog</div>
+      <% if @project.items.on_backlog.empty? %>
+        <div class="flex-grow flex justify-center items-center">
+          <div class="flex flex-col items-center">
+            <%= image_tag 'backlog_empty.svg' %>
+            <div class="text-xs font-thin my-4">
+              No items have been added to the backlog yet.
+            </div>
           </div>
         </div>
-      </div>
-    <% end %>
-  </div>
-  <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
-    <div class="">Icebox</div>
-    <% if @project.items.on_icebox.empty? %>
-      <div class="flex-grow flex justify-center items-center">
-        <div class="flex flex-col items-center">
-          <%= image_tag 'icebox_empty.svg' %>
-          <div class="text-xs font-thin my-4">
-            No items have been added to the icebox yet.
+      <% end %>
+    </div>
+    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-96 grow-0 shrink-0">
+      <div class="">Icebox</div>
+      <% if @project.items.on_icebox.empty? %>
+        <div class="flex-grow flex justify-center items-center">
+          <div class="flex flex-col items-center">
+            <%= image_tag 'icebox_empty.svg' %>
+            <div class="text-xs font-thin my-4">
+              No items have been added to the icebox yet.
+            </div>
           </div>
         </div>
-      </div>
-    <% end %>
+      <% end %>
+    </div>
   </div>
 </div>
