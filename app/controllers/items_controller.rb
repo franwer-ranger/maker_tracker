@@ -3,6 +3,7 @@
 class ItemsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_item, only: %i[show edit update destroy]
+  before_action :set_project, only: %i[edit new create]
 
   # GET /items or /items.json
   def index
@@ -15,7 +16,6 @@ class ItemsController < ApplicationController
 
   # GET /items/new
   def new
-    @project = Project.find(params[:project_id])
     @item = Item.new
   end
 
@@ -26,7 +26,7 @@ class ItemsController < ApplicationController
   # POST /items or /items.json
   def create
     @item = Item.new(item_params)
-    @item.project = @project = Project.find(params[:project_id])
+    @item.project = @project
     @item.user = current_user
 
     if @item.save
@@ -38,14 +38,10 @@ class ItemsController < ApplicationController
 
   # PATCH/PUT /items/1 or /items/1.json
   def update
-    respond_to do |format|
-      if @item.update(item_params)
-        format.html { redirect_to item_url(@item), notice: "Item was successfully updated." }
-        format.json { render :show, status: :ok, location: @item }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @item.errors, status: :unprocessable_entity }
-      end
+    if @item.update(item_params)
+      redirect_to [ @item.project, @item ], notice: "Item was successfully updated."
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
@@ -60,6 +56,10 @@ class ItemsController < ApplicationController
   end
 
   private
+
+  def set_project
+    @project = Project.find(params[:project_id])
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_item
