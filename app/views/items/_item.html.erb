@@ -1,16 +1,24 @@
 <turbo-frame id="item">
-  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), class: 'w-full flex items-center justify-between px-3 py-4 border border-gray-800 bg-gray-900 rounded' do %>
-    <div class="flex">
-      <div class="mr-3"><%= item.format_kind_icon %></div>
-      <div class="name"><%= item.name %></div>
+  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), class: 'w-full flex items-center justify-between px-2 py-4 border border-gray-800 bg-gray-900 rounded' do %>
+    <div class="flex items-center">
+      <div class="mr-2 text-xs"><%= item.format_kind_icon %></div>
+      <% if item.points %>
+        <div class="py-1 px-2 rounded font-bold mr-4 border border-gray-800 text-xs"><%= item.points %></div>
+      <% end %>
+      <div class="text-sm <%= item.points ? '' : 'italic' %>"><%= item.name %></div>
     </div>
-    <div class="flex">
-      <div class="p-1 font-bold">0</div>
-      <div class="p-1 font-bold">1</div>
-      <div class="p-1 font-bold">2</div>
-      <div class="p-1 font-bold">3</div>
-      <div class="p-1 font-bold">5</div>
-      <div class="p-1 font-bold">8</div>
-    </div>
+    <% unless item.points %>
+      <div class="flex" data-controller="points">
+        <%= form_with(model: [item.project, item], class: 'w-full', html: { "data-points-target": 'form' }) do |form| %>
+         <%= form.hidden_field :points, "data-points-target": 'points' %>
+        <% end %>
+        <button data-points="0" data-action="points#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">0</button>
+        <button data-points="1" data-action="points#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">1</button>
+        <button data-points="2" data-action="points#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">2</button>
+        <button data-points="3" data-action="points#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">3</button>
+        <button data-points="4" data-action="points#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">5</button>
+        <button data-points="5" data-action="points#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">8</button>
+      </div>
+    <% end %>
   <% end %>
 </turbo-frame>

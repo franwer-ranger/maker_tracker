@@ -6,7 +6,7 @@ class CreateItems < ActiveRecord::Migration[7.1]
       t.boolean :icebox, default: true
       t.string :name
       t.text :description
-      t.integer :points
+      t.integer :points, default: nil
 
       t.references :user, null: false, foreign_key: true
       t.references :sprint, null: true, foreign_key: true

@@ -1,5 +1,5 @@
 <div class="bg-[#F1F1F1] text-black w-full rounded-lg px-4 pt-1 pb-8">
-  <%= form_with(model: [project, item], class: 'w-full', remote: false) do |form| %>
+  <%= form_with(model: [project, item], class: 'w-full') do |form| %>
     <div class="flex justify-between my-4 items-center">
       <%= link_to 'Cancel', item.persisted? ? [project, item] : project, class: 'mx-2 underline text-sm' %>
       <%= form.submit 'Save', class: 'rounded-lg py-2 px-5 bg-[#FF3F01] text-white inline-block font-medium cursor-pointer' %>
@@ -14,7 +14,7 @@
     </div>
     <div class="my-4 px-6 py-3 bg-white rounded-lg flex justify-between items-center">
       <label class="font-medium">Points</label>
-      <%= form.select :points, options_for_select([['Unestimated', 0], 1, 2, 3, 5, 8], item.points), {}, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2 text-right' %>
+      <%= form.select :points, options_for_select([0, 1, 2, 3, 5, 8], item.points), { prompt: 'Unstimated' }, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2 text-right' %>
     </div>
     <div class="my-4 px-6 py-8 bg-white rounded-lg">
       <%= form.label :description %>
