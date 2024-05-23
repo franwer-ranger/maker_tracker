@@ -18,6 +18,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
     t.string "name"
     t.text "description"
     t.integer "points"
+    t.integer "position", null: false
     t.bigint "user_id", null: false
     t.bigint "sprint_id"
     t.bigint "project_id", null: false

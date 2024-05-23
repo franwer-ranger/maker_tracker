@@ -11,6 +11,8 @@ class Item < ApplicationRecord
   scope :on_backlog, -> { where.not(status: :accepted).where(icebox: 0) }
   scope :on_icebox, -> { where(icebox: 1) }
 
+  positioned on: [ :project, :icebox ]
+
   def self.format_kind(kind)
     kind_formatted[kind]
   end
