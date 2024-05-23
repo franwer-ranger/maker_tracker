@@ -1,15 +1,26 @@
 import { Controller } from '@hotwired/stimulus'
+import Sortable from 'sortablejs'
 
 export default class extends Controller {
-  static targets = ['position']
+  static targets = ['position', 'icebox', 'form']
 
   connect() {
-    console.log('Hello, from project!')
+    this.initSortable()
   }
 
-  submit(event) {
-    event.preventDefault()
-    this.pointsTarget.value = event.target.dataset.points
+  initSortable() {
+    this.sortable = new Sortable(this.iceboxTarget, {
+      group: 'lists',
+      onEnd: this.end.bind(this)
+    })
+  }
+
+  end(event) {
+    this.formTarget.action = this.formTarget.action.replace(
+      ':item',
+      event.item.dataset.itemId
+    )
+    this.positionTarget.value = event.newIndex + 1
     this.formTarget.requestSubmit()
   }
 }

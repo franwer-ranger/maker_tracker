@@ -1,7 +1,8 @@
 <div class="container mx-auto h-full xl:flex xl:justify-center">
-  <turbo-frame id="project" class="flex gap-6 h-full" data-controller="projects">
-    <%= form_with(url: edit_project_item_path(@project, ':item'), method: :put, class: 'w-full', html: { "data-points-target": 'form' }) do |form| %>
+  <turbo-frame id="project" class="flex gap-6 h-full" data-controller="projects" data-action="turbo:frame-load->projects#initSortable">
+    <%= form_with(model: [@project, Item.new], url: project_item_path(@project, ':item'), method: :put, class: 'w-full', html: { "data-projects-target": 'form' }) do |form| %>
       <%= form.hidden_field :position, "data-projects-target": 'position' %>
+      <%= form.hidden_field :position_changed, value: 'true' %>
     <% end %>
     <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-[28rem] grow-0 shrink-0">
       <div class="">Done</div>
@@ -45,7 +46,7 @@
             </div>
           </div>
         <% else %>
-          <div class="flex flex-col w-full h-full overflow-y-auto gap-2">
+          <div class="flex flex-col w-full h-full overflow-y-auto gap-2" data-projects-target="icebox">
             <%= render @project.items.order(:position) %>
           </div>
         <% end %>

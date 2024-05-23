@@ -1,4 +1,4 @@
-<turbo-frame id="item">
+<turbo-frame id="item" data-item-id="<%= item.id %>">
   <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), class: 'w-full flex items-center justify-between px-2 py-4 border border-gray-800 bg-gray-900 rounded' do %>
     <div class="flex items-center">
       <div class="mr-2 text-xs"><%= item.format_kind_icon %></div>
