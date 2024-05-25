@@ -46,6 +46,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
     t.integer "length"
     t.integer "velocity"
     t.integer "strength"
+    t.integer "number"
     t.bigint "project_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

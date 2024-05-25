@@ -4,9 +4,9 @@
       <%= form.hidden_field :position, "data-projects-target": 'position' %>
       <%= form.hidden_field :position_changed, value: 'true' %>
     <% end %>
-    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-[28rem] grow-0 shrink-0">
-      <div class="">Done</div>
-      <% if @project.items.accepted.empty? %>
+    <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0">
+      <div class="px-6 pt-6 pb-2">Done</div>
+      <% if @project.sprints.empty? %>
         <div class="flex-grow flex justify-center items-center">
           <div class="flex flex-col items-center">
             <%= image_tag 'done_empty.svg', class: 'h-60' %>
@@ -14,6 +14,20 @@
               No items have been completed yet.
             </div>
           </div>
+        </div>
+      <% else %>
+        <div class="flex flex-col w-full h-full overflow-y-auto gap-1" data-projects-target="done">
+            <% @project.sprints.each do |sprint| %>
+              <div class="text-sm text-white bg-black w-full px-4 py-3 flex items-center justify-between">
+                <div class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">
+                  S<%= sprint.number %>
+                </div>
+                <%= sprint_dates(sprint) %>
+              </div>
+              <% sprint.items.accepted.each do |item| %>
+                <%= render item %>
+              <% end %>
+            <% end %>
         </div>
       <% end %>
     </div>

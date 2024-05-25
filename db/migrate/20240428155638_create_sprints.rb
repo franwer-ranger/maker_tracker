@@ -6,6 +6,7 @@ class CreateSprints < ActiveRecord::Migration[7.1]
       t.integer :length
       t.integer :velocity
       t.integer :strength
+      t.integer :number
       t.references :project, null: false, foreign_key: true
 
       t.timestamps
