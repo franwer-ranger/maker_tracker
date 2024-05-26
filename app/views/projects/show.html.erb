@@ -17,7 +17,7 @@
         </div>
       <% else %>
         <div class="flex flex-col w-full h-full overflow-y-auto gap-1" data-projects-target="done">
-            <% @project.sprints.each do |sprint| %>
+            <% @project.previous_sprints.each do |sprint| %>
               <div class="text-sm text-white bg-black w-full px-4 py-3 flex items-center justify-between">
                 <div class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">
                   S<%= sprint.number %>
@@ -61,7 +61,7 @@
           </div>
         <% else %>
           <div class="flex flex-col w-full h-full overflow-y-auto gap-2" data-projects-target="icebox">
-            <%= render @project.items.order(:position) %>
+            <%= render @project.items.on_icebox.order(:position) %>
           </div>
         <% end %>
       </turbo-frame>

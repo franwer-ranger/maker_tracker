@@ -9,6 +9,7 @@ export default class extends Controller {
   }
 
   initSortable() {
+    if (!this.hasIceboxTarget) return
     this.sortable = new Sortable(this.iceboxTarget, {
       group: 'lists',
       onEnd: this.end.bind(this)

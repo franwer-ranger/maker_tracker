@@ -14,6 +14,10 @@ class Project < ApplicationRecord
     end
   end
 
+  def previous_sprints
+    sprints[0..-2]
+  end
+
   private
 
   def weeks
