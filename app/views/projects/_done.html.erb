@@ -1,0 +1,23 @@
+<turbo-frame id="done">
+  <% if project.previous_sprints.empty? %>
+    <div class="flex-grow flex justify-center items-center">
+      <div class="flex flex-col items-center">
+        <%= image_tag 'done_empty.svg', class: 'h-60' %>
+        <div class="text-xs font-thin my-4">
+          No items have been completed yet.
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="flex flex-col w-full h-full overflow-y-auto" data-projects-target="done">
+        <% project.previous_sprints.each do |sprint| %>
+          <%= render 'sprints/header', sprint: sprint %>
+          <div class="flex flex-col gap-1" data-projects-target="items" data-list="done">
+            <% sprint.items.order(:accepted_at).each do |item| %>
+              <%= render item %>
+            <% end %>
+          </div>
+        <% end %>
+    </div>
+  <% end %>
+</turbo-frame>

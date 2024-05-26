@@ -2,15 +2,17 @@
   <turbo-frame id="project" class="flex gap-6 h-full" data-controller="projects" data-action="turbo:frame-load->projects#initSortable">
     <%= form_with(model: [@project, Item.new], url: project_item_path(@project, ':item'), method: :put, class: 'w-full', html: { "data-projects-target": 'form' }) do |form| %>
       <%= form.hidden_field :position, "data-projects-target": 'position' %>
+      <%= form.hidden_field :icebox, "data-projects-target": 'icebox' %>
+      <%= form.hidden_field :sprint_id, "data-projects-target": 'sprintId' %>
       <%= form.hidden_field :position_changed, value: 'true' %>
     <% end %>
     <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0">
       <div class="px-6 pt-6 pb-2">Done</div>
-      <%= render 'sprints/index', sprints: @project.previous_sprints, order_items: :accepted_at %>
+      <%= render 'done', project: @project %>
     </div>
     <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0">
       <div class="px-6 pt-6 pb-2">Backlog</div>
-      <%= render 'sprints/index', sprints: [@project.current_sprint], order_items: :position %>
+      <%= render 'backlog', project: @project %>
     </div>
     <div class="bg-[#1D1D1D] rounded-lg h-full py-6 flex flex-col w-[28rem] grow-0 shrink-0 relative">
       <div class="mb-2 h-[30px] px-6">Icebox</div>
