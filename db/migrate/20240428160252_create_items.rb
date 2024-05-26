@@ -8,6 +8,7 @@ class CreateItems < ActiveRecord::Migration[7.1]
       t.text :description
       t.integer :points, default: nil
       t.integer :position, null: false
+      t.datetime :accepted_at
 
       t.references :user, null: false, foreign_key: true
       t.references :sprint, null: true, foreign_key: true

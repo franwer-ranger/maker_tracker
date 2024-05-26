@@ -6,65 +6,15 @@
     <% end %>
     <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0">
       <div class="px-6 pt-6 pb-2">Done</div>
-      <% if @project.sprints.empty? %>
-        <div class="flex-grow flex justify-center items-center">
-          <div class="flex flex-col items-center">
-            <%= image_tag 'done_empty.svg', class: 'h-60' %>
-            <div class="text-xs font-thin my-4">
-              No items have been completed yet.
-            </div>
-          </div>
-        </div>
-      <% else %>
-        <div class="flex flex-col w-full h-full overflow-y-auto gap-1" data-projects-target="done">
-            <% @project.previous_sprints.each do |sprint| %>
-              <div class="text-sm text-white bg-black w-full px-4 py-3 flex items-center justify-between">
-                <div class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">
-                  S<%= sprint.number %>
-                </div>
-                <%= sprint_dates(sprint) %>
-              </div>
-              <% sprint.items.accepted.each do |item| %>
-                <%= render item %>
-              <% end %>
-            <% end %>
-        </div>
-      <% end %>
+      <%= render 'sprints/index', sprints: @project.previous_sprints, order_items: :accepted_at %>
     </div>
-    <div class="bg-[#1D1D1D] rounded-lg h-full p-6 flex flex-col w-[28rem] grow-0 shrink-0">
-      <div class="">Backlog</div>
-      <% if @project.items.on_backlog.empty? %>
-        <div class="flex-grow flex justify-center items-center">
-          <div class="flex flex-col items-center">
-            <%= image_tag 'backlog_empty.svg', class: 'h-60' %>
-            <div class="text-xs font-thin my-4">
-              No items have been added to the backlog yet.
-            </div>
-          </div>
-        </div>
-      <% end %>
+    <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0">
+      <div class="px-6 pt-6 pb-2">Backlog</div>
+      <%= render 'sprints/index', sprints: [@project.current_sprint], order_items: :position %>
     </div>
-    <div class="bg-[#1D1D1D] rounded-lg h-full py-6 px-5 flex flex-col w-[28rem] grow-0 shrink-0 relative">
-      <div class="mb-2 h-[30px]">Icebox</div>
-      <turbo-frame id="items" class="flex h-[calc(100%-30px)] w-full items-start">
-        <%= link_to new_project_item_path(@project) do %>
-          <i class="fa-solid fa-plus text-[#FF3F01] text-lg absolute top-7 right-8"></i>
-        <% end %>
-        <% if @project.items.on_icebox.empty? %>
-          <div class="h-full w-full flex justify-center items-center">
-            <div class="flex flex-col items-center">
-              <%= image_tag 'icebox_empty.svg', class: 'h-60' %>
-              <div class="text-xs font-thin my-4">
-                No items have been added to the icebox yet.
-              </div>
-            </div>
-          </div>
-        <% else %>
-          <div class="flex flex-col w-full h-full overflow-y-auto gap-2" data-projects-target="icebox">
-            <%= render @project.items.on_icebox.order(:position) %>
-          </div>
-        <% end %>
-      </turbo-frame>
+    <div class="bg-[#1D1D1D] rounded-lg h-full py-6 flex flex-col w-[28rem] grow-0 shrink-0 relative">
+      <div class="mb-2 h-[30px] px-6">Icebox</div>
+      <%= render 'items/index', project: @project, items: @project.items.on_icebox %>
     </div>
   </turbo-frame>
 </div>

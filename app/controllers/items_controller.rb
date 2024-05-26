@@ -3,7 +3,7 @@
 class ItemsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_item, only: %i[show edit update destroy]
-  before_action :set_project, only: %i[edit new create]
+  before_action :set_project, only: %i[index edit new create]
 
   # GET /items or /items.json
   def index

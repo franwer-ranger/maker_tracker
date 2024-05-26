@@ -1,0 +1,19 @@
+<turbo-frame id="items" class="flex h-[calc(100%-30px)] w-full items-start">
+  <%= link_to new_project_item_path(project) do %>
+    <i class="fa-solid fa-plus text-[#FF3F01] text-lg absolute top-7 right-8"></i>
+  <% end %>
+  <% if items.empty? %>
+    <div class="h-full w-full flex justify-center items-center">
+      <div class="flex flex-col items-center">
+        <%= image_tag 'icebox_empty.svg', class: 'h-60' %>
+        <div class="text-xs font-thin my-4">
+          No items have been added to the icebox yet.
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="flex flex-col w-full h-full overflow-y-auto gap-1" data-projects-target="items">
+      <%= render items.order(:position) %>
+    </div>
+  <% end %>
+</turbo-frame>

@@ -2,17 +2,19 @@ import { Controller } from '@hotwired/stimulus'
 import Sortable from 'sortablejs'
 
 export default class extends Controller {
-  static targets = ['position', 'icebox', 'form']
+  static targets = ['position', 'items', 'form']
 
   connect() {
     this.initSortable()
   }
 
   initSortable() {
-    if (!this.hasIceboxTarget) return
-    this.sortable = new Sortable(this.iceboxTarget, {
-      group: 'lists',
-      onEnd: this.end.bind(this)
+    this.itemsTargets.forEach((itemTarget) => {
+      if (!itemTarget) return
+      this.sortable = new Sortable(itemTarget, {
+        group: 'lists',
+        onEnd: this.end.bind(this)
+      })
     })
   }
 

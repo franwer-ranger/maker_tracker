@@ -1,6 +1,7 @@
 class Project < ApplicationRecord
   has_many :items, dependent: :destroy
   has_many :sprints, dependent: :destroy
+  after_create :recreate_sprints
 
   def recreate_sprints
     sprints.destroy_all
@@ -16,6 +17,10 @@ class Project < ApplicationRecord
 
   def previous_sprints
     sprints[0..-2]
+  end
+
+  def current_sprint
+    sprints.last
   end
 
   private
