@@ -3,9 +3,9 @@
     <i class="fa-solid fa-plus text-[#FF3F01] text-lg"></i>
   <% end %>
   <div class="flex flex-col w-full h-full overflow-y-auto gap-1 z-20" data-projects-target="items" data-list="icebox">
-    <%= render items.order(:position) %>
+    <%= render project.items.on_icebox.order(:position) %>
   </div>
-  <% if items.empty? %>
+  <% if project.items.on_icebox.empty? %>
     <div class="absolute h-full w-full flex justify-center items-center">
       <div class="flex flex-col items-center">
         <%= image_tag 'icebox_empty.svg', class: 'h-60' %>
