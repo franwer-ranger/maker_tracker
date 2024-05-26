@@ -1,10 +1,20 @@
-<turbo-frame id="backlog">
-  <div class="flex flex-col w-full h-full overflow-y-auto" data-projects-target="backlog">
+<turbo-frame id="backlog" class="h-full">
+  <div class="relative flex flex-col w-full h-full overflow-y-auto" data-projects-target="backlog">
     <%= render 'sprints/header', sprint: project.current_sprint %>
-    <div class="flex flex-col gap-1" data-projects-target="items" data-list="backlog" data-sprint-id="<%= project.current_sprint.id %>">
+    <div class="flex flex-col h-full gap-1 z-20" data-projects-target="items" data-list="backlog" data-sprint-id="<%= project.current_sprint.id %>">
       <% project.current_sprint.items.order(:position).each do |item| %>
         <%= render item %>
       <% end %>
     </div>
+    <% if project.current_sprint.items.empty? %>
+      <div class="absolute h-full w-full flex justify-center items-center">
+        <div class="flex flex-col items-center">
+          <%= image_tag 'backlog_empty.svg', class: 'h-60' %>
+          <div class="text-xs font-thin my-4">
+            No items have been added to the backlog yet.
+          </div>
+        </div>
+      </div>
+    <% end %>
   </div>
 </turbo-frame>
