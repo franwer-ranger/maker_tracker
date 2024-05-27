@@ -4,7 +4,9 @@
       <%= form.hidden_field :points, "data-items-target": 'points' %>
       <%= form.hidden_field :user_id, "data-items-target": 'userId' %>
       <%= form.hidden_field :sprint_id, "data-items-target": 'sprintId' %>
+      <%= form.hidden_field :position, "data-items-target": 'position' %>
       <%= form.hidden_field :icebox, "data-items-target": 'icebox' %>
+      <%= form.hidden_field :position_changed, value: 'false', "data-items-target": 'positionChanged' %>
     <% end %>
     <div class="flex items-center">
       <div class="mr-2 text-xs"><%= item.format_kind_icon %></div>
@@ -17,7 +19,7 @@
       <% end %>
     </div>
     <% if item.points %>
-      <button data-status="<%= item.status %>" class="mx-3 border border-gray-800 px-3 py-2 rounded bg-gray-700 text-white text-xs font-semibold">
+      <button data-status="<%= item.status %>" class="mx-3 border border-gray-800 px-3 py-2 rounded bg-gray-200 text-black text-xs font-semibold">
         <%= item_button_caption(item) %>
       </button>
     <% else %>

@@ -11,6 +11,7 @@ class User < ApplicationRecord
   end
 
   def nickname
+    return pseudonym if pseudonym.present?
     "#{name.first.capitalize}#{last_name.first.capitalize}"
   end
 end

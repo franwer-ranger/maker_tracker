@@ -3,7 +3,7 @@
 class DeviseCreateUsers < ActiveRecord::Migration[7.1]
   def change
     create_table :users do |t|
-      t.string :alias
+      t.string :pseudonym
       t.string :name
       t.string :last_name
 

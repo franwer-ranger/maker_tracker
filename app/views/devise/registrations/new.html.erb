@@ -10,27 +10,32 @@
         <%= render 'devise/shared/error_messages', resource: %>
 
         <div class="my-2">
-          <div class="my-1">Name</div>
+          <div class="my-1">Alias</div>
+          <%= f.text_field :pseudonym, autofocus: true, autocomplete: false, class: 'my-1 w-full bg-white rounded px-4 py-3 text-black' %>
+        </div>
+
+        <div class="my-2">
+          <div class="my-1">Name*</div>
           <%= f.text_field :name, autofocus: true, autocomplete: false, class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true %>
         </div>
 
         <div class="my-2">
-          <div class="my-1">Last Name</div>
+          <div class="my-1">Last Name*</div>
           <%= f.text_field :last_name, autofocus: true, autocomplete: false, class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true %>
         </div>
 
         <div class="my-2">
-          <div class="my-1">Email</div>
+          <div class="my-1">Email*</div>
           <%= f.email_field :email, autofocus: true, autocomplete: 'email', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true %>
         </div>
 
         <div class="my-2">
-          <div class="my-1">Password</div>
+          <div class="my-1">Password*</div>
           <%= f.password_field :password, autocomplete: 'new-password', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true, minlength: '8' %>
         </div>
 
         <div class="my-2">
-          <div class="my-1">Password confirmation</div>
+          <div class="my-1">Password confirmation*</div>
           <%= f.password_field :password_confirmation, autocomplete: 'new-password', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true, minlength: '8' %>
         </div>
 

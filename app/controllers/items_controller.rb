@@ -29,9 +29,8 @@ class ItemsController < ApplicationController
   def create
     @item = Item.new(item_params)
     @item.project = @project
-    @item.user = current_user
 
-    if @item.save
+    if @item.save!
       redirect_to @project, notice: "Item was successfully created."
     else
       render :new, status: :unprocessable_entity

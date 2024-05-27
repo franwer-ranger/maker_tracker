@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class Item < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :sprint, optional: true
   belongs_to :project
 

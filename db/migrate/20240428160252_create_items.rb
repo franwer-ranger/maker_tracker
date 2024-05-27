@@ -10,10 +10,9 @@ class CreateItems < ActiveRecord::Migration[7.1]
       t.integer :position, null: false
       t.datetime :accepted_at
 
-      t.references :user, null: false, foreign_key: true
+      t.references :user, null: true, foreign_key: true
       t.references :sprint, null: true, foreign_key: true
       t.references :project, null: false, foreign_key: true
-
       t.timestamps
     end
   end
