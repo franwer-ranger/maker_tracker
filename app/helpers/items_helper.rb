@@ -19,4 +19,21 @@ module ItemsHelper
       "Restart"
     end
   end
+
+  def item_button_styles(item)
+    case item.status
+    when "unstarted"
+      "bg-gray-200 text-black"
+    when "started"
+      "bg-gray-800 text-white"
+    when "finished"
+      "bg-amber-500 text-black"
+    when "delivered"
+      ""
+    when "accepted"
+      ""
+    when "rejected"
+      ""
+    end
+  end
 end
