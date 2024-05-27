@@ -20,7 +20,7 @@
       <%= image_tag 'logo.svg' %>
       <% if current_user %>
         <div class="flex">
-          <%= current_user.email %>
+          <%= current_user.full_name %>
           <%= button_to(
                 '(Sign out)',
                 destroy_user_session_path,

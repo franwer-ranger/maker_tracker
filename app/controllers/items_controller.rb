@@ -17,10 +17,12 @@ class ItemsController < ApplicationController
   # GET /items/new
   def new
     @item = Item.new
+    @users = User.all
   end
 
   # GET /items/1/edit
   def edit
+    @users = User.all
   end
 
   # POST /items or /items.json
