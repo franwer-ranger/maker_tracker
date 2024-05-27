@@ -2,7 +2,20 @@ import { Controller } from '@hotwired/stimulus'
 import Sortable from 'sortablejs'
 
 export default class extends Controller {
-  static targets = ['position', 'items', 'form', 'icebox', 'sprintId']
+  static targets = [
+    'position',
+    'items',
+    'form',
+    'icebox',
+    'sprintId',
+    'userId',
+    'status'
+  ]
+
+  static values = {
+    currentSprintId: Number,
+    currentUserId: Number
+  }
 
   connect() {
     this.initSortable()
@@ -36,6 +49,26 @@ export default class extends Controller {
     }
 
     this.positionTarget.value = event.newIndex + 1
+    this.formTarget.requestSubmit()
+  }
+
+  changeStatus(event) {
+    event.preventDefault()
+
+    this.formTarget.action = this.formTarget.action.replace(
+      ':item',
+      event.target.dataset.itemId
+    )
+
+    const status = event.target.dataset.status
+    if (status === 'unstarted') {
+      this.statusTarget.value = 'started'
+      this.userIdTarget.value = this.currentUserIdValue
+      this.sprintIdTarget.value = this.currentSprintIdValue
+      this.iceboxTarget.value = false
+      this.positionTarget.value = 1
+    }
+
     this.formTarget.requestSubmit()
   }
 }
