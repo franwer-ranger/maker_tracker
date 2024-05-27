@@ -6,8 +6,6 @@ export default class extends Controller {
 
   connect() {
     this.initSortable()
-    console.log('Icebox', this.iceboxTarget)
-    console.log('SprintId', this.sprintIdTarget)
   }
 
   initSortable() {
