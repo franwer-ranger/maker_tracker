@@ -12,7 +12,7 @@ export default class extends Controller {
   ]
 
   connect() {
-    console.log('item connected')
+    console.debug('Item connected')
   }
 
   changePosition(newPosition) {

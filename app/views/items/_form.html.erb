@@ -1,4 +1,4 @@
-<div class="bg-[#F1F1F1] text-black w-full rounded-lg px-4 pt-1 pb-8">
+<div class="item-form bg-[#F1F1F1] text-black w-full rounded-lg px-4 pt-1 pb-8">
   <%= form_with(model: [project, item], class: 'w-full', html: { "data-turbo-frame": 'project' }) do |form| %>
     <div class="flex justify-between my-4 items-center">
       <%= link_to 'Cancel', item.persisted? ? [project, item] : project, class: 'mx-2 underline text-sm' %>

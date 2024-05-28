@@ -7,6 +7,7 @@ export default class extends Controller {
   connect() {
     this.sortable = new Sortable(this.element, {
       group: 'sharedList',
+      filter: '.item-form',
       onEnd: this.end.bind(this)
     })
   }
