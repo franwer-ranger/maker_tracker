@@ -1,7 +1,7 @@
 <turbo-frame id="iteration" class="h-full">
   <div class="relative flex flex-col w-full h-full overflow-y-auto" data-projects-target="iteration">
     <%= render 'sprints/header', sprint: project.current_sprint %>
-    <div class="flex flex-col h-full gap-1 z-20" data-projects-target="items" data-list="iteration" data-sprint-id="<%= project.current_sprint.id %>">
+    <div class="flex flex-col h-full gap-1 z-20" data-controller="iteration" data-iteration-items-outlet=".item" data-list="iteration">
       <% project.current_sprint.items.order(:position).each do |item| %>
         <%= render item %>
       <% end %>
