@@ -19,7 +19,7 @@
       <% end %>
     </div>
     <% if item.points %>
-      <button data-item-id="<%= item.id %>" data-status="<%= item.status %>" data-action="projects#changeStatus" class="<%= item_button_styles(item) %> mx-3 border border-gray-800 px-3 py-2 rounded text-xs font-semibold">
+      <button data-item-id="<%= item.id %>" data-status="<%= item.status %>" data-action="items#changeStatus" class="<%= item_button_styles(item) %> mx-3 border border-gray-800 px-3 py-2 rounded text-xs font-semibold">
         <%= item_button_caption(item) %>
       </button>
     <% else %>

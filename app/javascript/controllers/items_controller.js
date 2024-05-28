@@ -8,8 +8,7 @@ export default class extends Controller {
     'userId',
     'sprintId',
     'position',
-    'icebox',
-    'positionChanged'
+    'icebox'
   ]
 
   connect() {
@@ -30,13 +29,12 @@ export default class extends Controller {
     this.iceboxTarget.value = true
   }
 
-  start(userId, sprintId) {
+  start() {
     this.statusTarget.value = 'started'
-    this.userIdTarget.value = userId
-    this.sprintIdTarget.value = sprintId
+    this.userIdTarget.value = this.#userId()
+    this.sprintIdTarget.value = this.#sprintId()
     this.iceboxTarget.value = false
     this.positionTarget.value = null
-    this.positionChangedTarget.value = 'true'
   }
 
   apply() {
@@ -47,6 +45,22 @@ export default class extends Controller {
     event.preventDefault()
     const points = event.target.dataset.points
     this.pointsTarget.value = points
-    this.formTarget.requestSubmit()
+    this.apply()
+  }
+
+  changeStatus(event) {
+    event.preventDefault()
+    const status = event.target.dataset.status
+    if (status === 'unstarted') this.start(null, null)
+
+    this.apply()
+  }
+
+  #userId() {
+    return document.querySelector('meta[name="current-user-id"]').content
+  }
+
+  #sprintId() {
+    return document.querySelector('meta[name="current-sprint-id"]').content
   }
 }

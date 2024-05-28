@@ -1,3 +1,9 @@
+<% content_for :meta do %>
+    <meta name="current-user-id" content="<%= current_user.id %>">
+    <meta name="current-project-id" content="<%= @project.id %>">
+    <meta name="current-sprint-id" content="<%= @project.current_sprint.id %>">
+<% end %>
+
 <div class="container mx-auto h-full xl:flex xl:justify-center">
   <turbo-frame id="project" class="flex gap-6 h-full" data-controller="projects" data-projects-current-sprint-id-value="<%= @project.current_sprint.id %>" data-projects-current-user-id-value="<%= current_user.id %>">
     <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0">
