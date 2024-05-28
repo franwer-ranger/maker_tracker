@@ -1,6 +1,6 @@
 <turbo-frame id="backlog" class="h-full">
-  <div class="relative flex flex-col w-full h-full overflow-y-auto" data-projects-target="backlog">
-    <div class="flex flex-col h-full gap-1 z-20" data-projects-target="items" data-list="backlog" data-sprint-id="<%= project.current_sprint.id %>">
+  <div class="relative flex flex-col w-full h-full overflow-y-auto">
+    <div class="flex flex-col h-full gap-1 z-20" data-controller="backlog" data-backlog-items-outlet=".item" data-list="backlog">
       <% project.items.on_backlog.order(:position).each do |item| %>
         <%= render item %>
       <% end %>

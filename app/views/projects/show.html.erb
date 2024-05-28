@@ -1,13 +1,5 @@
 <div class="container mx-auto h-full xl:flex xl:justify-center">
-  <turbo-frame id="project" class="flex gap-6 h-full" data-controller="projects" data-action="turbo:frame-load->projects#initSortable" data-projects-current-sprint-id-value="<%= @project.current_sprint.id %>" data-projects-current-user-id-value="<%= current_user.id %>">
-    <%= form_with(model: [@project, Item.new], url: project_item_path(@project, ':item'), method: :put, class: 'w-full', html: { "data-projects-target": 'form' }) do |form| %>
-      <%= form.hidden_field :position, "data-projects-target": 'position' %>
-      <%= form.hidden_field :icebox, "data-projects-target": 'icebox' %>
-      <%= form.hidden_field :status, "data-projects-target": 'status' %>
-      <%= form.hidden_field :sprint_id, "data-projects-target": 'sprintId' %>
-      <%= form.hidden_field :user_id, "data-projects-target": 'userId' %>
-      <%= form.hidden_field :position_changed, value: 'true' %>
-    <% end %>
+  <turbo-frame id="project" class="flex gap-6 h-full" data-controller="projects" data-projects-current-sprint-id-value="<%= @project.current_sprint.id %>" data-projects-current-user-id-value="<%= current_user.id %>">
     <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0">
       <div class="px-6 pt-6 pb-2">Done</div>
       <%= render 'done', project: @project %>

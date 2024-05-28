@@ -1,7 +1,12 @@
-<turbo-frame id="item" data-item-id="<%= item.id %>" data-controller="items">
+<turbo-frame class="item" id="item" data-item-id="<%= item.id %>" data-controller="items">
   <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), class: 'w-full flex items-center justify-between px-2 py-4 border border-gray-800 bg-gray-900 rounded cursor-move' do %>
-    <%= form_with(model: [item.project, item], class: 'hidden', html: { "data-items-target": 'form' }) do |form| %>
+    <%= form_with(model: [item.project, item], class: 'hidden', html: { "data-items-target": 'form', "data-turbo-frame": 'project' }) do |form| %>
       <%= form.hidden_field :points, "data-items-target": 'points' %>
+      <%= form.hidden_field :position, "data-items-target": 'position' %>
+      <%= form.hidden_field :icebox, "data-items-target": 'icebox' %>
+      <%= form.hidden_field :status, "data-items-target": 'status' %>
+      <%= form.hidden_field :sprint_id, "data-items-target": 'sprintId' %>
+      <%= form.hidden_field :user_id, "data-items-target": 'userId' %>
     <% end %>
     <div class="flex items-center">
       <div class="mr-2 text-xs"><%= item.format_kind_icon %></div>
@@ -19,12 +24,12 @@
       </button>
     <% else %>
       <div class="flex">
-        <button data-points="0" data-action="items#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">0</button>
-        <button data-points="1" data-action="items#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">1</button>
-        <button data-points="2" data-action="items#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">2</button>
-        <button data-points="3" data-action="items#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">3</button>
-        <button data-points="5" data-action="items#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">5</button>
-        <button data-points="8" data-action="items#submit" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">8</button>
+        <button data-points="0" data-action="items#changePoints" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">0</button>
+        <button data-points="1" data-action="items#changePoints" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">1</button>
+        <button data-points="2" data-action="items#changePoints" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">2</button>
+        <button data-points="3" data-action="items#changePoints" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">3</button>
+        <button data-points="5" data-action="items#changePoints" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">5</button>
+        <button data-points="8" data-action="items#changePoints" class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">8</button>
       </div>
     <% end %>
   <% end %>

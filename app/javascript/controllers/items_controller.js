@@ -3,40 +3,50 @@ import { Controller } from '@hotwired/stimulus'
 export default class extends Controller {
   static targets = [
     'form',
-    'points'
-    // 'status',
-    // 'userId',
-    // 'sprintId',
-    // 'position',
-    // 'icebox',
-    // 'positionChanged'
+    'points',
+    'status',
+    'userId',
+    'sprintId',
+    'position',
+    'icebox',
+    'positionChanged'
   ]
-  // static values = {
-  //   currentSprintId: Number,
-  //   currentUserId: Number
-  // }
 
-  connect() {}
+  connect() {
+    console.log('item connected')
+  }
 
-  submit(event) {
+  changePosition(newPosition) {
+    this.positionTarget.value = newPosition
+  }
+
+  moveToBacklog() {
+    this.sprintIdTarget.value = null
+    this.iceboxTarget.value = false
+  }
+
+  moveToIcebox() {
+    this.sprintIdTarget.value = null
+    this.iceboxTarget.value = true
+  }
+
+  start(userId, sprintId) {
+    this.statusTarget.value = 'started'
+    this.userIdTarget.value = userId
+    this.sprintIdTarget.value = sprintId
+    this.iceboxTarget.value = false
+    this.positionTarget.value = null
+    this.positionChangedTarget.value = 'true'
+  }
+
+  apply() {
+    this.formTarget.requestSubmit()
+  }
+
+  changePoints(event) {
     event.preventDefault()
     const points = event.target.dataset.points
-    // const status = event.target.dataset.status
-
-    // if (status) {
-    //   if (status === 'unstarted') {
-    //     this.statusTarget.value = 'started'
-    //     this.userIdTarget.value = this.currentUserIdValue
-    //     this.sprintIdTarget.value = this.currentSprintIdValue
-    //     this.iceboxTarget.value = false
-    //     this.positionTarget.value = 1
-    //     this.positionChangedTarget.value = 'true'
-    //   }
-    // }
-
-    if (points) {
-      this.pointsTarget.value = points
-    }
+    this.pointsTarget.value = points
     this.formTarget.requestSubmit()
   }
 }

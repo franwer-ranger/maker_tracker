@@ -40,10 +40,7 @@ class ItemsController < ApplicationController
   # PATCH/PUT /items/1 or /items/1.json
   def update
     if @item.update(item_params)
-      if params[:item][:position_changed] == "true"
-        return redirect_to @item.project
-      end
-      redirect_to [ @item.project, @item ], notice: "Item was successfully updated."
+      redirect_to @item.project
     else
       render :edit, status: :unprocessable_entity
     end
