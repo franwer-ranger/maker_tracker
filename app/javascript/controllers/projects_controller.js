@@ -24,8 +24,10 @@ export default class extends Controller {
   initSortable() {
     this.itemsTargets.forEach((itemTarget) => {
       if (!itemTarget) return
+      const dataList = itemTarget.dataset.list
+      const isSortable = dataList === 'icebox' || dataList === 'backlog'
       this.sortable = new Sortable(itemTarget, {
-        group: 'lists',
+        group: isSortable ? 'lists' : null,
         onEnd: this.end.bind(this)
       })
     })
@@ -44,7 +46,7 @@ export default class extends Controller {
     }
 
     if (toList === 'backlog') {
-      this.sprintIdTarget.value = event.to.dataset.sprintId
+      this.sprintIdTarget.value = null
       this.iceboxTarget.value = false
     }
 

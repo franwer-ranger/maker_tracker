@@ -8,10 +8,10 @@ class Item < ApplicationRecord
   enum :status, { unstarted: 0, started: 1, finished: 2, delivered: 3, accepted: 4, rejected: 5 }, default: :unstarted
   enum kind: { bug: 0, feature: 1, chore: 2, release: 3 }
 
-  scope :on_backlog, -> { where.not(status: :accepted).where(icebox: 0) }
+  scope :on_backlog, -> { where.not(status: :accepted).where(icebox: 0).where(sprint_id: nil) }
   scope :on_icebox, -> { where(icebox: 1) }
 
-  positioned on: [ :project, :icebox ]
+  positioned on: [ :project, :sprint, :icebox ]
 
   def self.format_kind(kind)
     kind_formatted[kind]
