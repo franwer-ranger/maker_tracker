@@ -11,7 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
-  create_table "items", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "items", force: :cascade do |t|
     t.integer "status"
     t.integer "kind"
     t.boolean "icebox", default: true
@@ -20,9 +20,9 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
     t.integer "points"
     t.integer "position", null: false
     t.datetime "accepted_at"
-    t.bigint "user_id"
-    t.bigint "sprint_id"
-    t.bigint "project_id", null: false
+    t.integer "user_id"
+    t.integer "sprint_id"
+    t.integer "project_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_items_on_project_id"
@@ -30,7 +30,7 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
     t.index ["user_id"], name: "index_items_on_user_id"
   end
 
-  create_table "projects", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "projects", force: :cascade do |t|
     t.string "name"
     t.text "description"
     t.date "start_date"
@@ -41,20 +41,20 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "sprints", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "sprints", force: :cascade do |t|
     t.date "start_date"
     t.date "end_date"
     t.integer "length"
     t.integer "velocity"
     t.integer "strength"
     t.integer "number"
-    t.bigint "project_id", null: false
+    t.integer "project_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_sprints_on_project_id"
   end
 
-  create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "pseudonym"
     t.string "name"
     t.string "last_name"

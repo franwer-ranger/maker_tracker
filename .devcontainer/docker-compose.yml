@@ -9,19 +9,6 @@ services:
       - 3000:3000
     environment:
       - RAILS_ENV=development
-      - MYSQL_HOST=mysql
-      - MYSQL_USER=root
-      - MYSQL_PASSWORD=blanked
-      - MYSQL_DATABASE=maker_tracker
       - REDIS_URL=redis://redis:6379/1
-  mysql:
-    image: mysql:8
-    environment:
-      - MYSQL_ROOT_PASSWORD=blanked
-      - MYSQL_DATABASE=maker_tracker
-      - MYSQL_USER=maker_tracker
-      - MYSQL_PASSWORD=password
-    ports:
-      - 3309:3306
   redis:
     image: redis:6
