@@ -4,10 +4,11 @@ import Sortable from 'sortablejs'
 export default class extends Controller {
   static outlets = ['items']
 
-  connect() {
+  initialize() {
     this.sortable = new Sortable(this.element, {
       filter: '.item-form',
-      onEnd: this.end.bind(this)
+      onEnd: this.end.bind(this),
+      forceFallback: true,
     })
   }
 
