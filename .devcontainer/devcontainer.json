@@ -14,6 +14,7 @@
           "Gemfile": "ruby",
           "*.html.erb": "erb"
         },
+        "files.autoSave": "onFocusChange",
         "sorbet.enabled": false,
         "rubyLsp.rubyVersionManager": "none",
         "rubyLsp.formatter": "rubocop",
