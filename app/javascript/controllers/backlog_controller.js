@@ -8,8 +8,7 @@ export default class extends Controller {
     this.sortable = new Sortable(this.element, {
       group: 'sharedList',
       filter: '.item-form',
-      onEnd: this.end.bind(this),
-      forceFallback: true,
+      onEnd: this.end.bind(this)
     })
   }
 

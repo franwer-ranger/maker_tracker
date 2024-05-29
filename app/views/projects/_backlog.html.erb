@@ -4,6 +4,7 @@
       <% project.items.on_backlog.order(:position).each do |item| %>
         <%= render item %>
       <% end %>
+      <div class="hidden item-form text-center text-sm italic border rounded p-3">💩sortablejs hack💩 https://github.com/SortableJS/Sortable/issues/1686#issuecomment-1240231903 </div>
     </div>
     <% if project.items.on_backlog.empty? %>
       <div class="absolute h-full w-full flex justify-center items-center">

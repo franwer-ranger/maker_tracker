@@ -7,8 +7,7 @@ export default class extends Controller {
   initialize() {
     this.sortable = new Sortable(this.element, {
       filter: '.item-form',
-      onEnd: this.end.bind(this),
-      forceFallback: true,
+      onEnd: this.end.bind(this)
     })
   }
 
