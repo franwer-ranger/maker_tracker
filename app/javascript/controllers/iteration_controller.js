@@ -1,29 +1,8 @@
-import { Controller } from '@hotwired/stimulus'
-import Sortable from 'sortablejs'
+import SortableController from './sortable_controller'
 
-export default class extends Controller {
-  static outlets = ['items']
-
-  initialize() {
-    this.sortable = new Sortable(this.element, {
-      draggable: '.item',
-      onEnd: this.end.bind(this),
-      onMove: this.#cancelItemForm.bind(this)
-    })
-  }
-
+export default class extends SortableController {
   end(event) {
-    if (this.#cancelItemForm(event) === false) return false
-
-    const itemOutlet = this.itemsOutlets.find(
-      (item) => item.element === event.item
-    )
-    itemOutlet?.changePosition(event.newIndex + 1)
+    const itemOutlet = super.end(event)
     itemOutlet?.apply()
-  }
-
-  #cancelItemForm(event) {
-    const element = event.dragged ?? event.item
-    if (element.querySelectorAll('#item-form').length > 0) return false
   }
 }
