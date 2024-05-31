@@ -4,15 +4,17 @@ import Sortable from 'sortablejs'
 export default class extends Controller {
   static outlets = ['items']
 
-  initialize() {
+  connect() {
     this.sortable = new Sortable(this.element, {
       group: 'sharedList',
-      filter: '.item-form',
-      onEnd: this.end.bind(this)
+      onEnd: this.end.bind(this),
+      onMove: this.#cancelItemForm.bind(this)
     })
   }
 
   end(event) {
+    if (this.#cancelItemForm(event) === false) return false
+
     const itemOutlet = this.itemsOutlets.find(
       (item) => item.element === event.item
     )
@@ -20,5 +22,10 @@ export default class extends Controller {
 
     if (event.to.dataset.list === 'backlog') itemOutlet?.moveToBacklog()
     itemOutlet?.apply()
+  }
+
+  #cancelItemForm(event) {
+    const element = event.dragged ?? event.item
+    if (element.querySelectorAll('#item-form').length > 0) return false
   }
 }

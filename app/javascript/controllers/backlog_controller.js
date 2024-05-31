@@ -7,12 +7,19 @@ export default class extends Controller {
   initialize() {
     this.sortable = new Sortable(this.element, {
       group: 'sharedList',
-      filter: '.item-form',
-      onEnd: this.end.bind(this)
+      draggable: '.item',
+      onEnd: this.end.bind(this),
+      onMove: this.#cancelItemForm.bind(this)
     })
   }
 
+  move(event) {
+    if (event.dragged.querySelectorAll('#item-form').length > 0) return false
+  }
+
   end(event) {
+    if (this.#cancelItemForm(event) === false) return false
+
     const itemOutlet = this.itemsOutlets.find(
       (item) => item.element === event.item
     )
@@ -20,5 +27,10 @@ export default class extends Controller {
 
     if (event.to.dataset.list === 'icebox') itemOutlet?.moveToIcebox()
     itemOutlet?.apply()
+  }
+
+  #cancelItemForm(event) {
+    const element = event.dragged ?? event.item
+    if (element.querySelectorAll('#item-form').length > 0) return false
   }
 }
