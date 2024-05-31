@@ -7,14 +7,9 @@ export default class extends Controller {
   initialize() {
     this.sortable = new Sortable(this.element, {
       group: 'sharedList',
-      draggable: '.item',
       onEnd: this.end.bind(this),
       onMove: this.#cancelItemForm.bind(this)
     })
-  }
-
-  move(event) {
-    if (event.dragged.querySelectorAll('#item-form').length > 0) return false
   }
 
   end(event) {

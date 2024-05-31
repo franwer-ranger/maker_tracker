@@ -4,7 +4,7 @@ import Sortable from 'sortablejs'
 export default class extends Controller {
   static outlets = ['items']
 
-  connect() {
+  initialize() {
     this.sortable = new Sortable(this.element, {
       group: 'sharedList',
       onEnd: this.end.bind(this),
