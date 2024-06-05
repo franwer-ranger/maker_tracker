@@ -1,4 +1,4 @@
-<turbo-frame id="iteration" class="flex-1">
+<turbo-frame id="iteration" class="<%= height_full ? 'flex-1' : '' %>">
   <div class="relative flex flex-col w-full h-full" data-projects-target="iteration">
     <%= render 'sprints/header', sprint: project.current_sprint %>
     <div class="flex flex-col h-full gap-1 z-20" data-controller="iteration" data-iteration-items-outlet=".item" data-list="iteration">
@@ -7,15 +7,5 @@
       <% end %>
       <div class="hidden item-form text-center text-sm italic border rounded p-3">💩sortablejs hack💩 https://github.com/SortableJS/Sortable/issues/1686#issuecomment-1240231903 </div>
     </div>
-    <% if project.current_sprint.items.empty? %>
-      <div class="absolute h-full w-full flex justify-center items-center">
-        <div class="flex flex-col items-center">
-          <%= image_tag 'backlog_empty.svg', class: 'h-60' %>
-          <div class="text-xs font-thin my-4">
-            No items have been added to the current iteration yet.
-          </div>
-        </div>
-      </div>
-    <% end %>
   </div>
 </turbo-frame>
