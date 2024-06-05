@@ -19,7 +19,7 @@
         "rubyLsp.rubyVersionManager": "none",
         "rubyLsp.formatter": "rubocop",
         "editor.detectIndentation": false,
-        "[javascript][json][jsonc][yaml][yml]": {
+        "[javascript][json][jsonc][yaml][yml][tailwind.css]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode",
           "editor.tabSize": 2,
           "editor.insertSpaces": true,

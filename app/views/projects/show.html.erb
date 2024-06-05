@@ -10,19 +10,19 @@
 
 <div class="container mx-auto h-full xl:flex xl:justify-center">
   <turbo-frame id="project" class="flex gap-6 h-full w-full">
-    <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0 overflow-y-auto">
+    <div class="app-scroll-container bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0 overflow-y-auto">
       <div class="px-6 pt-6 pb-2">Done</div>
       <%= render 'done', project: @project %>
     </div>
-    <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0 overflow-y-auto">
+    <div class="app-scroll-container bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0 overflow-y-auto">
       <div class="px-6 pt-6 pb-2">Current Iteration</div>
       <%= render 'iteration', project: @project %>
     </div>
-    <div class="bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0 overflow-y-auto">
+    <div class="app-scroll-container bg-[#1D1D1D] rounded-lg h-full flex flex-col w-[28rem] grow-0 shrink-0 overflow-y-auto">
       <div class="px-6 pt-6 pb-2">Backlog</div>
       <%= render 'backlog', project: @project %>
     </div>
-    <div class="bg-[#1D1D1D] rounded-lg h-full py-6 flex flex-col w-[28rem] grow-0 shrink-0 relative overflow-y-auto">
+    <div class="app-scroll-container bg-[#1D1D1D] rounded-lg h-full py-6 flex flex-col w-[28rem] grow-0 shrink-0 relative overflow-y-auto">
       <div class="mb-2 h-[30px] px-6">Icebox</div>
       <%= render 'icebox', project: @project %>
     </div>
