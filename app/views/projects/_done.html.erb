@@ -1,5 +1,5 @@
-<turbo-frame id="done" class="h-full">
-  <div class="relative flex flex-col w-full h-full overflow-y-auto">
+<turbo-frame id="done" class="flex-1">
+  <div class="relative flex flex-col w-full h-full">
     <div class="flex flex-col h-full gap-1 z-20" data-controller="done" data-backlog-items-outlet=".item" data-list="done">
         <% project.previous_sprints.each do |sprint| %>
           <%= render 'sprints/header', sprint: sprint %>
