@@ -6,7 +6,7 @@ export default class extends Controller {
   initialize() {
     const options = {
       onEnd: this.end.bind(this),
-      onMove: this.#cancelItemForm.bind(this)
+      onMove: this.move.bind(this)
     }
     const group = this._group()
     if (group != -1) options.group = group
@@ -22,6 +22,10 @@ export default class extends Controller {
     )
     itemOutlet?.changePosition(event.newIndex + 1)
     return itemOutlet
+  }
+
+  move(event) {
+    this.#cancelItemForm(event)
   }
 
   #cancelItemForm(event) {

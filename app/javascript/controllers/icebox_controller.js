@@ -10,6 +10,6 @@ export default class extends SortableController {
   }
 
   _group() {
-    return 'sharedList'
+    return { name: 'icebox', put: ['backlog', 'iteration'] }
   }
 }

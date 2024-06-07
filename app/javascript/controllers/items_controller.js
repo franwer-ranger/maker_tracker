@@ -26,6 +26,7 @@ export default class extends Controller {
 
   moveToIcebox() {
     this.sprintIdTarget.value = null
+    this.statusTarget.value = 'unstarted'
     this.iceboxTarget.value = true
   }
 
