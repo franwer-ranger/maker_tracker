@@ -38,6 +38,19 @@ export default class extends Controller {
     this.positionTarget.value = null
   }
 
+  finish() {
+    this.statusTarget.value = 'finished'
+  }
+
+  deliver() {
+    this.statusTarget.value = 'delivered'
+  }
+
+  accept() {
+    //TODO: "create" a new list on top of the current iteration to show the accepted items on the current sprint (disabled and not sortable)
+    console.log('comming soon...')
+  }
+
   apply() {
     this.formTarget.requestSubmit()
   }
@@ -52,7 +65,9 @@ export default class extends Controller {
   changeStatus(event) {
     event.preventDefault()
     const status = event.target.dataset.status
-    if (status === 'unstarted') this.start(null, null)
+    if (status === 'unstarted') this.start()
+    if (status === 'started') this.finish()
+    if (status === 'finished') this.deliver()
 
     this.apply()
   }
