@@ -20,6 +20,10 @@ module ItemsHelper
     end
   end
 
+  def item_status_options
+    Item.statuses.map { |key, _value| [ key.capitalize, key ] }
+  end
+
   def item_button_styles(item)
     case item.status
     when "unstarted"
@@ -27,13 +31,7 @@ module ItemsHelper
     when "started"
       "bg-gray-800 text-white"
     when "finished"
-      "bg-amber-500 text-black"
-    when "delivered"
-      ""
-    when "accepted"
-      ""
-    when "rejected"
-      ""
+      "bg-amber-500 text-white"
     end
   end
 end

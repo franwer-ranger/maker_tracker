@@ -12,6 +12,12 @@
       <label class="font-medium">Type of request</label>
       <%= form.select :kind, options_for_select(item_kind_options, item.kind), {}, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2' %>
     </div>
+    <% if item.persisted? %>
+      <div class="my-4 px-6 py-3 bg-white rounded-lg flex justify-between items-center">
+        <label class="font-medium">State</label>
+        <%= form.select :status, options_for_select(item_status_options, item.status), {}, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2' %>
+      </div>
+    <% end %>
     <div class="my-4 px-6 py-3 bg-white rounded-lg flex justify-between items-center">
       <label class="font-medium">Points</label>
       <%= form.select :points, options_for_select([0, 1, 2, 3, 5, 8], item.points), { prompt: 'Unstimated' }, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2 text-right' %>
