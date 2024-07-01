@@ -1,8 +1,11 @@
 <turbo-frame id="iteration" class="<%= height_full ? 'flex-1' : '' %>">
   <div class="relative flex flex-col w-full h-full" data-projects-target="iteration">
     <%= render 'sprints/header', sprint: project.current_sprint %>
+    <% project.current_sprint.items.accepted.order(:accepted_at).each do |item| %>
+      <%= render item %>
+    <% end %>
     <div class="flex flex-col h-full gap-1 z-20" data-controller="iteration" data-iteration-items-outlet=".item" data-list="iteration">
-      <% project.current_sprint.items.order(:position).each do |item| %>
+      <% project.current_sprint.items.in_progress.order(:position).each do |item| %>
         <%= render item %>
       <% end %>
       <div class="hidden item-form text-center text-sm italic border rounded p-3">💩sortablejs hack💩 https://github.com/SortableJS/Sortable/issues/1686#issuecomment-1240231903 </div>

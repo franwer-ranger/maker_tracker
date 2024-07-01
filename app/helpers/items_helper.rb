@@ -34,4 +34,9 @@ module ItemsHelper
       "bg-amber-500 text-white"
     end
   end
+
+  def item_status_bg(item)
+    return "bg-[#1c3718]" if item.accepted?
+    "bg-gray-900"
+  end
 end

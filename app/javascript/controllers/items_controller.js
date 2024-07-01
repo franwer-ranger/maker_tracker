@@ -46,9 +46,11 @@ export default class extends Controller {
     this.statusTarget.value = 'delivered'
   }
 
-  accept() {
+  accept(event) {
+    event.preventDefault()
+    this.statusTarget.value = 'accepted'
+    this.apply()
     //TODO: "create" a new list on top of the current iteration to show the accepted items on the current sprint (disabled and not sortable)
-    console.log('comming soon...')
   }
 
   apply() {

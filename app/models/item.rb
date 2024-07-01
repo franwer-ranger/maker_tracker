@@ -10,6 +10,9 @@ class Item < ApplicationRecord
 
   scope :on_backlog, -> { where.not(status: :accepted).where(icebox: 0).where(sprint_id: nil) }
   scope :on_icebox, -> { where(icebox: 1) }
+  scope :in_progress, -> { where(status: [ :started, :finished, :delivered ]) }
+
+  before_save :set_accepted_at, if: -> { status_changed? && status == "accepted" }
 
   positioned on: [ :project, :sprint, :icebox ]
 
@@ -27,5 +30,9 @@ class Item < ApplicationRecord
 
   def self.kind_icon
     { bug: "🐞", feature: "💫", chore: "⚙️", release: "🚀" }
+  end
+
+  def set_accepted_at
+    self.accepted_at = Time.zone.now
   end
 end

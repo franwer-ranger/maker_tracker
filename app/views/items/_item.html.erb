@@ -1,5 +1,5 @@
 <turbo-frame class="item" id="item" data-item-id="<%= item.id %>" data-controller="items">
-  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), class: 'w-full flex items-center justify-between px-2 py-4 border border-gray-800 bg-gray-900 rounded cursor-move' do %>
+  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), class: "w-full flex items-center justify-between px-2 py-4 border border-gray-800 #{item_status_bg(item)} rounded cursor-move" do %>
     <%= form_with(model: [item.project, item], class: 'hidden', html: { "data-items-target": 'form', "data-turbo-frame": 'project' }) do |form| %>
       <%= form.hidden_field :points, "data-items-target": 'points' %>
       <%= form.hidden_field :position, "data-items-target": 'position' %>
@@ -21,13 +21,15 @@
     <% if item.points %>
       <% if item.delivered? %>
         <div class="flex flex-1 gap-1">
-          <button data-item-id="<%= item.id %>" data-status="delivered" data-action="items#accept" class="bg-green-600 text-white border border-gray-800 p-2 rounded text-xs font-semibold">
+          <button data-item-id="<%= item.id %>" data-action="items#accept" class="bg-green-600 text-white border border-gray-800 p-2 rounded text-xs font-semibold">
             Accept
           </button>
-          <button data-item-id="<%= item.id %>" data-status="delivered" data-action="items#reject" class="bg-red-600 text-white border border-gray-800 p-2 rounded text-xs font-semibold">
+          <button data-item-id="<%= item.id %>" data-action="items#reject" class="bg-red-600 text-white border border-gray-800 p-2 rounded text-xs font-semibold">
             Reject
           </button>
         </div>
+      <% elsif item.accepted? %>
+        <div class="text-xs mx-3 font-light"><%= item.accepted_at.strftime('%a %d %B') %></div>
       <% else %>
         <button data-item-id="<%= item.id %>" data-status="<%= item.status %>" data-action="items#changeStatus" class="<%= item_button_styles(item) %> mx-3 border border-gray-800 px-3 py-2 rounded text-xs font-semibold">
           <%= item_button_caption(item) %>
