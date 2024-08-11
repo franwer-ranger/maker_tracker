@@ -14,6 +14,9 @@ class Item < ApplicationRecord
 
   before_save :set_accepted_at, if: -> { status_changed? && status == "accepted" }
 
+  # TODO: The sprint field should be changed, there's a bug when the sprint is deleted (this will nullify the sprint_id)
+  # and the position will be bugged because the done column uses the accepted_at field to show items not the sprint_id.
+  # Maybe we should remove the sprint_id and create a new column to if an item is done or not and use that as the position criteria
   positioned on: [ :project, :sprint, :icebox ]
 
   def self.format_kind(kind)

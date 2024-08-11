@@ -4,29 +4,36 @@
       <%= link_to 'Cancel', item.persisted? ? [project, item] : project, class: 'mx-2 underline text-sm' %>
       <%= form.submit 'Save', class: 'rounded-lg py-2 px-5 bg-[#FF3F01] text-white inline-block font-medium cursor-pointer' %>
     </div>
-    <div class="my-4 px-6 py-8 bg-white rounded-lg">
+    <div class="my-4 px-6 py-4 bg-white rounded-lg">
       <label class="font-medium">Name</label>
       <%= form.text_field :name, class: 'block rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full' %>
     </div>
-    <div class="my-4 px-6 py-3 bg-white rounded-lg flex justify-between items-center">
+    <div class="my-4 px-6 py-1 bg-white rounded-lg flex justify-between items-center">
       <label class="font-medium">Type of request</label>
       <%= form.select :kind, options_for_select(item_kind_options, item.kind), {}, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2' %>
     </div>
     <% if item.persisted? %>
-      <div class="my-4 px-6 py-3 bg-white rounded-lg flex justify-between items-center">
-        <label class="font-medium">State</label>
-        <%= form.select :status, options_for_select(item_status_options, item.status), {}, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2' %>
+      <div class="my-4 px-6 py-1 bg-white rounded-lg">
+        <div class="flex justify-between items-center">
+          <label class="font-medium">State</label>
+          <%= form.select :status, options_for_select(item_status_options, item.status), {}, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2' %>
+        </div>
+        <% if item.accepted? %>
+          <div class="flex justify-end w-full pb-4">
+            <%= form.date_field :accepted_at, class: "rounded" %>
+          </div>
+        <% end %>
       </div>
     <% end %>
-    <div class="my-4 px-6 py-3 bg-white rounded-lg flex justify-between items-center">
+    <div class="my-4 px-6 py-1 bg-white rounded-lg flex justify-between items-center">
       <label class="font-medium">Points</label>
       <%= form.select :points, options_for_select([0, 1, 2, 3, 5, 8], item.points), { prompt: 'Unstimated' }, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2 text-right' %>
     </div>
-    <div class="my-4 px-6 py-3 bg-white rounded-lg flex justify-between items-center">
+    <div class="my-4 px-6 py-1 bg-white rounded-lg flex justify-between items-center">
       <label class="font-medium">Owner</label>
       <%= form.select :user_id, options_for_select(users_options(@users), item.user), { prompt: 'Unassigned' }, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2 text-right' %>
     </div>
-    <div class="my-4 px-6 py-8 bg-white rounded-lg">
+    <div class="my-4 px-6 py-4 bg-white rounded-lg">
       <%= form.label :description %>
       <%= form.text_area :description, rows: 4, class: 'block rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full' %>
     </div>
