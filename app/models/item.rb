@@ -10,14 +10,13 @@ class Item < ApplicationRecord
 
   scope :on_backlog, -> { where.not(status: :accepted).where(icebox: 0).where(sprint_id: nil) }
   scope :on_icebox, -> { where(icebox: 1) }
-  scope :in_progress, -> { where(status: [ :started, :finished, :delivered ]) }
+  scope :in_progress, -> { where(in_progress: 1) }
+  scope :done, -> { where(done: 1) }
 
   before_save :set_accepted_at, if: -> { status_changed? && status == "accepted" }
+  before_save :set_started_at, if: -> { status_changed? && status == "started" }
 
-  # TODO: The sprint field should be changed, there's a bug when the sprint is deleted (this will nullify the sprint_id)
-  # and the position will be bugged because the done column uses the accepted_at field to show items not the sprint_id.
-  # Maybe we should remove the sprint_id and create a new column to if an item is done or not and use that as the position criteria
-  positioned on: [ :project, :sprint, :icebox ]
+  positioned on: [ :project, :done, :in_progress, :icebox ]
 
   def self.format_kind(kind)
     kind_formatted[kind]
@@ -37,5 +36,9 @@ class Item < ApplicationRecord
 
   def set_accepted_at
     self.accepted_at = Time.zone.now
+  end
+
+  def set_started_at
+    self.started_at = Time.zone.now
   end
 end

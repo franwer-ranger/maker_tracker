@@ -15,11 +15,16 @@ ActiveRecord::Schema[7.1].define(version: 2024_04_28_160252) do
     t.integer "status"
     t.integer "kind"
     t.boolean "icebox", default: true
+    t.boolean "in_progress", default: false
+    t.boolean "done", default: false
     t.string "name"
     t.text "description"
     t.integer "points"
     t.integer "position", null: false
     t.datetime "accepted_at"
+    t.datetime "started_at"
+    t.datetime "finished_at"
+    t.datetime "delivered_at"
     t.integer "user_id"
     t.integer "sprint_id"
     t.integer "project_id", null: false

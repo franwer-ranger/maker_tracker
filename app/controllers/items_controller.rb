@@ -64,6 +64,6 @@ class ItemsController < ApplicationController
   # Only allow a list of trusted parameters through.
   def item_params
     params.require(:item)
-      .permit(:status, :kind, :icebox, :name, :description, :points, :position, :user_id, :sprint_id, :project_id)
+      .permit(:status, :kind, :icebox, :name, :description, :points, :position, :user_id, :sprint_id, :project_id, :accepted_at, :in_progress, :done)
   end
 end

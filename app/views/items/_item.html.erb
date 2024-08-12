@@ -1,9 +1,11 @@
 <turbo-frame class="item" id="item" data-item-id="<%= item.id %>" data-controller="items">
-  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), "data-turbo-prefetch": "false", class: "w-full flex items-center justify-between px-2 py-4 border border-gray-800 #{item_status_bg(item)} rounded cursor-move" do %>
+  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), "data-turbo-prefetch": 'false', class: "w-full flex items-center justify-between px-2 py-4 border border-gray-800 #{item_status_bg(item)} rounded cursor-move" do %>
     <%= form_with(model: [item.project, item], class: 'hidden', html: { "data-items-target": 'form', "data-turbo-frame": '_top' }) do |form| %>
       <%= form.hidden_field :points, "data-items-target": 'points' %>
       <%= form.hidden_field :position, "data-items-target": 'position' %>
       <%= form.hidden_field :icebox, "data-items-target": 'icebox' %>
+      <%= form.hidden_field :in_progress, "data-items-target": 'inProgress' %>
+      <%= form.hidden_field :done, "data-items-target": 'done' %>
       <%= form.hidden_field :status, "data-items-target": 'status' %>
       <%= form.hidden_field :sprint_id, "data-items-target": 'sprintId' %>
       <%= form.hidden_field :user_id, "data-items-target": 'userId' %>

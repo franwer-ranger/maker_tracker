@@ -8,12 +8,10 @@ export default class extends Controller {
     'userId',
     'sprintId',
     'position',
-    'icebox'
+    'icebox',
+    'inProgress',
+    'done'
   ]
-
-  connect() {
-    console.debug('Item connected')
-  }
 
   changePosition(newPosition) {
     this.positionTarget.value = newPosition
@@ -22,12 +20,16 @@ export default class extends Controller {
   moveToBacklog() {
     this.sprintIdTarget.value = null
     this.iceboxTarget.value = false
+    this.inProgressTarget.value = false
+    this.doneTarget.value = false
   }
 
   moveToIcebox() {
     this.sprintIdTarget.value = null
     this.statusTarget.value = 'unstarted'
     this.iceboxTarget.value = true
+    this.inProgressTarget.value = false
+    this.doneTarget.value = false
   }
 
   start() {
@@ -35,22 +37,31 @@ export default class extends Controller {
     this.userIdTarget.value = this.#userId()
     this.sprintIdTarget.value = this.#sprintId()
     this.iceboxTarget.value = false
+    this.inProgressTarget.value = true
+    this.doneTarget.value = false
     this.positionTarget.value = null
   }
 
   finish() {
     this.statusTarget.value = 'finished'
+    this.inProgressTarget.value = true
+    this.doneTarget.value = false
+    this.iceboxTarget.value = false
   }
 
   deliver() {
     this.statusTarget.value = 'delivered'
+    this.inProgressTarget.value = true
+    this.doneTarget.value = false
+    this.iceboxTarget.value = false
   }
 
   accept(event) {
     event.preventDefault()
     this.statusTarget.value = 'accepted'
+    this.inProgressTarget.value = false
+    this.doneTarget.value = true
     this.apply()
-    //TODO: "create" a new list on top of the current iteration to show the accepted items on the current sprint (disabled and not sortable)
   }
 
   apply() {
