@@ -10,7 +10,8 @@ export default class extends Controller {
     'position',
     'icebox',
     'inProgress',
-    'done'
+    'done',
+    'backlog'
   ]
 
   changePosition(newPosition) {
@@ -19,6 +20,7 @@ export default class extends Controller {
 
   moveToBacklog() {
     this.sprintIdTarget.value = null
+    this.backlogTarget.value = true
     this.iceboxTarget.value = false
     this.inProgressTarget.value = false
     this.doneTarget.value = false
@@ -30,6 +32,7 @@ export default class extends Controller {
     this.iceboxTarget.value = true
     this.inProgressTarget.value = false
     this.doneTarget.value = false
+    this.backlogTarget.value = false
   }
 
   start() {
@@ -39,6 +42,7 @@ export default class extends Controller {
     this.iceboxTarget.value = false
     this.inProgressTarget.value = true
     this.doneTarget.value = false
+    this.backlogTarget.value = false
     this.positionTarget.value = null
   }
 
@@ -47,6 +51,7 @@ export default class extends Controller {
     this.inProgressTarget.value = true
     this.doneTarget.value = false
     this.iceboxTarget.value = false
+    this.backlogTarget.value = false
   }
 
   deliver() {
@@ -54,12 +59,14 @@ export default class extends Controller {
     this.inProgressTarget.value = true
     this.doneTarget.value = false
     this.iceboxTarget.value = false
+    this.backlogTarget.value = false
   }
 
   accept(event) {
     event.preventDefault()
     this.statusTarget.value = 'accepted'
     this.inProgressTarget.value = false
+    this.backlogTarget.value = false
     this.doneTarget.value = true
     this.apply()
   }

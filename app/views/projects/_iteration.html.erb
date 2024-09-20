@@ -5,7 +5,7 @@
       <%= render item %>
     <% end %>
     <div class="flex flex-col h-full gap-1 z-20" data-controller="iteration" data-iteration-items-outlet=".item" data-list="iteration">
-      <% project.current_sprint.items.in_progress.order(:position).each do |item| %>
+      <% project.current_sprint.in_progress.order(:position).each do |item| %>
         <%= render item %>
       <% end %>
       <div class="hidden item-form text-center text-sm italic border rounded p-3">💩sortablejs hack💩 https://github.com/SortableJS/Sortable/issues/1686#issuecomment-1240231903 </div>

@@ -16,6 +16,7 @@ class Project < ApplicationRecord
       sprint_start_date = (sprint_end_date + 1.day).beginning_of_day
       break if sprint_end_date > Date.today
      end
+     recreate_velocity
   end
 
   def previous_sprints
@@ -26,7 +27,15 @@ class Project < ApplicationRecord
     sprints.last
   end
 
-  private
+  # private
+
+  def recreate_velocity
+    velocity_window = 3
+    sprints = Sprint.last(velocity_window + 1).first(velocity_window)
+    new_velocity = sprints.map(&:current_velocity).sum / velocity_window
+    update velocity: new_velocity
+    new_velocity
+  end
 
   def recreate_sprint(number, start_date, end_date)
     sprint = sprints.find_or_initialize_by(start_date: start_date)

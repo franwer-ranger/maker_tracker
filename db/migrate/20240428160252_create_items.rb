@@ -6,6 +6,7 @@ class CreateItems < ActiveRecord::Migration[7.1]
       t.boolean :icebox, default: true
       t.boolean :in_progress, default: false
       t.boolean :done, default: false
+      t.boolean :backlog, default: false
       t.string :name
       t.text :description
       t.integer :points, default: nil

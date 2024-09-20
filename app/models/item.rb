@@ -8,7 +8,7 @@ class Item < ApplicationRecord
   enum :status, { unstarted: 0, started: 1, finished: 2, delivered: 3, accepted: 4, rejected: 5 }, default: :unstarted
   enum kind: { bug: 0, feature: 1, chore: 2, release: 3 }
 
-  scope :on_backlog, -> { where.not(status: :accepted).where(icebox: 0).where(sprint_id: nil) }
+  scope :on_backlog, -> { where.not(status: :accepted).where(backlog: 1) }
   scope :on_icebox, -> { where(icebox: 1) }
   scope :in_progress, -> { where(in_progress: 1) }
   scope :done, -> { where(done: 1) }

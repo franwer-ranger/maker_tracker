@@ -1,6 +1,13 @@
 <div class="text-sm text-white bg-black w-full px-4 py-2 flex items-center justify-between">
-  <div class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">
-    S<%= sprint.number %>
+  <div class="flex items-center">
+    <div class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">
+      S<%= sprint.number %>
+    </div>
+    <% if sprint.current? %>
+      <div class="py-1 px-2 text-xs rounded font-bold mr-1 border border-gray-800 text-white">
+        <%= sprint.project.velocity %> points
+      </div>
+    <% end %>
   </div>
   <%= sprint_dates(sprint) %>
 </div>
