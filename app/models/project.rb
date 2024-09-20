@@ -5,14 +5,17 @@ class Project < ApplicationRecord
 
   def recreate_sprints
     sprints.destroy_all
-    weeks.each_slice(sprint_length).with_index do |sprint_iteration, i|
-      sprint_iteration = sprint_iteration.flatten
-      sprint = sprints.find_or_initialize_by(start_date: sprint_iteration.first)
-      sprint.end_date = sprint_iteration.last
-      sprint.length = sprint_length
-      sprint.number = i + 1
-      sprint.save!
-    end
+
+    sprint_start_date = start_date
+
+    sprint_number = 0
+    loop do
+      sprint_number += 1
+      sprint_end_date = ((sprint_start_date + sprint_length.weeks) - 1.day).end_of_day
+      recreate_sprint(sprint_number, sprint_start_date, sprint_end_date)
+      sprint_start_date = (sprint_end_date + 1.day).beginning_of_day
+      break if sprint_end_date > Date.today
+     end
   end
 
   def previous_sprints
@@ -25,21 +28,11 @@ class Project < ApplicationRecord
 
   private
 
-  def weeks
-    (start_date..current_sprint_end_date).to_a.in_groups_of(7)
-  end
-
-  def current_sprint_end_date
-    sprint_days = ((sprint_length * 7) - 1).days
-    Date.today + sprint_days - (relative_cwdays[Date.today.cwday] - 1)
-  end
-
-  def current_week_end_date
-    Date.today + 6.days - (relative_cwdays[Date.today.cwday] - 1)
-  end
-
-  def relative_cwdays
-    cwdays = (start_date..(start_date + 6.days)).to_a.map { |day| day.cwday }
-    cwdays.each_with_index.reduce({}) { |result, (cwday, i)| result[cwday] = i + 1; result }
+  def recreate_sprint(number, start_date, end_date)
+    sprint = sprints.find_or_initialize_by(start_date: start_date)
+    sprint.end_date = end_date
+    sprint.length = sprint_length
+    sprint.number = number
+    sprint.save!
   end
 end

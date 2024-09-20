@@ -18,6 +18,7 @@
         "sorbet.enabled": false,
         "rubyLsp.rubyVersionManager": "none",
         "rubyLsp.formatter": "rubocop",
+        "rubyLsp.erbSupport": false,
         "editor.detectIndentation": false,
         "[javascript][json][jsonc][yaml][yml][tailwind.css]": {
           "editor.defaultFormatter": "esbenp.prettier-vscode",
