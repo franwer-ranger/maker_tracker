@@ -2,6 +2,16 @@ class Sprint < ApplicationRecord
   belongs_to :project
   has_many :items, dependent: :nullify
 
+  def self.build_next
+    current = Sprint.last
+    Sprint.build(
+      project: current.project,
+      start_date: current.end_date.beginning_of_day + 1.days,
+      end_date: current.end_date.end_of_day + current.project.sprint_length.weeks,
+      number: current.number + 1
+    )
+  end
+
   def current?
     Sprint.last.id == id
   end

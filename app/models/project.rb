@@ -3,6 +3,10 @@ class Project < ApplicationRecord
   has_many :sprints, dependent: :destroy
   after_create :recreate_sprints
 
+  def in_progress_will_release?
+    current_sprint.in_progress.reduce(0) { |sum, item| sum + item.points } >= velocity_with_override
+  end
+
   def velocity_overrided?
     velocity_override.present?
   end

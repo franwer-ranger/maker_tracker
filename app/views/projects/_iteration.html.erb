@@ -8,6 +8,9 @@
       <% project.current_sprint.in_progress.order(:position).each do |item| %>
         <%= render item %>
       <% end %>
+      <% if project.in_progress_will_release? %>
+        <%= render 'sprints/header', sprint: Sprint.build_next %>
+      <% end %>
       <div class="hidden item-form text-center text-sm italic border rounded p-3">💩sortablejs hack💩 https://github.com/SortableJS/Sortable/issues/1686#issuecomment-1240231903 </div>
     </div>
   </div>
