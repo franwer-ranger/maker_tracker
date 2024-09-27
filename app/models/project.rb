@@ -3,6 +3,14 @@ class Project < ApplicationRecord
   has_many :sprints, dependent: :destroy
   after_create :recreate_sprints
 
+  def velocity_overrided?
+    velocity_override.present?
+  end
+
+  def velocity_with_override
+    velocity_override || velocity
+  end
+
   def recreate_sprints
     sprints.destroy_all
 

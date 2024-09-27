@@ -41,6 +41,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_19_194221) do
     t.text "description"
     t.date "start_date"
     t.integer "velocity"
+    t.integer "velocity_override"
     t.integer "volatility"
     t.integer "sprint_length"
     t.datetime "created_at", null: false
@@ -48,8 +49,8 @@ ActiveRecord::Schema[7.2].define(version: 2024_09_19_194221) do
   end
 
   create_table "sprints", force: :cascade do |t|
-    t.date "start_date"
-    t.date "end_date"
+    t.datetime "start_date"
+    t.datetime "end_date"
     t.integer "length"
     t.integer "velocity"
     t.integer "strength"

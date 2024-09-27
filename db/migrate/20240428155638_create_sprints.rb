@@ -1,8 +1,8 @@
 class CreateSprints < ActiveRecord::Migration[7.1]
   def change
     create_table :sprints do |t|
-      t.date :start_date
-      t.date :end_date
+      t.datetime :start_date
+      t.datetime :end_date
       t.integer :length
       t.integer :velocity
       t.integer :strength
