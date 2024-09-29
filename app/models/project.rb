@@ -1,4 +1,6 @@
 class Project < ApplicationRecord
+  include Backlog
+
   has_many :items, dependent: :destroy
   has_many :sprints, dependent: :destroy
   after_create :recreate_sprints

@@ -2,13 +2,14 @@ class Sprint < ApplicationRecord
   belongs_to :project
   has_many :items, dependent: :nullify
 
-  def self.build_next
-    current = Sprint.last
-    Sprint.build(
-      project: current.project,
-      start_date: current.end_date.beginning_of_day + 1.days,
-      end_date: current.end_date.end_of_day + current.project.sprint_length.weeks,
-      number: current.number + 1
+  def self.build_by_number(project, number)
+    start_date = (project.start_date + (number - 1) * project.sprint_length.weeks).beginning_of_day
+    end_date = (start_date + project.sprint_length.weeks - 1.day).end_of_day
+    Sprint.new(
+      project: project,
+      start_date: start_date,
+      end_date: end_date,
+      number: number
     )
   end
 

@@ -6,7 +6,9 @@ export default class extends Controller {
   initialize() {
     const options = {
       onEnd: this.end.bind(this),
-      onMove: this.move.bind(this)
+      onMove: this.move.bind(this),
+      filter: '.no-sort',
+      draggable: '.item'
     }
     const group = this._group()
     if (group != -1) options.group = group
@@ -20,7 +22,8 @@ export default class extends Controller {
     const itemOutlet = this.itemsOutlets.find(
       (item) => item.element === event.item
     )
-    itemOutlet?.changePosition(event.newIndex + 1)
+
+    itemOutlet?.changePosition(this.#filteredPosition(event.newIndex))
     return itemOutlet
   }
 
@@ -28,8 +31,23 @@ export default class extends Controller {
     this.#cancelItemForm(event)
   }
 
+  #filterPositions() {
+    return Array.from(this.element.children)
+      .map((item, index) => ({
+        element: item,
+        position: index + 1
+      }))
+      .filter((item) => item.element.classList.contains('item'))
+      .map((item) => item.position)
+  }
+
+  #filteredPosition(index) {
+    return this.#filterPositions().indexOf(index + 1) + 1
+  }
+
   #cancelItemForm(event) {
     const element = event.dragged ?? event.item
+    if (element.classList.contains('no-sort')) return false
     if (element.querySelectorAll('#item-form').length > 0) return false
   }
 
