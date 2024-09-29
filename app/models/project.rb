@@ -4,7 +4,11 @@ class Project < ApplicationRecord
   after_create :recreate_sprints
 
   def in_progress_will_release?
-    current_sprint.in_progress.reduce(0) { |sum, item| sum + item.points } >= velocity_with_override
+    in_progress_velocity >= velocity_with_override
+  end
+
+  def in_progress_velocity
+    current_sprint.in_progress.reduce(0) { |sum, item| sum + item.points }
   end
 
   def velocity_overrided?
