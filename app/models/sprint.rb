@@ -13,6 +13,10 @@ class Sprint < ApplicationRecord
     )
   end
 
+  def past?
+    end_date < Sprint.last.start_date
+  end
+
   def current?
     Sprint.last.id == id
   end

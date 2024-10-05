@@ -15,6 +15,8 @@ Rails.application.routes.draw do
     resources :items
   end
 
+  put "/items/:item_id/state" => "items/state#update", as: :item_state
+
   # Defines the root path route ("/")
   # root "posts#index"
 end

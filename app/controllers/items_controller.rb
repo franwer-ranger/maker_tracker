@@ -34,7 +34,9 @@ class ItemsController < ApplicationController
   end
 
   def update
+    previous_status = @item.status
     if @item.update(item_params)
+      @item.state_change(@item.status) if @item.status != previous_status
       redirect_to @item.project
     else
       render :edit, status: :unprocessable_entity
