@@ -1,102 +1,38 @@
 import { Controller } from '@hotwired/stimulus'
 
 export default class extends Controller {
-  static targets = [
-    'form',
-    'points',
-    'status',
-    'userId',
-    'sprintId',
-    'position',
-    'icebox',
-    'inProgress',
-    'done',
-    'backlog'
-  ]
+  static targets = ['itemForm', 'itemStateForm', 'points', 'state', 'position']
 
   changePosition(newPosition) {
     this.positionTarget.value = newPosition
+    this.itemFormTarget.requestSubmit()
   }
 
   moveToBacklog() {
-    this.sprintIdTarget.value = null
-    this.backlogTarget.value = true
-    this.iceboxTarget.value = false
-    this.inProgressTarget.value = false
-    this.doneTarget.value = false
+    this.stateTarget.value = 'to_backlog'
+    this.itemStateFormTarget.requestSubmit()
   }
 
   moveToIcebox() {
-    this.sprintIdTarget.value = null
-    this.statusTarget.value = 'unstarted'
-    this.iceboxTarget.value = true
-    this.inProgressTarget.value = false
-    this.doneTarget.value = false
-    this.backlogTarget.value = false
-  }
-
-  start() {
-    this.statusTarget.value = 'started'
-    this.userIdTarget.value = this.#userId()
-    this.sprintIdTarget.value = this.#sprintId()
-    this.iceboxTarget.value = false
-    this.inProgressTarget.value = true
-    this.doneTarget.value = false
-    this.backlogTarget.value = false
-    this.positionTarget.value = null
-  }
-
-  finish() {
-    this.statusTarget.value = 'finished'
-    this.inProgressTarget.value = true
-    this.doneTarget.value = false
-    this.iceboxTarget.value = false
-    this.backlogTarget.value = false
-  }
-
-  deliver() {
-    this.statusTarget.value = 'delivered'
-    this.inProgressTarget.value = true
-    this.doneTarget.value = false
-    this.iceboxTarget.value = false
-    this.backlogTarget.value = false
+    this.stateTarget.value = 'to_icebox'
+    this.itemStateFormTarget.requestSubmit()
   }
 
   accept(event) {
     event.preventDefault()
-    this.statusTarget.value = 'accepted'
-    this.inProgressTarget.value = false
-    this.backlogTarget.value = false
-    this.doneTarget.value = true
-    this.apply()
-  }
-
-  apply() {
-    this.formTarget.requestSubmit()
+    this.stateTarget.value = 'accepted'
+    this.itemStateFormTarget.requestSubmit()
   }
 
   changePoints(event) {
     event.preventDefault()
-    const points = event.target.dataset.points
-    this.pointsTarget.value = points
-    this.apply()
+    this.pointsTarget.value = event.target.dataset.points
+    this.itemFormTarget.requestSubmit()
   }
 
   changeStatus(event) {
     event.preventDefault()
-    const status = event.target.dataset.status
-    if (status === 'unstarted') this.start()
-    if (status === 'started') this.finish()
-    if (status === 'finished') this.deliver()
-
-    this.apply()
-  }
-
-  #userId() {
-    return document.querySelector('meta[name="current-user-id"]').content
-  }
-
-  #sprintId() {
-    return document.querySelector('meta[name="current-sprint-id"]').content
+    this.stateTarget.value = event.target.dataset.status
+    this.itemStateFormTarget.requestSubmit()
   }
 }

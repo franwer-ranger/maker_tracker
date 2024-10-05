@@ -5,7 +5,6 @@ export default class extends SortableController {
     const itemOutlet = super.end(event)
 
     if (event.to.dataset.list === 'icebox') itemOutlet?.moveToIcebox()
-    itemOutlet?.apply()
   }
 
   _group() {

@@ -10,7 +10,8 @@ class Project < ApplicationRecord
   end
 
   def in_progress_velocity
-    current_sprint.in_progress.reduce(0) { |sum, item| sum + item.points }
+    current_sprint.current_velocity +
+      current_sprint.in_progress.reduce(0) { |sum, item| sum + item.points }
   end
 
   def velocity_overrided?
@@ -45,7 +46,7 @@ class Project < ApplicationRecord
     sprints.last
   end
 
-  # private
+  private
 
   def recreate_velocity
     velocity_window = 3
