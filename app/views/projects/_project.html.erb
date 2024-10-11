@@ -4,7 +4,9 @@
       <%= project.name %>
     <% end %>
     <div class="font-semibold text-lg">
-      <i class="fa-solid fa-gear"></i>
+      <%= link_to edit_project_path(project), class: 'font-semibold text-lg' do %>
+        <i class="fa-solid fa-gear"></i>
+      <% end %>
     </div>
   </div>
   <hr>
