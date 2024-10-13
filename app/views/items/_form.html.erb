@@ -20,7 +20,7 @@
         </div>
         <% if item.accepted? %>
           <div class="flex justify-end w-full pb-4">
-            <%= form.date_field :accepted_at, class: "rounded" %>
+            <%= form.date_field :accepted_at, class: 'rounded' %>
           </div>
         <% end %>
       </div>
@@ -34,8 +34,13 @@
       <%= form.select :user_id, options_for_select(users_options(@users), item.user), { prompt: 'Unassigned' }, class: 'border-transparent focus:border-transparent focus:ring-0 pl-3 py-2 mt-2 text-right' %>
     </div>
     <div class="my-4 px-6 py-4 bg-white rounded-lg">
-      <%= form.label :description %>
-      <%= form.text_area :description, rows: 4, class: 'block rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full' %>
+      <turbo-frame id="item-description">
+        <% if item.description.blank? %>
+          <%= render 'items/description/field', form: form, item: item %>
+        <% else %>
+          <%= render 'items/description/preview' %>
+        <% end %>
+      </turbo-frame>
     </div>
   <% end %>
 </div>

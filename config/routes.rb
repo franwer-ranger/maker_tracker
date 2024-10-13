@@ -17,6 +17,9 @@ Rails.application.routes.draw do
 
   put "/items/:item_id/state" => "items/state#update", as: :item_state
 
+  get "/items/:item_id/description" => "items/description#show", as: :item_description
+  get "/items/:item_id/description/edit" => "items/description#edit", as: :edit_item_description
+
   # Defines the root path route ("/")
   # root "posts#index"
 end
