@@ -6,6 +6,7 @@ class Item < ApplicationRecord
   belongs_to :user, optional: true
   belongs_to :sprint, optional: true
   belongs_to :project
+  has_many :comments, dependent: :destroy
 
   enum :status, { unstarted: 0, started: 1, finished: 2, delivered: 3, accepted: 4, rejected: 5 }, default: :unstarted
   enum kind: { bug: 0, feature: 1, chore: 2, release: 3 }

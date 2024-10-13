@@ -5,6 +5,9 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
 
+  has_many :items
+  has_many :comments
+  
   def full_name
     return email if name.nil? || last_name.nil?
     "#{name} #{last_name}"

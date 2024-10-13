@@ -12,7 +12,9 @@ Rails.application.routes.draw do
 
   root "projects#index"
   resources :projects do
-    resources :items
+    resources :items do 
+      resources :comments
+    end
   end
 
   put "/items/:item_id/state" => "items/state#update", as: :item_state

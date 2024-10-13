@@ -1,0 +1,18 @@
+
+<div class="my-4 px-4 py-2 bg-white rounded-lg">
+  <label class="font-medium">Activity</label>
+  <% item.comments.each do |comment| %>
+    <div class="flex items-center py-2 border-b border-gray-200">
+      <div class="flex items-center">
+        <div class="mr-2 text-xs"><%= comment.user.nickname %></div>
+        <div class="text-xs"><%= comment.content %></div>
+      </div>
+    </div>
+  <% end %>
+  <%= form_with(model: [project, item, item.comments.new], class: 'w-full', html: { "data-turbo-frame": '_top' }) do |form| %>
+    <%= form.text_area :content, rows: 2, class: 'block rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full' %>
+    <div class="flex justify-end items-center py-2 border-b border-gray-200">
+      <%= form.submit 'Post Comment', class: 'rounded-lg py-2 px-5 bg-[#FF3F01] text-white inline-block font-medium cursor-pointer' %>
+    </div>
+  <% end %>
+</div>
