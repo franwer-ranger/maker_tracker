@@ -2,6 +2,8 @@ class Sprint < ApplicationRecord
   belongs_to :project
   has_many :items, dependent: :nullify
 
+  scope :all_by_project, ->(project) { where(project: project).order(:created_at) }
+
   def self.build_by_number(project, number)
     start_date = (project.start_date + (number - 1) * project.sprint_length.weeks).beginning_of_day
     end_date = (start_date + project.sprint_length.weeks - 1.day).end_of_day
@@ -14,11 +16,15 @@ class Sprint < ApplicationRecord
   end
 
   def past?
-    end_date < Sprint.last.start_date
+    end_date < Sprint.last_by_project(project).start_date
   end
 
   def current?
-    Sprint.last.id == id
+    Sprint.last_by_project(project).id == id
+  end
+
+  def self.last_by_project(project)
+    Sprint.all_by_project(project).last
   end
 
   def in_progress
@@ -34,6 +40,6 @@ class Sprint < ApplicationRecord
   end
 
   def items_by_accepted_at
-    Item.accepted.where(accepted_at: start_date.beginning_of_day..end_date.end_of_day)
+    Item.accepted.where(accepted_at: start_date.beginning_of_day..end_date.end_of_day, project: project)
   end
 end
