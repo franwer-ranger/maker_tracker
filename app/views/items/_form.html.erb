@@ -34,10 +34,7 @@
         <label class="font-medium">Owner</label>
         <%= form.select :user_id, options_for_select(users_options(@users), item.user), { prompt: 'Unassigned' }, class: 'text-right text-xs rounded border-transparent focus:border-transparent focus:ring-0 pl-2 py-1 max-w-36' %>
       </div>
-      <div class="py-2">
-        <%= form.label :description %>
-        <%= form.text_area :description, rows: 4, class: 'block rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full' %>
-      </div>
+      <%= render 'description', form: form, item: item %>
     </div>
   <% end %>
   <div class="my-4 px-4 py-2 bg-white rounded-lg">
