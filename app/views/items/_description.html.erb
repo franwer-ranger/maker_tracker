@@ -1,7 +1,7 @@
-<div class="my-4" data-controller="items--description" data-items--description-content-value="<%= item.description %>">
+<div class="my-3" data-controller="items--description" data-items--description-content-value="<%= item.description %>">
   <div data-items--description-target="preview" class="<%= item.description.blank? ? 'hidden' : '' %>">
     <%= render 'items/description/header', label: 'Edit', item: item %>
-    <div class="mb-2">
+    <div class="mb-2 bg-white rounded p-4">
       <div data-items--description-target="markdown text-sm"><%= item.description %></div>
     </div>
   </div>

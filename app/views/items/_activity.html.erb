@@ -1,0 +1,10 @@
+<label class="font-medium">Activity</label>
+<div class="my-3 px-4 py-2 bg-white rounded-lg">
+  <%= turbo_stream_from "item_#{item.id}_comments" %>
+  <%= turbo_frame_tag "item_#{item.id}_comments" do %>
+    <%= render partial: 'comments/comment', collection: item.comments, locals: { item: item, project: project } %>
+  <% end %>
+  <%= turbo_frame_tag 'item_comment_form' do %>
+    <%= render 'comments/form', item: item, project: project, comment: item.comments.new %>
+  <% end %>
+</div>
