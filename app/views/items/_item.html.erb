@@ -1,5 +1,5 @@
 <turbo-frame class="item" id="item" data-item-id="<%= item.id %>" data-controller="items">
-  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), "data-turbo-prefetch": 'false', class: "w-full flex items-center justify-between px-2 border border-gray-800 #{item_status_bg(item)} #{item.accepted? ? 'py-3' : 'cursor-move rounded py-4'}" do %>
+  <%= link_to edit_project_item_path(item.project, item), id: dom_id(item), "data-turbo-prefetch": 'false', class: "w-full flex items-center justify-between px-2 border border-gray-800 #{item_status_bg(item)} #{item.accepted? ? 'py-2' : 'cursor-move rounded py-2'}" do %>
     <%= form_with(url: item_state_path(item), class: 'hidden', method: :put, html: { "data-items-target": 'itemStateForm', "data-turbo-frame": '_top' }) do |form| %>
       <%= form.hidden_field :state, "data-items-target": 'state' %>
     <% end %>

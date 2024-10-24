@@ -1,8 +1,13 @@
 <%= turbo_frame_tag "comment_#{comment.id}" do %>
   <%= form_with(model: [project, item, comment], class: 'w-full', html: { "data-turbo-frame": '_top' }) do |form| %>
-    <%= form.text_area :content, rows: 2, class: 'block rounded-md border border-gray-400 outline-none px-3 py-2 mt-2 w-full text-xs' %>
-    <div class="flex justify-end items-center py-2 border-b border-gray-200">
-      <%= form.submit 'Post Comment', class: 'rounded-lg py-2 px-5 bg-[#FF3F01] text-white inline-block font-medium cursor-pointer' %>
+    <div class="flex items-center gap-2">
+      <div class="bg-gray-300 rounded leading-none w-10 h-10 flex justify-center items-center">
+        <%= current_user.nickname %>
+      </div>
+      <%= form.text_area :content, rows: 3, class: 'block rounded-md border-transparent focus:border-transparent focus:ring-0 outline-none px-3 py-1 w-full text-sm' %>
+    </div>
+    <div class="flex items-center py-2 justify-end">
+      <%= form.submit 'Post Comment', class: 'rounded-lg py-2 px-3 text-xs font-medium bg-[#FF3F01] text-white inline-block cursor-pointer' %>
     </div>
   <% end %>
 <% end %>

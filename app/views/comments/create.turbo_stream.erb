@@ -2,6 +2,6 @@
   <%= render partial: 'comments/form', locals: { item: @item, project: @project, comment: Comment.new } %>
 <% end %>
 
-<%= turbo_stream.append "item_#{@item.id}_comments" do %>
+<%= turbo_stream.prepend "item_#{@item.id}_comments" do %>
   <%= render partial: 'comments/comment', locals: { comment: @comment, item: @item, project: @project } %>
 <% end %>
