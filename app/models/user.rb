@@ -7,14 +7,14 @@ class User < ApplicationRecord
 
   has_many :items
   has_many :comments
-  
+
   def full_name
     return email if name.nil? || last_name.nil?
     "#{name} #{last_name}"
   end
 
-  def nickname
-    return pseudonym if pseudonym.present?
+  def initials_safe
+    return initials if initials.present?
     "#{name.first.capitalize}#{last_name.first.capitalize}"
   end
 end

@@ -16,7 +16,7 @@
       <% end %>
       <div class="text-sm <%= item.points ? '' : 'italic' %>"><%= item.name %></div>
       <% if item.user %>
-        <div class="text-sm mx-1 <%= item.points ? '' : 'italic' %>">(<%= item.user.nickname %>)</div>
+        <div class="text-sm mx-1 <%= item.points ? '' : 'italic' %>">(<%= item.user.initials_safe %>)</div>
       <% end %>
     </div>
     <% if item.points %>

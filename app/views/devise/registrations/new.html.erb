@@ -8,35 +8,41 @@
 
       <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { class: 'my-4 w-[480px]' }) do |f| %>
         <%= render 'devise/shared/error_messages', resource: %>
-
         <div class="my-2">
-          <div class="my-1">Alias</div>
-          <%= f.text_field :pseudonym, autofocus: true, autocomplete: false, class: 'my-1 w-full bg-white rounded px-4 py-3 text-black' %>
+          <div class="my-1">Email*</div>
+          <%= f.email_field :email, autofocus: true, autocomplete: 'email', class: 'block rounded-md border border-gray-400 text-sm outline-none focus:outline-none focus:ring-0 px-3 py-2 mt-2 w-full', required: true %>
+        </div>
+        <div class="flex my-2 gap-2">
+          <div class="flex-grow">
+            <div class="my-1">Username*</div>
+            <%= f.text_field :username, autofocus: true, autocomplete: false, class: 'block rounded-md border border-gray-400 text-sm outline-none focus:outline-none focus:ring-0 px-3 py-2 mt-1 w-full', required: true %>
+            <div class="text-xs italic font-light my-1">Should be unique. Used for @ mentions</div>
+          </div>
+
+          <div class="w-32">
+            <div class="my-1">Initials</div>
+            <%= f.text_field :initials, autofocus: true, autocomplete: false, class: 'block rounded-md border border-gray-400 text-sm outline-none focus:outline-none focus:ring-0 px-3 py-2 mt-1 w-full', maxlength: '3' %>
+          </div>
         </div>
 
         <div class="my-2">
           <div class="my-1">Name*</div>
-          <%= f.text_field :name, autofocus: true, autocomplete: false, class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true %>
+          <%= f.text_field :name, autofocus: true, autocomplete: false, class: 'block rounded-md border border-gray-400 text-sm outline-none focus:outline-none focus:ring-0 px-3 py-2 mt-2 w-full', required: true %>
         </div>
 
         <div class="my-2">
           <div class="my-1">Last Name*</div>
-          <%= f.text_field :last_name, autofocus: true, autocomplete: false, class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true %>
-        </div>
-
-        <div class="my-2">
-          <div class="my-1">Email*</div>
-          <%= f.email_field :email, autofocus: true, autocomplete: 'email', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true %>
+          <%= f.text_field :last_name, autofocus: true, autocomplete: false, class: 'block rounded-md border border-gray-400 text-sm outline-none focus:outline-none focus:ring-0 px-3 py-2 mt-2 w-full', required: true %>
         </div>
 
         <div class="my-2">
           <div class="my-1">Password*</div>
-          <%= f.password_field :password, autocomplete: 'new-password', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true, minlength: '8' %>
+          <%= f.password_field :password, autocomplete: 'new-password', class: 'block rounded-md border border-gray-400 text-sm outline-none focus:outline-none focus:ring-0 px-3 py-2 mt-2 w-full', required: true, minlength: '8' %>
         </div>
 
         <div class="my-2">
           <div class="my-1">Password confirmation*</div>
-          <%= f.password_field :password_confirmation, autocomplete: 'new-password', class: 'my-1 w-full bg-white rounded px-4 py-3 text-black', required: true, minlength: '8' %>
+          <%= f.password_field :password_confirmation, autocomplete: 'new-password', class: 'block rounded-md border border-gray-400 text-sm outline-none focus:outline-none focus:ring-0 px-3 py-2 mt-2 w-full', required: true, minlength: '8' %>
         </div>
 
         <div class="actions">

@@ -9,9 +9,9 @@
 #   end
 
 puts "Creating seeds..."
-User.create(email: "romerramos@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Romer", last_name: "Ramos", pseudonym: "RR")
-User.create(email: "fran@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Fran", last_name: "Barahona", pseudonym: "FB")
-User.create(email: "chris@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Christian", last_name: "Benjumea", pseudonym: "CB")
+User.create(email: "romerramos@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Romer", last_name: "Ramos", initials: "RR", username: "romerramos")
+User.create(email: "fran@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Fran", last_name: "Barahona", initials: "FB", username: "fran")
+User.create(email: "chris@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Christian", last_name: "Benjumea", initials: "CB", username: "chris")
 project = Project.create(name: "Postgram", description: "Take it slow...", start_date: Date.new(2024, 06, 01), velocity: 10, volatility: 10, sprint_length: 2)
 project.recreate_sprints
 

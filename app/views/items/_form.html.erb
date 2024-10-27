@@ -32,7 +32,7 @@
       </div>
       <div class="flex justify-between items-center py-1">
         <label class="font-medium">Owner</label>
-        <%= form.select :user_id, options_for_select(users_options(@users), item.user), { prompt: 'Unassigned' }, class: 'text-right text-sm rounded border-transparent focus:border-transparent focus:ring-0 pl-2 py-1 max-w-36' %>
+        <%= form.select :user_id, options_for_select(users_options(@users), item.user&.id), { prompt: 'Unassigned' }, class: 'text-right text-sm rounded border-transparent focus:border-transparent focus:ring-0 pl-2 py-1' %>
       </div>
     </div>
     <%= render 'description', form: form, item: item %>

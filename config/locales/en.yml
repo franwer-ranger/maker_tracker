@@ -6,7 +6,7 @@
 #
 #     I18n.t "hello"
 #
-# In views, this is aliased to just `t`:
+# In views, this is initialsed to just `t`:
 #
 #     <%= t("hello") %>
 #
@@ -28,4 +28,4 @@
 #       enabled: "ON"
 
 en:
-  hello: "Hello world"
+  hello: 'Hello world'
