@@ -37,5 +37,7 @@
     </div>
     <%= render 'description', form: form, item: item %>
   <% end %>
-  <%= render 'activity', project: project, item: item %>
+  <% if item.persisted? %>
+    <%= render 'activity', project: project, item: item %>
+  <% end %>
 </div>

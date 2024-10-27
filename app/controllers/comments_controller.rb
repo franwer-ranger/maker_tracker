@@ -12,38 +12,25 @@ class CommentsController < ApplicationController
 
   def create
     @comment = @item.comments.new(comment_params.merge(user: current_user))
-    respond_to do |format|
-      if @comment.save
-        format.turbo_stream
-        format.html { redirect_to edit_project_item_url(@item, project: @item.project), notice: "Comment was successfully created." }
-        format.json { render :show, status: :created, location: @comment }
-      else
-        format.turbo_stream
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @comment.errors, status: :unprocessable_entity }
-      end
+    if @comment.save
+      redirect_to edit_project_item_url(@item, project_id: @item.project.id), notice: "Comment was successfully created."
+    else
+      render :new, status: :unprocessable_entity
     end
   end
 
   def update
     if @comment.update(comment_params)
-      respond_to do |format|
-        format.turbo_stream
-        format.html { redirect_to @project, notice: "Comment was successfully updated." }
-      end
-      
+      redirect_to edit_project_item_url(@comment.item, project_id: @comment.item.project.id), notice: "Comment was successfully updated."
     else
       render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
+    project_id = @comment.item.project.id
     @comment.destroy!
-    respond_to do |format|
-      format.turbo_stream
-      format.html { redirect_to @project, notice: "Comment was successfully updated." }
-      format.json { head :no_content }
-    end
+    redirect_to edit_project_item_url(@comment.item, project_id: project_id), notice: "Comment was successfully updated."
   end
 
   private

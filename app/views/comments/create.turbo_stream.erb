@@ -1,7 +1,0 @@
-<%= turbo_stream.replace 'item_comment_form' do %>
-  <%= render partial: 'comments/form', locals: { item: @item, project: @project, comment: Comment.new } %>
-<% end %>
-
-<%= turbo_stream.prepend "item_#{@item.id}_comments" do %>
-  <%= render partial: 'comments/comment', locals: { comment: @comment, item: @item, project: @project } %>
-<% end %>

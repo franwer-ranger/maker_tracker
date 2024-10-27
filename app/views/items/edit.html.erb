@@ -1,5 +1,5 @@
 <div class="mx-auto md:w-2/3 w-full">
-  <turbo-frame id="item">
+  <turbo-frame id="<%= dom_id(@item) %>">
     <%= render 'form', item: @item, project: @project %>
   </turbo-frame>
 </div>
