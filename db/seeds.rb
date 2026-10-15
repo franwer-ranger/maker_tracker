@@ -1,19 +1,22 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# Development data. Idempotent: it can be run several times without duplicating records.
 
 puts "Creating seeds..."
-User.create(email: "romerramos@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Romer", last_name: "Ramos", initials: "RR", username: "romerramos")
-User.create(email: "fran@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Fran", last_name: "Barahona", initials: "FB", username: "fran")
-User.create(email: "chris@gmail.com", password: "12345678", password_confirmation: "12345678", name: "Christian", last_name: "Benjumea", initials: "CB", username: "chris")
-project = Project.create(name: "Postgram", description: "Take it slow...", start_date: Date.new(2024, 06, 01), velocity: 10, volatility: 10, sprint_length: 2)
-project.recreate_sprints
 
-9.times { |i| Item.create!(name: "test #{i}", project_id: 1, kind: :bug) }
+[
+  { email: "romerramos@gmail.com", name: "Romer", last_name: "Ramos", initials: "RR", username: "romerramos" },
+  { email: "fran@gmail.com", name: "Fran", last_name: "Barahona", initials: "FB", username: "fran" },
+  { email: "chris@gmail.com", name: "Christian", last_name: "Benjumea", initials: "CB", username: "chris" }
+].each do |attributes|
+  User.find_or_create_by!(email: attributes[:email]) do |user|
+    user.assign_attributes(attributes.merge(password: "12345678", password_confirmation: "12345678"))
+  end
+end
+
+project = Project.find_or_create_by!(name: "Postgram") do |p|
+  p.assign_attributes(description: "Take it slow...", start_date: Date.new(2024, 6, 1), velocity: 10, volatility: 10, sprint_length: 2)
+end
+project.recreate_sprints if project.sprints.empty?
+
+9.times { |i| project.items.find_or_create_by!(name: "test #{i}") { |item| item.kind = :bug } }
+
 puts "Seeds created!"
