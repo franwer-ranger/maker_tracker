@@ -1,24 +1,9 @@
-# README
+# Maker Tracker
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Gestor de proyectos estilo Pivotal Tracker (Rails 8.1 + SQLite).
 
-Things you may want to cover:
+```bash
+bin/setup   # instala gemas, prepara la BD con seeds y arranca en http://localhost:3002
+```
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Usuario de desarrollo: `fran@gmail.com` / `12345678`. Más detalles en [AGENTS.md](AGENTS.md).
