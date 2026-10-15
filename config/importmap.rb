@@ -5,6 +5,6 @@ pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "stimulus.min.js"
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
 pin_all_from "app/javascript/controllers", under: "controllers"
-pin "sortablejs" # @1.15.2
-pin "marked" # @14.1.2
-pin "dompurify" # @3.1.7
+pin "sortablejs" # @1.15.7
+pin "marked" # @18.1.1
+pin "dompurify" # @3.4.17
