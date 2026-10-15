@@ -16,9 +16,8 @@ bin/setup               # gemas + db:prepare (crea y siembra la BD) y arranca el
 bin/setup --skip-server # lo mismo sin arrancar el servidor
 bin/setup --reset       # además borra la BD y vuelve a sembrarla
 bin/dev                 # servidor en http://localhost:3002 (Tailwind en watch dentro de Puma)
-bin/rails test          # tests
-bin/rubocop             # lint
-bin/ci                  # setup + lint + seguridad + tests (config/ci.rb)
+bin/rubocop -A          # lint (con -A corrige todo lo que puede)
+bin/ci                  # setup + lint + auditorías de seguridad + seeds (config/ci.rb); debe pasar antes de cada commit
 ```
 
 - Puerto **3002** (fijo para poder levantarlo a la vez que el resto de proyectos). Se cambia con `PORT=...`.
@@ -30,4 +29,5 @@ bin/ci                  # setup + lint + seguridad + tests (config/ci.rb)
 
 - `config/master.key` no está en git. Desarrollo y tests no lo necesitan; solo producción.
 - Action Cable usa `async` en desarrollo y `solid_cable` en producción (BD `storage/production_cable.sqlite3`).
-- Los tests de controladores son scaffolds antiguos y fallan (fixtures sin `position` ni `project`): pendiente de arreglar.
+- No hay tests (se eliminaron) y los generadores de Rails no los crean. `bin/ci` es la comprobación que hay que pasar.
+- Las seeds son idempotentes: `bin/rails db:seed` se puede ejecutar varias veces.
