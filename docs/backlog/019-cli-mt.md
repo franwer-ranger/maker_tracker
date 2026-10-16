@@ -45,10 +45,11 @@ Como agente, quiero un comando `mt` que me dé el contexto, la siguiente histori
 - [ ] `--file -` lee de la entrada estándar. `mt show PG-49 > f.md`, editar y `mt edit PG-49 --file f.md` funciona sin tocar nada más.
 
 **Salida**
-- [ ] Por defecto, texto legible: el `markdown` si lo hay o el `summary`; después los `warnings` y, al final, "Siguiente:" con los `breadcrumbs`. Igual en terminal que dentro de un agente (no cambia según haya TTY).
+- [ ] Por defecto, texto legible: el `markdown` si lo hay o el `summary`; después los `warnings` y, al final, "Next:" con los `breadcrumbs`. Igual en terminal que dentro de un agente (no cambia según haya TTY).
 - [ ] `--json` imprime el sobre tal cual.
 - [ ] Si hay error, imprime el mensaje y el `hint` por stderr y sale con código distinto de 0 (`2` para errores de uso, `1` para el resto).
-- [ ] `mt help` y `mt <comando> --help` describen cada comando con un ejemplo.
+- [ ] `mt help` y `mt <comando> --help` describen cada comando con un ejemplo, en inglés como el resto de la salida.
+- [ ] Al escribir frontmatter, los valores que lo necesiten van entre comillas (títulos con `:`, `no`, `on`…), y lo que `mt show` imprime se puede devolver con `mt edit --file` sin cambios.
 
 - [ ] `bin/ci` compila y pasa `go vet` en `cli/`.
 
@@ -59,6 +60,8 @@ Como agente, quiero un comando `mt` que me dé el contexto, la siguiente histori
 - Autocompletado de la shell.
 
 ## Notas para quien lo construya
+
+- **La salida de cada comando está en [`docs/CLI.md`](../CLI.md)**: reglas comunes (idioma, avisos, `Next:`, errores en dos líneas, YAML seguro) y ejemplos con las seeds.
 
 - Go lo instala Fran (también lo necesitan wflow y wtree). Añádelo a `AGENTS.md` (Stack) y haz que `bin/setup` avise si falta.
 - Solo biblioteca estándar de Go, salvo que haga falta algo de verdad (p. ej. para el parseo de flags).

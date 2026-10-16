@@ -20,8 +20,8 @@ Como agente de producto, quiero crear, editar y ordenar historias, hitos y el br
 ## Criterios de aceptación
 
 - [ ] **Crear historia** (`POST …/projects/PG/stories`): o con campos (`title`, `milestone`, `state`, `body`, `mockup`, `labels`, `blocked_by`), o con un `markdown` en el formato de **ver** (#016). Sin `state`, nace como Idea; sin `milestone`, va a la bandeja de ideas. Sin `body`, la plantilla.
-- [ ] **Editar historia** (`PATCH …/stories/49`): igual que crear, con `Story#edit!`. Si llega `markdown`, se aplican `title`, cuerpo, `mockup`, `labels` y `blocked_by`. Si cambian `state` o `milestone`, error `VALIDATION_FAILED` con hint ("Usa mt move PG-49 ready" / "mt reorder"): son hechos con su propio evento. `number` y `claimed_by` se ignoran.
-- [ ] **Mover** (`POST …/stories/49/move`, `state`). Al pasar a Lista, la regla de `PRODUCT.md` es un warning, no un bloqueo: "Tiene preguntas abiertas" o "Tiene label ui y no tiene mockup".
+- [ ] **Editar historia** (`PATCH …/stories/49`): igual que crear, con `Story#edit!`. Si llega `markdown`, se aplican `title`, cuerpo, `mockup`, `labels` y `blocked_by`. Si cambian `state` o `milestone`, error `VALIDATION_FAILED` con hint ("use mt move PG-49 ready" / "mt reorder"): son hechos con su propio evento. `number` y `claimed_by` se ignoran.
+- [ ] **Mover** (`POST …/stories/49/move`, `state`). Al pasar a Lista, la regla de `PRODUCT.md` es un warning, no un bloqueo: "it has open questions" o "it has the ui label but no mockup".
 - [ ] **Reordenar** (`POST …/stories/49/reorder`, `position` y/o `milestone`, `reason`). Un agente sin motivo recibe `REASON_REQUIRED`. Las posiciones se cuentan desde 1.
 - [ ] **Hitos**: crear (`title`, `goal`), editar el objetivo, reordenar (con motivo), cerrar y reabrir.
 - [ ] **Brief** (`PUT …/projects/PG/brief`, `markdown`): `Project#edit_brief!`.

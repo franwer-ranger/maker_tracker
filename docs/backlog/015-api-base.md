@@ -23,12 +23,13 @@ Como agente, quiero que todas las respuestas de la API tengan la misma forma y q
 - [ ] Sin token o con uno inválido: `401` con código `UNAUTHORIZED` y un `hint` que explica cómo conseguir un token.
 - [ ] Respuesta correcta, siempre con este sobre:
   ```json
-  { "ok": true, "data": {}, "summary": "PG-49 reclamada por claude", "breadcrumbs": ["mt show PG-49", "mt done PG-49 --commit <sha>"], "warnings": [] }
+  { "ok": true, "data": {}, "summary": "PG-49 is in progress, claimed by claude", "breadcrumbs": ["mt show PG-49", "mt done PG-49 --commit <sha>"], "warnings": [] }
   ```
   `warnings` solo aparece si hay alguno.
+- [ ] **Todo lo que pone la API va en inglés**: `summary`, `message`, `hint`, `warnings` y claves. El contenido (títulos, cuerpos, brief) va tal cual se escribió. Los mensajes de las excepciones de dominio, que están en español para la UI, se traducen al pasar por la API. Ver `docs/CLI.md` → Idioma.
 - [ ] Error, siempre con este sobre y su código HTTP:
   ```json
-  { "ok": false, "error": { "code": "CLAIMED_BY_OTHER", "message": "PG-49 la tiene codex", "hint": "Elige otra con mt next o pide a Fran que la libere", "retryable": false } }
+  { "ok": false, "error": { "code": "CLAIMED_BY_OTHER", "message": "PG-49 is claimed by codex since 11:42", "hint": "pick another one with mt next, or ask fran to release it", "retryable": false } }
   ```
   Códigos iniciales: `UNAUTHORIZED`, `NOT_FOUND`, `VALIDATION_FAILED` (con los errores por campo), `CLAIMED_BY_OTHER`, `REASON_REQUIRED`, `NOTHING_READY`, `INTERNAL`. Las excepciones de dominio (`Story::ClaimedByOther`, `Eventable::ReasonRequired`, `ActiveRecord::RecordInvalid`, `RecordNotFound`) se traducen en un solo sitio.
 - [ ] Los proyectos se identifican por su clave (`/api/projects/PG/…`) y las historias por su número (`/api/projects/PG/stories/49`). En las respuestas, la referencia es siempre `PG-49`.

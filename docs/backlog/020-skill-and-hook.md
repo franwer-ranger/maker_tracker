@@ -19,7 +19,7 @@ Como Fran, quiero que cualquier sesión de Claude Code en un repo con `.mt` arra
 
 ## Criterios de aceptación
 
-- [ ] La skill `maker-tracker` (en `cli/skill/SKILL.md`) explica:
+- [ ] La skill `maker-tracker` (en `cli/skill/SKILL.md`), escrita en inglés porque es para cualquier proyecto, explica:
   - el ciclo de desarrollo: `mt next` → `mt start` → construir → `mt done --commit`;
   - qué hacer con dudas: `mt comment` en la historia y seguir con otra (`mt release`) si bloquean;
   - cuándo registrar una decisión (`mt decide`);

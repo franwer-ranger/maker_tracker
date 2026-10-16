@@ -85,7 +85,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 - `warnings`: avisos que no bloquean (pasar a Lista con preguntas abiertas, empezar una historia bloqueada…).
 - Lo que lee un agente (contexto, roadmap, una historia) va además en `data.markdown`. Una historia se lee y se escribe en el mismo formato que `docs/backlog/`: frontmatter con sus propiedades y el cuerpo debajo.
 
-**CLI `mt`**: binario en Go, en `cli/` de este repo. En el Mac, habla con la torre por Tailscale. Configuración en `~/.config/mt/config` (`mt setup <url> <token>`) y proyecto por repo en `.mt` (`mt init PG`). Imprime texto legible por defecto, también dentro de un agente; `--json` da el sobre. Historias en [`backlog/`](backlog/) #014–#020. Los principales:
+**CLI `mt`**: binario en Go, en `cli/` de este repo. En el Mac, habla con la torre por Tailscale. Configuración en `~/.config/mt/config` (`mt setup <url> <token>`) y proyecto por repo en `.mt` (`mt init PG`). Imprime texto legible por defecto, también dentro de un agente; `--json` da el sobre. El formato de cada salida, con ejemplos, está en [`CLI.md`](CLI.md). Historias en [`backlog/`](backlog/) #014–#020. Los principales:
 
 | Comando | Qué hace |
 |---|---|
