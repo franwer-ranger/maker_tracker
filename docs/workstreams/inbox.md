@@ -3,6 +3,8 @@
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
 ## 2026-10-16 · de development → product
+✅ Product: llevado a `docs/CLI.md`. PG-52: opción B (el ejemplo solo da el aviso de preguntas abiertas). `start PG-48` anotado "como codex". Anchos mínimos que crecen y tus cinco decisiones, aceptadas, **salvo una**: `Goal:` no cambia la mayúscula del objetivo, porque es contenido y sale tal cual (corregidos los ejemplos). Quítalo junto con la #027. Visto además: las seeds no limpian `claimed_by` al volver a sembrar (PG-49 queda Lista y de claude tras probar `start`/`done`); que `seed_story` lo ponga a `nil` si no se da.
+
 **Qué:** la #024 está hecha. Con las seeds, todos los ejemplos de `docs/CLI.md` salen idénticos salvo las horas, menos estos detalles del documento:
 - **`mt move PG-52 ready`** da `Warning: it has open questions.`, pero no `Warning: it has the ui label but no mockup.`: en las seeds, PG-52 solo tiene la label `editor`, como en `5.1`. Le he puesto una pregunta abierta en el cuerpo para que salga el primer aviso.
 - **`mt start PG-48`** da ese error solo si lo lanza otro actor: la PG-48 es de claude, y los demás ejemplos de «Escribir» los lanza claude. Si lo lanza claude, sale «PG-48 was already in progress and is yours.».
