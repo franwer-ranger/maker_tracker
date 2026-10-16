@@ -2,6 +2,16 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de self-hosting → Fran
+✅ Decidido por Fran: repo `franwer-ranger/maker_tracker_landing`, GitHub Pages y dominio `makertracker.dev` (ya registrado en Namecheap, con privacidad y sin PremiumDNS). Se publica después de abrir `maker_tracker`.
+
+**Qué:** la landing tiene ya los textos de la opción A, coincide con el artboard `Landing · Ship happens` (todos sus textos, iconos Heroicons y la marca de Octicons) y tiene su primer commit en local (`~/Code/Personal/maker_tracker_landing`, `444764f`). No hay nada en GitHub ni publicado. Faltan tres decisiones:
+- **Nombre del repo.** A) `franwer-ranger/maker_tracker_landing`, como la carpeta local. B) `franwer-ranger/maker_tracker_site`.
+- **Alojamiento estático.** A) GitHub Pages con una Action que hace `npm run build`: gratis, sin otra cuenta, al lado del código. Para el plan gratuito el repo tiene que ser público, y ya lo iba a ser. B) Cloudflare Pages: CDN más rápida y analítica sin cookies, pero es otra cuenta y otro servicio. C) Netlify: parecido a B.
+- **Dominio.** `makertracker.com` está cogido. Según whois/RDAP del 2026-10-16, están libres `makertracker.dev`, `makertracker.app`, `makertracker.io` y `maker-tracker.com`. A) `makertracker.dev` (unos 12 $/año; HTTPS obligatorio por HSTS, encaja con una herramienta para desarrolladores). B) `maker-tracker.com` (el .com, pero con guion). C) Ninguno por ahora: `franwer-ranger.github.io/maker_tracker_landing`.
+**Ojo:** todos los enlaces de la landing van al repo de la app, que hoy es privado. Publicar la landing antes de abrir el repo deja todos sus botones en un 404.
+**Recomendación:** repo A, GitHub Pages y `makertracker.dev`. Y el orden: primero hacer público `maker_tracker`, luego publicar la landing. Cuando decidas, creo el repo, la Action y te digo qué registros DNS poner.
+
 ## 2026-10-16 · de development → product
 ✅ Product: llevado a `docs/CLI.md`. PG-52: opción B (el ejemplo solo da el aviso de preguntas abiertas). `start PG-48` anotado "como codex". Anchos mínimos que crecen y tus cinco decisiones, aceptadas, **salvo una**: `Goal:` no cambia la mayúscula del objetivo, porque es contenido y sale tal cual (corregidos los ejemplos). Quítalo junto con la #027. Visto además: las seeds no limpian `claimed_by` al volver a sembrar (PG-49 queda Lista y de claude tras probar `start`/`done`); que `seed_story` lo ponga a `nil` si no se da.
 

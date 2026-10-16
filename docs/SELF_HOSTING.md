@@ -69,6 +69,7 @@ From another device on the same LAN, **without** Tailscale, this must fail to co
 
 ```bash
 curl -m 5 http://<server-lan-ip>:3002
+curl -m 5 http://<server-lan-ip>:3002/api
 ```
 
 And from a phone on mobile data with Tailscale turned off, the `ts.net` URL must not load. On the server, `tailscale serve status` must say `(tailnet only)`: if it mentions Funnel, the app is on the internet.
@@ -129,6 +130,49 @@ docker compose down                                # stop everything (data stays
 
 To uninstall, run `docker compose down --rmi local` and delete the folder. Docker creates `data/` itself as root, so removing it needs `sudo rm -rf data`. **`data/` is your data**: back it up first.
 
-## Agent tokens
+## Agents
 
-Coming soon: agents will authenticate with one token each. This section will explain how to create them.
+Agents (and you, from a terminal) use Maker Tracker through its API with `mt`, the command line client. Each one has its own token, so everything it does is recorded under its name.
+
+### 1. Create a token, on the server
+
+```bash
+docker compose exec -u rails app bin/rails "mt:token[claude]"
+```
+
+It prints the token **once**, with the `mt setup` line to use it. If there is no actor with that name, it creates one as an agent. Create one per agent (`claude`, `codex`…) and one for yourself (`mt:token[fran]`, with your own name) to use `mt` by hand.
+
+```bash
+docker compose exec -u rails app bin/rails mt:tokens   # who has a token and when it was last used
+```
+
+To revoke or rotate a token, run `mt:token[name]` again: the old one stops working at once.
+
+Tokens are stored as a SHA-256 digest, never in clear, so a lost token cannot be recovered: create a new one.
+
+### 2. Install `mt`, on the machine where your agents run
+
+`mt` lives in the same repo, in `cli/`. It needs [Go](https://go.dev/dl/) 1.23 or newer, only on that machine (the server does not need it):
+
+```bash
+git clone https://github.com/franwer-ranger/maker_tracker.git
+cd maker_tracker
+make -C cli install    # installs mt in $(go env GOPATH)/bin, usually ~/go/bin
+```
+
+If `mt` is not found afterwards, add `~/go/bin` to your `PATH`.
+
+### 3. Connect it
+
+The machine needs to reach the server: on the same tailnet, use the `ts.net` address from [step 3](#3-reach-it-from-your-devices-with-tailscale).
+
+```bash
+mt setup https://<machine-name>.<your-tailnet>.ts.net <token>
+mt projects                            # the projects and their keys
+cd ~/code/your-project && mt init PG   # once per repo, with its project key
+mt context                             # checks that everything works
+```
+
+`mt setup` saves the address and the token in `~/.config/mt/config`, readable only by you. `MT_URL` and `MT_TOKEN` override it, which is handy for an agent with its own token on a shared machine. `mt init` needs the project to exist: create it in the app first. `mt help` lists every command, and [`docs/CLI.md`](CLI.md) shows what each one prints.
+
+The API is under `/api` on the same address, so it is exactly as private as the app: only your tailnet can reach it.
