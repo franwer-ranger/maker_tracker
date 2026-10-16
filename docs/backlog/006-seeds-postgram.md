@@ -2,8 +2,8 @@
 number: 6
 title: Seeds · Postgram como en los mockups
 milestone: M1
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-8-0
 labels: [modelo, seeds]
 blocked_by: [5]
@@ -59,3 +59,26 @@ Como agente que construye una pantalla, quiero datos de desarrollo iguales a los
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/v2-model`, commit «Siembra Postgram como en los mockups v2».
+
+**Hecho**
+- `db/seeds.rb` siembra lo siguiente, con los textos sacados con el MCP de Paper (`get_jsx` sobre `4.2`, `4.4` y `4.6`):
+  - Actores `fran`, `claude` y `codex`.
+  - Postgram (`PG`) con el brief de `4.6`.
+  - Cuatro hitos con sus objetivos. M1 está cerrado hace 34 días («12 sep» en el mockup).
+  - 41 historias: M1 con 9 hechas; M2 en el orden del roadmap, con #48 reclamada por claude y #45 por codex; M3 con 6 historias, 4 en Definiendo y #28 bloqueada por #51; M4 con 3 ideas; y 14 ideas en la bandeja con `labels`.
+  - D-12, D-13 y D-14 (la D-14 ligada a #48) y comentarios en #49 y #48.
+  - El historial de #49 tal como sale en `4.4`: creada el 3 oct, claude la edita ayer a las 22:31 y pasa a Lista ayer a las 22:40. También el `story.claimed` de #48 y #45.
+- `Project#next_story` de Postgram devuelve PG-49.
+- Idempotentes: después de `db:seed:replant` y otro `db:seed`, los recuentos no cambian (3 actores, 1 proyecto, 4 hitos, 41 historias, 3 decisiones, 3 comentarios y 5 eventos).
+
+**Decisiones**
+- Todo se crea con `find_or_create_by!` por clave natural (nombre, `key`, título, `number`, cuerpo). Los eventos solo se añaden si la historia aún no tiene uno con esa acción y ese actor. Las seeds no pasan por las operaciones de dominio, para no generar eventos que no salen en los mockups.
+- Las fechas son relativas a `Time.current`: «3 oct» son 13 días antes, «ayer 22:40» es ayer a esa hora.
+- Los cuerpos de las decisiones son el «Por qué» del mockup sin la etiqueta. El «Vinculada a #48» de la D-14 es la relación con la historia, no texto.
+- Los números que el mockup no da son inventados: M1 #1–#9, bandeja #10–#23, M4 #24–#26 y M3 #27–#32. Quedan huecos (#33–#40, #44 y #46).
+
+**Fuera / a revisar con Producto**
+- El mockup dice «En curso · 4/10» en M2, pero la tabla de la historia da 9 historias (5 visibles y 4 hechas). He seguido la tabla.
+- El brief no tiene Glosario en el mockup: la sección queda vacía.
