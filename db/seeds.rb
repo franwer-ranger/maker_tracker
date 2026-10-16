@@ -16,9 +16,8 @@ codex = Actor.find_or_create_by!(name: "codex") { it.kind = :agent }
 
 # Proyecto y brief (4.6) ------------------------------------------------------
 
-postgram = Project.find_or_create_by!(key: "PG") do |project|
-  project.name = "Postgram"
-  project.brief = <<~MARKDOWN
+postgram = Project.find_or_initialize_by(key: "PG")
+postgram.update!(name: "Postgram", brief: <<~MARKDOWN)
     ## Visión
 
     Postgram es el sitio donde un maker escribe una vez y publica en todas sus redes. Gana el que publica con constancia, no el que publica mejor; nuestro trabajo es quitar fricción hasta que publicar sea un hábito.
@@ -34,31 +33,36 @@ postgram = Project.find_or_create_by!(key: "PG") do |project|
     Agencias y gestión de clientes. Generar contenido con IA por el usuario.
 
     ## Glosario
-  MARKDOWN
-end
+
+    Post: lo que escribe el maker, una vez. Publicación: cada copia de un post en una red.
+MARKDOWN
 
 # Hitos (4.2) -----------------------------------------------------------------
 
 def seed_milestone(project, title, goal, closed_at: nil)
-  project.milestones.find_or_create_by!(title: title) do |milestone|
-    milestone.goal = goal
-    milestone.closed_at = closed_at
-  end
+  milestone = project.milestones.find_or_initialize_by(title: title)
+  milestone.closed_at = closed_at if milestone.new_record?
+  milestone.update!(goal: goal)
+  milestone
 end
 
 m1 = seed_milestone(postgram, "Cuentas y primer post", "Que un maker cree su cuenta, conecte una red y publique su primer post.", closed_at: 34.days.ago)
 m2 = seed_milestone(postgram, "Publicar sin fricción", "Un maker programa una semana de posts en menos de 10 minutos.")
-m3 = seed_milestone(postgram, "Analítica para makers", "Saber qué post funciona y por qué.")
+m3 = seed_milestone(postgram, "Analítica para makers", "Saber qué post funciona y por qué")
 m4 = seed_milestone(postgram, "Equipos", "Varias personas publicando en la misma cuenta.")
 
 # Historias -------------------------------------------------------------------
 # Los números son los del mockup. Se crean en orden: la posición dentro del hito
 # es la de creación.
 
-def seed_story(project, number, title, milestone: nil, state: :idea, **attributes)
-  project.stories.find_or_create_by!(number: number) do |story|
-    story.assign_attributes(title: title, milestone: milestone, state: state, **attributes)
-  end
+# Crea la historia o la pone al día (título, hito, estado, propiedades…).
+# `on_create` solo se asigna al crearla (fechas que no deben moverse).
+def seed_story(project, number, title, milestone: nil, state: :idea, on_create: {}, **attributes)
+  story = project.stories.find_or_initialize_by(number: number)
+  story.assign_attributes(on_create) if story.new_record?
+  story.assign_attributes(title: title, milestone: milestone, state: state, **attributes)
+  story.save!
+  story
 end
 
 def story_body(historia: "", criterios: [], fuera: "", notas: "")
@@ -119,33 +123,52 @@ end
   seed_story(postgram, number, title, milestone: m4)
 end
 
-# M2 · en el orden del roadmap (4.2).
-seed_story(postgram, 48, "Exportar post a PDF", milestone: m2, state: :in_progress,
-           claimed_by: claude, claimed_at: 18.minutes.ago,
-           body: story_body(historia: "Como maker, quiero exportar un post a PDF para compartirlo fuera de las redes."))
-seed_story(postgram, 45, "Programar publicaciones", milestone: m2, state: :in_progress,
-           claimed_by: codex, claimed_at: 1.day.ago.change(hour: 18),
-           body: story_body(historia: "Como maker, quiero programar un post para una fecha y hora, para preparar la semana de una vez."))
-seed_story(postgram, 49, "Plantillas de post reutilizables", milestone: m2, state: :ready,
-           mockup: "#{PAPER}/p-8-0",
-           body: story_body(
-             historia: "Como maker que publica cada semana, quiero guardar un post como plantilla para no reescribir el mismo formato una y otra vez.",
-             criterios: [
-               "Desde un post publicado, «Guardar como plantilla» crea una plantilla con el texto y las imágenes",
-               "Al crear un post nuevo puedo elegir una plantilla y se rellena el editor",
-               "Las variables {fecha} y {enlace} se sustituyen al usar la plantilla"
-             ],
-             fuera: "Compartir plantillas entre cuentas (M4).",
-             notas: "Reutiliza el editor actual; no hace falta un editor nuevo. Ver decisión D-12 sobre almacenamiento de imágenes."
-           ))
-seed_story(postgram, 50, "Vista previa por red social", milestone: m2, state: :ready,
-           mockup: "#{PAPER}/p-8-0", labels: %w[editor redes],
-           body: story_body(historia: "Como maker, quiero ver cómo quedará el post en cada red antes de publicarlo, para no llevarme sorpresas."))
-seed_story(postgram, 51, "Métricas de engagement", milestone: m2, state: :defining,
-           body: story_body(historia: "Como maker, quiero saber qué posts generan conversación, para repetir lo que funciona."))
-{ 41 => "Conectar LinkedIn", 42 => "Publicar en varias redes a la vez", 43 => "Borradores automáticos", 47 => "Cola de publicación" }.each do |number, title|
-  seed_story(postgram, number, title, milestone: m2, state: :done)
-end
+# M2 · en el orden de 5.1 Tablero y 5.3 Roadmap: 8 abiertas y 4 hechas.
+# Las hechas primero: #49 está bloqueada por #47.
+m2_done = [
+  seed_story(postgram, 47, "Borradores automáticos", milestone: m2, state: :done, labels: %w[editor]),
+  seed_story(postgram, 43, "Subir varias imágenes a la vez", milestone: m2, state: :done, labels: %w[editor]),
+  seed_story(postgram, 42, "Conectar Instagram", milestone: m2, state: :done, labels: %w[redes]),
+  seed_story(postgram, 41, "Conectar LinkedIn", milestone: m2, state: :done, labels: %w[redes])
+]
+m2_stories = [
+  seed_story(postgram, 48, "Exportar post a PDF", milestone: m2, state: :in_progress, labels: %w[export],
+             claimed_by: claude, on_create: { claimed_at: 18.minutes.ago },
+             body: story_body(historia: "Como maker, quiero exportar un post a PDF para compartirlo fuera de las redes.")),
+  seed_story(postgram, 45, "Programar publicaciones", milestone: m2, state: :in_progress, labels: %w[calendario],
+             claimed_by: codex, on_create: { claimed_at: 1.day.ago.change(hour: 18) },
+             body: story_body(historia: "Como maker, quiero programar un post para una fecha y hora, para preparar la semana de una vez.")),
+  # El cuerpo es el markdown de 5.6 Historia · Editando (#49).
+  seed_story(postgram, 49, "Plantillas de post reutilizables", milestone: m2, state: :ready,
+             mockup: "#{PAPER}/p-C-0", labels: %w[editor ui], blocked_by: [ 47 ], body: <<~MARKDOWN),
+               ## Contexto
+               Los makers repiten el mismo formato cada semana.
+
+               ## Historia
+               Como maker que publica cada semana, quiero guardar un post como plantilla para no reescribir el mismo formato una y otra vez.
+
+               ## Criterios de aceptación
+               - [ ] Desde un post publicado, «Guardar como plantilla» crea una plantilla con el texto y las imágenes.
+               - [ ] Al crear un post nuevo puedo elegir una plantilla y se rellena el editor.
+               - [ ] Las variables {fecha} y {enlace} se sustituyen al usar la plantilla.
+
+               ## Fuera de alcance
+               Compartir plantillas entre cuentas (M4).
+
+               ## Preguntas abiertas
+             MARKDOWN
+  seed_story(postgram, 50, "Vista previa por red social", milestone: m2, state: :ready,
+             mockup: "#{PAPER}/p-C-0", labels: %w[editor],
+             body: story_body(historia: "Como maker, quiero ver cómo quedará el post en cada red antes de publicarlo, para no llevarme sorpresas.")),
+  seed_story(postgram, 51, "Métricas de engagement", milestone: m2, state: :defining, labels: %w[analítica],
+             body: story_body(historia: "Como maker, quiero saber qué posts generan conversación, para repetir lo que funciona.")),
+  seed_story(postgram, 54, "Reprogramar arrastrando en el calendario", milestone: m2, state: :defining,
+             labels: %w[calendario], blocked_by: [ 45 ]),
+  seed_story(postgram, 52, "Hilos de X en un solo post", milestone: m2, labels: %w[editor]),
+  seed_story(postgram, 53, "Programar desde el móvil", milestone: m2, labels: %w[móvil])
+] + m2_done
+# Fija el orden también en una base de datos sembrada antes.
+m2_stories.each.with_index(1) { |story, position| story.update!(position: position) }
 
 # M3 · 6 historias, 4 en Definiendo. Una está bloqueada por #51.
 seed_story(postgram, 27, "Panel de rendimiento por post", milestone: m3, state: :defining, labels: %w[analítica])
@@ -157,16 +180,18 @@ seed_story(postgram, 32, "Alertas cuando un post despega", milestone: m3)
 
 # Decisiones (4.6) ------------------------------------------------------------
 
-def seed_decision(project, number, title, body, actor:, at:, story: nil)
+def seed_decision(project, number, title, body, actor:, at:, story: nil, supersedes: nil)
   project.decisions.find_or_create_by!(number: number) do |decision|
-    decision.assign_attributes(title: title, body: body, actor: actor, story: story, created_at: at, updated_at: at)
+    decision.assign_attributes(title: title, body: body, actor: actor, story: story, supersedes: supersedes, created_at: at, updated_at: at)
   end
 end
 
-seed_decision(postgram, 12, "Imágenes en Active Storage local", "Un solo servidor; S3 cuando haga falta.", actor: fran, at: 14.days.ago)
+seed_decision(postgram, 9, "Imágenes en S3 desde el principio", "Para no migrar cuando crezca el número de imágenes.", actor: fran, at: 30.days.ago)
+seed_decision(postgram, 12, "Imágenes en Active Storage local", "Un solo servidor; S3 cuando haga falta.", actor: fran, at: 14.days.ago,
+              supersedes: postgram.decisions.find_by!(number: 9))
 seed_decision(postgram, 13, "Publicar sin fricción va antes que Analítica", "Los usuarios beta lo piden primero.", actor: fran, at: 1.day.ago)
 seed_decision(postgram, 14, "PDFs con Prawn, sin servicios externos", "Autoalojado y sin coste por documento.",
-              actor: fran, at: 2.hours.ago, story: postgram.stories.find_by!(number: 48))
+              actor: claude, at: 2.hours.ago, story: postgram.stories.find_by!(number: 48))
 
 # Comentarios -----------------------------------------------------------------
 
@@ -180,26 +205,34 @@ s48 = postgram.stories.find_by!(number: 48)
 s45 = postgram.stories.find_by!(number: 45)
 s49 = postgram.stories.find_by!(number: 49)
 
-seed_comment(s49, claude, "Añadidos los tres criterios y los dos mockups de Paper (selector de plantilla y guardar como plantilla).", at: 1.day.ago.change(hour: 22, min: 31))
-seed_comment(s49, fran, "Perfecto, la paso a Lista.", at: 1.day.ago.change(hour: 22, min: 40))
+seed_comment(s49, claude, "He añadido los criterios y enlazado el mockup. Variables solo {fecha} y {enlace}: el resto, en otra historia.",
+             at: 1.day.ago.change(hour: 22, min: 31))
 seed_comment(s48, claude, "Empiezo con Prawn, como dice D-14. ¿El export incluye los comentarios o solo el post?", at: 15.minutes.ago)
 
 # Eventos ---------------------------------------------------------------------
 # Solo los que se ven en los mockups. Se añaden a mano y solo si la historia aún
 # no los tiene, para que las seeds sigan siendo idempotentes.
 
-def seed_event(story, action, actor:, at:, data: {})
-  return if story.events.exists?(action: action, actor: actor)
+def seed_event(project, action, actor:, at:, story: nil, data: {})
+  data = data.deep_stringify_keys
+  return if project.events.where(story: story, action: action, actor: actor).any? { it.data == data }
 
-  story.project.events.create!(story: story, action: action, actor: actor, data: data, occurred_at: at)
+  project.events.create!(story: story, action: action, actor: actor, data: data, occurred_at: at)
 end
 
-# #49 (4.4 · Historial): creada desde una idea → claude la define → pasa a Lista.
-seed_event(s49, "story.created", actor: fran, at: 13.days.ago, data: { state: "defining", milestone_id: m2.id })
-seed_event(s49, "story.edited", actor: claude, at: 1.day.ago.change(hour: 22, min: 31), data: { fields: %w[body mockup] })
-seed_event(s49, "story.state_changed", actor: fran, at: 1.day.ago.change(hour: 22, min: 40), data: { from: "defining", to: "ready" })
+# #49 (5.4 · Historial): creada como idea → pasa a Definiendo → claude la define → pasa a Lista.
+seed_event(postgram, "story.created", story: s49, actor: fran, at: 13.days.ago, data: { state: "idea", milestone_id: m2.id })
+seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 7.days.ago, data: { from: "idea", to: "defining" })
+seed_event(postgram, "story.edited", story: s49, actor: claude, at: 1.day.ago.change(hour: 22, min: 31), data: { fields: %w[body mockup] })
+seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 1.day.ago.change(hour: 22, min: 40), data: { from: "defining", to: "ready" })
 
-seed_event(s48, "story.claimed", actor: claude, at: s48.claimed_at)
-seed_event(s45, "story.claimed", actor: codex, at: s45.claimed_at)
+seed_event(postgram, "story.claimed", story: s48, actor: claude, at: s48.claimed_at)
+seed_event(postgram, "story.claimed", story: s45, actor: codex, at: s45.claimed_at)
+
+# Segundo proyecto (5.0 Proyectos): un hito abierto, sin historias y sin actividad desde hace 2 días.
+
+maker_tracker = Project.find_or_create_by!(key: "MT") { it.name = "Maker Tracker" }
+seed_milestone(maker_tracker, "Núcleo v2", "El modelo nuevo funcionando, con la UI mínima para definir producto.")
+seed_event(maker_tracker, "project.created", actor: fran, at: 2.days.ago)
 
 puts "Seeds created!"

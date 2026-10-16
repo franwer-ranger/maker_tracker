@@ -2,8 +2,8 @@
 number: 12
 title: Seeds · alinear con las pantallas de App
 milestone: M1
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-C-0
 labels: [seeds]
 blocked_by: [6]
@@ -63,3 +63,20 @@ Como agente que construye una pantalla de M1, quiero que las seeds coincidan con
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/m1-screens`, commit «Alinea las seeds con las pantallas de App».
+
+**Hecho**
+- M2 tiene 12 historias en el orden y con las labels de la tabla: #52, #53 y #54 son nuevas, #49 está bloqueada por #47 y #54 por #45, y las Hechas se han renombrado.
+- El cuerpo de #49 es el de `5.6` y el comentario de claude, el de `5.4`. Los textos están comprobados con `find_nodes` en Paper.
+- El historial de #49 tiene los cuatro eventos de `5.4`: creada como idea el 3 oct, pasa a Definiendo el 9 oct, claude edita ayer a las 22:31 y pasa a Lista ayer a las 22:40.
+- El objetivo de M3 es «Saber qué post funciona y por qué» y el brief tiene Glosario.
+- D-9 «Imágenes en S3 desde el principio» la registra fran y D-12 la sustituye. D-14 la registra claude.
+- Segundo proyecto, Maker Tracker (`MT`), con el hito abierto «Núcleo v2» (en pantalla, «M1 · Núcleo v2») y su `project.created` de hace 2 días.
+- `next_story` de Postgram sigue siendo PG-49. Después de `db:seed:replant` y otro `db:seed`: 3 actores, 2 proyectos, 5 hitos, 44 historias, 4 decisiones, 2 comentarios y 7 eventos.
+
+**Decisiones**
+- Historias, hitos y brief se ponen al día al volver a sembrar (no solo se crean), y el orden de M2 se fija con su posición. Las decisiones, los comentarios y los eventos son de solo lectura, así que en una base de datos sembrada con la #006 quedarían los antiguos. **Para ver los datos nuevos hay que ejecutar `bin/setup --reset`.**
+- `seed_event` compara también `data`, porque #49 tiene dos `story.state_changed` de fran.
+- Se ha quitado el comentario de fran en #49: `5.4` muestra «Comentarios · 1».
+- El cuerpo de D-9 no sale en Paper; el texto es inventado.
