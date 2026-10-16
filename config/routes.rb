@@ -18,6 +18,11 @@ Rails.application.routes.draw do
     get "/", to: "boards#show", as: ""
     resource :roadmap, only: :show
     resource :brief, only: :show
-    resources :stories, param: :number, only: :show
+    resources :stories, param: :number, only: %i[show create] do
+      scope module: :stories do
+        resource :state, only: :update
+        resource :position, only: :update
+      end
+    end
   end
 end

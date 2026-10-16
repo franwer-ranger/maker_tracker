@@ -72,11 +72,19 @@ class Story < ApplicationRecord
   end
 
   # Bloqueada no es un estado: se deriva de `blocked_by`.
-  def blocked?(done_numbers: nil)
-    return false if blocked_by.empty?
+  def blocked?(done_numbers: nil) = pending_blockers(done_numbers: done_numbers).any?
+
+  # Números de `blocked_by` que aún no están hechos.
+  def pending_blockers(done_numbers: nil)
+    return [] if blocked_by.empty?
 
     done_numbers ||= project.stories.done.where(number: blocked_by).pluck(:number)
-    (blocked_by - done_numbers).any?
+    blocked_by - done_numbers
+  end
+
+  # En Definiendo y sin ningún criterio (`- [ ]` / `- [x]`) en el cuerpo.
+  def missing_criteria?
+    defining? && !body.match?(/^\s*[-*] \[[ xX]\]/)
   end
 
   # Las historias que tienen a esta en su `blocked_by`.

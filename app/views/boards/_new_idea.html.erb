@@ -1,0 +1,12 @@
+<details class="group shrink-0">
+  <summary class="flex h-nav cursor-pointer list-none items-center gap-2 rounded-md px-2 text-control text-text-muted transition-colors duration-150 ease-brand hover:text-text group-open:hidden <%= ComponentsHelper::FOCUS_RING %> [&::-webkit-details-marker]:hidden">
+    <%= icon "plus", size: 16 %>
+    Nueva idea
+  </summary>
+  <%= form_with url: project_stories_path(@project), scope: :story, class: "flex flex-col gap-2" do |form| %>
+    <%= form.hidden_field :milestone_id, value: @milestone&.id if @filter == :milestone %>
+    <%= form.text_field :title, required: true, autofocus: true, placeholder: "Título de la idea", "aria-label": "Título de la idea",
+          class: "h-control-sm w-full rounded-md border border-strong bg-bg px-3 text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+    <%= ui_button "Crear idea", type: "submit", size: :sm, class: "self-start" %>
+  <% end %>
+</details>

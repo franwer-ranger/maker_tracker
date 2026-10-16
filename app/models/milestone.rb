@@ -17,6 +17,16 @@ class Milestone < ApplicationRecord
   # "M2": su número es su posición en el roadmap.
   def code = "M#{position}"
 
+  # [hechas, total]
+  def progress = [ stories.done.count, stories.count ]
+
+  # Hecho si está cerrado; En curso si alguna historia ha empezado.
+  def status
+    return "Hecho" if closed?
+
+    stories.in_progress.or(stories.done).exists? ? "En curso" : "Sin empezar"
+  end
+
   # Operaciones de dominio: cada una hace su cambio y registra su evento.
   # Si no cambia nada, no hay evento y devuelven false.
 

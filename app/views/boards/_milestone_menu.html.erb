@@ -1,0 +1,21 @@
+<% current = { milestone: @milestone && milestone_label(@milestone), ideas: "Bandeja de ideas", all: "Todos los hitos" }.fetch(@filter) %>
+<%= ui_menu align: :right, class: "group", summary: capture { %>
+  <span class="flex h-control-sm items-center gap-2 rounded-md border border-strong bg-bg px-3 group-open:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]">
+    <span class="font-mono text-xs text-text-muted">Hito</span>
+    <span class="text-control font-medium text-text"><%= current %></span>
+    <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
+  </span>
+<% } do %>
+  <% @milestones.reject(&:closed?).each do |milestone| %>
+    <% done, total = milestone.progress %>
+    <%= menu_item milestone.title, project_path(@project, hito: milestone.position), code: milestone.code,
+                  meta: "#{done}/#{total}", active: milestone == @milestone %>
+  <% end %>
+  <% @milestones.select(&:closed?).each do |milestone| %>
+    <%= menu_item milestone.title, project_path(@project, hito: milestone.position), code: milestone.code,
+                  meta: "cerrado", meta_class: "text-state-done", muted: true, active: milestone == @milestone %>
+  <% end %>
+  <%= menu_separator %>
+  <%= menu_item "Bandeja de ideas", project_path(@project, hito: "ideas"), icon: "inbox", meta: @project.ideas.count, active: @filter == :ideas %>
+  <%= menu_item "Todos los hitos", project_path(@project, hito: "todos"), icon: "square-3-stack-3d", meta: "sin reordenar", active: @filter == :all %>
+<% end %>

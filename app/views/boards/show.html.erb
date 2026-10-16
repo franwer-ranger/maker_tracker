@@ -1,5 +1,52 @@
 <% content_for :title, "Tablero · #{@project.name}" %>
-<div class="flex flex-col gap-2 px-16 py-12">
-  <h1 class="text-3xl font-semibold tracking-[-0.02em]">Tablero</h1>
-  <p class="text-sm text-text-muted">Llega con la historia #008.</p>
+<div class="flex h-full flex-col gap-8 px-12 py-10"
+     data-controller="board"
+     data-board-sortable-value="<%= @filter != :all %>"
+     data-board-state-url-value="<%= project_story_state_path(@project, "__number__") %>"
+     data-board-position-url-value="<%= project_story_position_path(@project, "__number__") %>">
+  <header class="flex items-end justify-between gap-8">
+    <div class="flex flex-col gap-2.5">
+      <%= section_label board_heading_label(@filter, @milestone) %>
+      <h1 class="font-display text-display-sm tracking-[-0.01em]">
+        <%= { milestone: @milestone&.title, ideas: "Bandeja de ideas", all: "Todos los hitos" }.fetch(@filter) %>
+      </h1>
+      <% if @filter == :milestone && @milestone.goal.present? %>
+        <p class="text-sm text-text-muted"><%= @milestone.goal %></p>
+      <% elsif @filter == :all %>
+        <p class="text-sm text-text-muted">Solo se puede cambiar de columna; el orden se decide en cada hito.</p>
+      <% end %>
+    </div>
+    <div class="shrink-0">
+      <%= render "boards/milestone_menu" %>
+    </div>
+  </header>
+
+  <p class="-my-4 text-control text-accent empty:hidden" data-board-target="error" role="alert" aria-live="polite"><%= flash[:alert] %></p>
+
+  <div class="flex min-h-0 grow gap-3">
+    <% @columns.each do |state, stories| %>
+      <section class="flex min-w-0 basis-0 grow flex-col gap-2 rounded-xl border border-border bg-surface-sunken p-3" aria-label="<%= Story.human_state(state) %>">
+        <header class="flex h-7 shrink-0 items-center gap-2 px-1">
+          <%= state_dot state, halo: false %>
+          <h2 class="text-control font-medium text-text"><%= Story.human_state(state) %></h2>
+          <span class="font-mono text-xs text-text-subtle"><%= state == "done" && @hidden_done.to_i.positive? ? stories.size + @hidden_done : stories.size %></span>
+        </header>
+
+        <ol class="flex min-h-12 flex-col gap-2 overflow-y-auto" data-board-target="column" data-state="<%= state %>">
+          <% stories.each do |story| %>
+            <%= render "boards/card", story: story %>
+          <% end %>
+        </ol>
+
+        <% if state == "done" && @hidden_done.to_i.positive? %>
+          <%= link_to "ver todas (#{stories.size + @hidden_done})", project_path(@project, hito: "todos", hechas: "todas"),
+                      class: "px-2 text-control text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING} rounded-md" %>
+        <% end %>
+
+        <% if state == "idea" && @filter != :all %>
+          <%= render "boards/new_idea" %>
+        <% end %>
+      </section>
+    <% end %>
+  </div>
 </div>

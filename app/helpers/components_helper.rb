@@ -64,7 +64,8 @@ module ComponentsHelper
   end
 
   # state_dot :ready; state_dot :in_progress, size: 8
-  def state_dot(state, size: 6)
+  # `halo: false` quita el halo de En curso (cabeceras de columna).
+  def state_dot(state, size: 6, halo: true)
     state = state.to_sym
     tag.span class: class_names(
       "inline-block shrink-0 rounded-full",
@@ -72,7 +73,8 @@ module ComponentsHelper
       "border-[1.5px] border-state-idea": state == :idea,
       "bg-state-defining": state == :defining,
       "bg-state-ready": state == :ready,
-      "bg-accent #{HALO}": state == :in_progress,
+      "bg-accent": state == :in_progress,
+      HALO => state == :in_progress && halo,
       "bg-state-done": state == :done
     ), aria: { hidden: true }
   end
@@ -148,8 +150,15 @@ module ComponentsHelper
     end
   end
 
-  # Opción de un menú: código en mono (w-6), texto y metadato a la derecha.
-  def menu_item(label, href, code: nil, meta: nil, active: false, muted: false)
+  def menu_separator = tag.div(class: "h-px shrink-0 bg-border")
+
+  # Label de una historia: mono 11px sobre surface, radio 4.
+  def ui_label(text)
+    tag.span text, class: "rounded-sm bg-surface px-1.5 py-0.5 font-mono text-[11px] leading-[14px] text-text-muted"
+  end
+
+  # Opción de un menú: código en mono o icono (w-6), texto y metadato a la derecha.
+  def menu_item(label, href, code: nil, icon: nil, meta: nil, meta_class: "text-text-muted", active: false, muted: false)
     link_to href, class: class_names(
       "flex h-nav shrink-0 items-center gap-2.5 rounded-md px-2.5 text-control",
       "hover:bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] #{FOCUS_RING}",
@@ -159,8 +168,9 @@ module ComponentsHelper
     ), aria: { current: ("page" if active) } do
       safe_join([
         (tag.span(code, class: class_names("w-6 shrink-0 font-mono text-xs", muted ? "text-text-subtle" : "text-text-muted")) if code),
+        (tag.span(icon(icon, size: 16), class: "flex w-6 shrink-0 items-center text-text-muted") if icon),
         tag.span(label, class: "grow truncate"),
-        (tag.span(meta, class: "font-mono text-xs text-text-muted") if meta)
+        (tag.span(meta, class: "font-mono text-xs #{meta_class}") if meta)
       ].compact)
     end
   end

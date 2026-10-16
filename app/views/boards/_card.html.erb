@@ -1,0 +1,24 @@
+<li data-number="<%= story.number %>">
+  <%= link_to project_story_path(@project, story), draggable: false,
+        class: class_names(
+          "flex flex-col gap-2.5 rounded-lg border border-border p-3 transition-colors duration-150 ease-brand hover:border-strong",
+          ComponentsHelper::FOCUS_RING,
+          "bg-bg": !story.done?
+        ) do %>
+    <span class="flex items-center justify-between gap-2">
+      <span class="font-mono text-xs text-text-muted">#<%= story.number %></span>
+      <%= story_card_meta story, @context %>
+    </span>
+    <span class="<%= story.done? ? "text-text-muted" : "text-text-soft" %> text-sm"><%= story.title %></span>
+    <% if @filter == :all && story.milestone %>
+      <span class="font-mono text-xs text-text-subtle"><%= story.milestone.code %></span>
+    <% end %>
+    <% if story.labels.any? %>
+      <span class="flex flex-wrap gap-1.5">
+        <% story.labels.each do |label| %>
+          <%= ui_label label %>
+        <% end %>
+      </span>
+    <% end %>
+  <% end %>
+</li>

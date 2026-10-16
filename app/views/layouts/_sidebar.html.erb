@@ -13,7 +13,7 @@
       <% Project.order(:created_at).each do |other| %>
         <%= menu_item other.name, project_path(other), code: other.key, active: other == project %>
       <% end %>
-      <div class="my-1 border-t border-border"></div>
+      <%= menu_separator %>
       <%= menu_item "Todos los proyectos", projects_path %>
     <% end %>
 

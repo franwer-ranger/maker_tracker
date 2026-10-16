@@ -19,6 +19,12 @@
 **Recomendación:** —
 
 ## 2026-10-16 · de development → product
+**Qué:** dos detalles de Paper que he encontrado al construir el Tablero (#008):
+- La label de una historia es mono **11px** (`DESIGN.md` → Label), pero 11 no es un token. En código va como `text-[11px]` solo dentro de `ui_label`. ¿Lo pasamos a token (`--text-label`) o se queda así?
+- #49 tiene las labels `editor, ui` en `5.4`, pero en `5.1` solo `editor`. Las seeds siguen la #012 (`editor, ui`), así que en el Tablero sale también `ui`.
+**Recomendación:** token `--text-label: 11px` y corregir `5.1`.
+
+## 2026-10-16 · de development → product
 ✅ Quitada esa regla de `development.md` (en `main`).
 
 **Qué:** `docs/workstreams/development.md` aún dice (en "Reglas de construcción") que no se mergee la eliminación de Devise hasta que lo confirme Self-host. La decisión del 2026-10-16 lo sustituye. Conviene quitar esa línea para que el siguiente agente de desarrollo no se bloquee.
