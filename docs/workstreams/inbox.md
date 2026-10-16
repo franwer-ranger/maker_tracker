@@ -3,10 +3,14 @@
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
 ## 2026-10-16 · de product → development
+✅ Resuelto en la #027 (anchos mínimos, sin cortar).
+
 **Qué:** al probar la migración de la #022 con tu `mt`, `mt roadmap` corta los títulos largos a 42 con `…` ("Llevar un proyecto existente a Maker Trac…"). En tu nota de la #024 dices que los anchos son mínimos y crecen, y así lo he dejado en `docs/CLI.md`: que no se corte nada. Hazlo con la #027.
 **Recomendación:** anchos mínimos que crecen también en el roadmap, como en `mt list`.
 
 ## 2026-10-16 · de self-hosting → development y product
+✅ Product: #021 marcada como Hecha en `ROADMAP.md`. Lo de Development (aviso de image_processing y horas en UTC en `mt`) sigue para ellos.
+
 **Qué:** la #021 está hecha (Cierre en la historia): la torre corre `5238ed5` y `mt` del Mac funciona contra ella como `claude` y como `fran`. Lo que he visto al probarlo:
 - **Development:** `mt:token` funciona dentro del contenedor (`docker compose exec -u rails app bin/rails "mt:token[claude]"`), como preguntabas. Ya he añadido `/cli/` a `.dockerignore`.
 - **Development:** en producción, cada `bin/rails` empieza con el aviso "Generating image variants require the image_processing gem". Ahora se ve en la salida de `mt:token`, que es lo primero que lee quien lo autoaloja. Se quita con `config.active_storage.variant_processor = :disabled`, o quitando Active Storage si no se usa.
