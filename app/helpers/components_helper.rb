@@ -155,9 +155,9 @@ module ComponentsHelper
 
   def menu_separator = tag.div(class: "h-px shrink-0 bg-border")
 
-  # Label de una historia: mono 11px sobre surface, radio 4.
+  # Label de una historia: mono text-label (11px) sobre surface, radio 4.
   def ui_label(text)
-    tag.span text, class: "rounded-sm bg-surface px-1.5 py-0.5 font-mono text-[11px] leading-[14px] text-text-muted"
+    tag.span text, class: "rounded-sm bg-surface px-1.5 py-0.5 font-mono text-label text-text-muted"
   end
 
   # Opción de un menú: código en mono o icono (w-6), texto y metadato a la derecha.

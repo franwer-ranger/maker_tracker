@@ -25,6 +25,7 @@
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
+  --text-label: 11px;
   --text-xs: 12px;
   --text-control: 13px;
   --text-sm: 14px;

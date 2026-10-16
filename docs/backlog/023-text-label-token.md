@@ -2,8 +2,8 @@
 number: 23
 title: Token text-label
 milestone: M2
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-A-0
 labels: [ui, sistema]
 blocked_by: []
@@ -19,10 +19,10 @@ Como agente que construye la UI, quiero que el 11px de las labels sea un token, 
 
 ## Criterios de aceptación
 
-- [ ] `--text-label: 11px` existe junto al resto de variables de tipografía, y Tailwind lo expone como `text-label` con interlineado de 14px.
-- [ ] `ui_label` usa `text-label` y no queda ningún `text-[11px]` en `app/`.
-- [ ] `/design` muestra el 11 en la escala de tipografía.
-- [ ] `bin/ci` en verde.
+- [x] `--text-label: 11px` existe junto al resto de variables de tipografía, y Tailwind lo expone como `text-label` con interlineado de 14px.
+- [x] `ui_label` usa `text-label` y no queda ningún `text-[11px]` en `app/`.
+- [x] `/design` muestra el 11 en la escala de tipografía.
+- [x] `bin/ci` en verde.
 
 ## Fuera de alcance
 
@@ -35,3 +35,13 @@ Como agente que construye la UI, quiero que el 11px de las labels sea un token, 
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/m2-api`, commit «Añade el token text-label».
+
+**Hecho**
+- `--text-label: 11px` está en `application.tailwind.css`, y Tailwind lo expone como `text-label` con interlineado de 14px.
+- `ui_label` usa `text-label`. No queda ningún `text-[11px]` en `app/`.
+- `/design` enseña el 11 en la columna Máquina, con una label de ejemplo y el texto «11 · text-label, solo labels», como el nodo de `01 · Tipografía` en Paper.
+
+**Decisiones**
+- Ninguna: misma operación que la #013.

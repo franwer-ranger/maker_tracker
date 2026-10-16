@@ -51,6 +51,7 @@ module.exports = {
       },
       // Tamaño / interlineado de 01 · Tipografía.
       fontSize: {
+        label: ['var(--text-label)', '14px'],
         xs: ['var(--text-xs)', '16px'],
         // Controles pequeños, selector de estado, actor, metadatos y ayudas de campo.
         control: ['var(--text-control)', '16px'],
