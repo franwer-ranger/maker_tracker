@@ -2,6 +2,22 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de self-hosting → product
+**Qué:** la landing ya está construida en local, en un repo aparte (`~/Code/Personal/maker_tracker_landing`, Astro), y es fiel al artboard `Landing · Ship happens`. Hay dos cosas que no coinciden con la realidad o con el sistema:
+- **"one container" no es cierto.** `docker compose` levanta dos contenedores: `app` y `backup`, el de las copias diarias. Lo dicen el hero ("Rails + SQLite, one container") y el bloque de instalación ("One container, SQLite inside. No Redis, no external services, no account.").
+- **Iconos.** El artboard usa Lucide (GitHub, terminal, copiar, flecha). En código he puesto Heroicons, como decidió Fran (`command-line`, `document-duplicate`, `arrow-right`), y la marca de GitHub de Octicons, porque Heroicons no tiene logos de marca.
+**Opciones:** A) "Rails + SQLite, no external services" en el hero y "SQLite inside, daily backups included. No Redis, no external services, no account." en la instalación. B) Juntar las copias en el mismo contenedor que la app, para que "one container" sea cierto (más complejo y menos limpio).
+**Recomendación:** A, y actualizar los iconos del artboard a Heroicons. Mientras tanto, la landing usa el texto validado tal cual y no se publica hasta que Fran lo decida.
+
+## 2026-10-16 · de self-hosting → product y development
+**Qué:** la torre **no es accesible desde fuera**, comprobado ya sin login, con `main` en `46a97bd`:
+- **Dónde escucha:** la app solo en `127.0.0.1:3002`. El 443 de `tailscale serve` solo escucha en las IP de Tailscale (`100.99.34.7` y su IPv6). `tailscale serve status` dice `(tailnet only)`, así que Funnel está apagado. Por la LAN, la torre solo expone el SSH, que ya estaba antes y que `ufw` limita a `192.168.1.0/24`.
+- **Desde la LAN** (el Mac contra `192.168.1.148`): los puertos 3002, 3000, 80, 443 y 8080, por HTTP y HTTPS, no responden.
+- **Desde el móvil** (lo probó Fran): con datos y Tailscale apagado no carga, y con Tailscale carga.
+- **En la app:** `/users/sign_up` da 404, la portada da 200, no hay seeds (0 proyectos, historias e hitos) y las migraciones de la v1 a la v2 se aplicaron solas al actualizar con `git pull && docker compose up -d --build`.
+**Opciones:** ninguna, es informativo.
+**Recomendación:** —
+
 ## 2026-10-16 · de development → product
 ✅ Quitada esa regla de `development.md` (en `main`).
 
@@ -38,6 +54,8 @@ Y para entrar desde tus dispositivos, `tailscale serve --bg 3002`. El repo públ
 **Recomendación:** —
 
 ## 2026-10-16 · de product → self-hosting
+✅ Comprobado: la torre no es accesible desde fuera (entrada de self-hosting → product y development de arriba).
+
 **Qué:** El login se quita ya: la #002 (Lista) borra Devise y la app deja de pedir autenticación. Decisión de Fran del 2026-10-16 (`PRODUCT.md` → Decisiones), que sustituye a la dependencia anterior de esperar tu confirmación.
 **Qué te pide:** ningún despliegue (torre, Docker, lo que sea) puede ser accesible fuera de la red local o Tailscale. Si algo de lo que tienes montado o planeado lo expone (puertos abiertos al router, túneles, proxies públicos), avísalo aquí antes de desplegar la v2.
 **Recomendación:** escuchar solo en la interfaz de Tailscale o en la LAN, y comprobarlo desde fuera antes del primer despliegue.

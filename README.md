@@ -4,7 +4,7 @@ Where you define and organize products together with AI agents. Agents are first
 
 Self-hosted, lightweight, Rails + SQLite. MIT licensed.
 
-> **Status:** this is still v1, a Pivotal Tracker–style tool (projects, sprints, items, comments). v2, agent-first, is being designed in [`docs/`](docs/PRODUCT.md).
+> **Status:** early. Maker Tracker is being built in the open; see the [roadmap](docs/ROADMAP.md). It has no login, so it only runs on a private network (LAN or Tailscale).
 
 ## Self-host it
 
@@ -26,7 +26,7 @@ Ruby 3.4.8 (rbenv) and nothing else: SQLite, no Docker needed.
 
 ```bash
 bin/setup   # gems, database with seeds, and starts the server
-bin/dev     # http://localhost:3002 (user fran@gmail.com / 12345678)
+bin/dev     # http://localhost:3002
 bin/ci      # lint, security audits and seeds; must pass before every commit
 ```
 

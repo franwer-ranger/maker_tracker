@@ -2,7 +2,8 @@
 
 Maker Tracker runs on your own machine with Docker: one container for the app, one for backups, and all its data in a single folder. It is meant to live on a private network. This guide uses [Tailscale](https://tailscale.com) so you can reach it from your devices, over HTTPS, without opening any port.
 
-> Maker Tracker is still v1 (projects, sprints, items and comments) and has open sign-up. **Never expose it to the internet**: keep it behind Tailscale or your LAN.
+> [!WARNING]
+> **Maker Tracker has no login.** Anyone who can reach it can read and change everything in it. **Never expose it to the internet**: run it only on your LAN or on a Tailscale tailnet. No port forwarding on your router, no public reverse proxy, no Tailscale Funnel.
 
 ## Requirements
 
@@ -31,7 +32,7 @@ cd maker_tracker
 docker compose up -d --build
 ```
 
-The first build takes a few minutes. When it finishes:
+The first build takes a minute or two (86 seconds on a 9th-gen Intel i7). When it finishes:
 
 ```bash
 docker compose ps   # app should say "healthy", backup "running"
@@ -60,7 +61,7 @@ What you get:
 
 The setting persists across reboots. To stop publishing it: `tailscale serve --https=443 off`.
 
-Not using Tailscale? Put any reverse proxy with HTTPS in front of `127.0.0.1:3002` (Caddy, nginx). The app assumes it is served over HTTPS.
+Not using Tailscale? Put a reverse proxy with HTTPS (Caddy, nginx) in front of `127.0.0.1:3002` that **only listens on your LAN**, never one reachable from the internet. The app assumes it is served over HTTPS.
 
 ### Check that it is not reachable from outside
 
@@ -70,11 +71,7 @@ From another device on the same LAN, **without** Tailscale, this must fail to co
 curl -m 5 http://<server-lan-ip>:3002
 ```
 
-And from a phone on mobile data with Tailscale turned off, the `ts.net` URL must not load.
-
-## 4. Create your user
-
-Open the app and sign up at `/users/sign_up`. A fresh install has no users: the development seeds never run in production.
+And from a phone on mobile data with Tailscale turned off, the `ts.net` URL must not load. On the server, `tailscale serve status` must say `(tailnet only)`: if it mentions Funnel, the app is on the internet.
 
 ## Updating
 
@@ -130,8 +127,8 @@ docker compose exec -u rails app bin/rails console # Rails console (as the app u
 docker compose down                                # stop everything (data stays)
 ```
 
-To uninstall, run `docker compose down --rmi local` and delete the folder. **`data/` is your data**: back it up first.
+To uninstall, run `docker compose down --rmi local` and delete the folder. Docker creates `data/` itself as root, so removing it needs `sudo rm -rf data`. **`data/` is your data**: back it up first.
 
 ## Agent tokens
 
-Coming with v2: agents will authenticate with one token each. This section will explain how to create them.
+Coming soon: agents will authenticate with one token each. This section will explain how to create them.

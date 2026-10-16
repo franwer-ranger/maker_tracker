@@ -7,6 +7,12 @@
 #   bin/backup --loop   one backup every BACKUP_INTERVAL_HOURS (24), keeping
 #                       the newest BACKUP_KEEP (14)
 
+# `docker compose exec` skips the entrypoint and runs as root: switch to the app
+# user so backups and the database never end up owned by root.
+if [ "$(id -u)" = "0" ]; then
+  HOME=/home/rails exec setpriv --reuid=rails --regid=rails --init-groups "$0" "$@"
+fi
+
 STORAGE=/rails/storage
 BACKUPS=/rails/backups
 DATABASE="$STORAGE/production.sqlite3"
@@ -26,6 +32,8 @@ backup() {
 
   # .backup takes a consistent copy even while the app is writing.
   sqlite3 "$DATABASE" ".backup '$tmp/production.sqlite3'"
+  # A self-contained file: out of WAL mode, it opens without write access.
+  sqlite3 "$tmp/production.sqlite3" "PRAGMA journal_mode=DELETE;" > /dev/null
   check="$(sqlite3 "$tmp/production.sqlite3" "PRAGMA integrity_check;")"
   if [ "$check" != "ok" ]; then
     echo "backup: integrity check failed: $check" >&2

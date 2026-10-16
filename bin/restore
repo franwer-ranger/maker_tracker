@@ -6,6 +6,12 @@
 #   bin/restore          lists the backups
 #   bin/restore <name>   restores that backup
 
+# `docker compose exec` skips the entrypoint and runs as root: switch to the app
+# user so backups and the database never end up owned by root.
+if [ "$(id -u)" = "0" ]; then
+  HOME=/home/rails exec setpriv --reuid=rails --regid=rails --init-groups "$0" "$@"
+fi
+
 STORAGE=/rails/storage
 BACKUPS=/rails/backups
 DATABASE="$STORAGE/production.sqlite3"
@@ -32,6 +38,7 @@ fi
 if [ -f "$DATABASE" ]; then
   aside="$DATABASE.before-restore-$(date -u +%Y%m%d-%H%M%S)"
   sqlite3 "$DATABASE" ".backup '$aside'"
+  sqlite3 "$aside" "PRAGMA journal_mode=DELETE;" > /dev/null
   echo "restore: current database kept at $aside"
 fi
 
