@@ -13,7 +13,7 @@ La regla que las une: **montas la torre siguiendo solo la guía que escribes.** 
 
 ## Es tuyo
 
-`Dockerfile`, `config/deploy*`, `.kamal/`, scripts de despliegue y backup, `docs/SELF_HOSTING.md`, `README.md`, `LICENSE` y `site/` (la landing estática). Si necesitas tocar configuración de la app (`config/environments/production.rb`, hosts, SSL), hazlo con cambios mínimos y avísalo en el inbox para Desarrollo.
+`Dockerfile`, `config/deploy*`, `.kamal/`, scripts de despliegue y backup, `docs/SELF_HOSTING.md`, `README.md`, `LICENSE` y el repo de la landing (aparte de este). Si necesitas tocar configuración de la app (`config/environments/production.rb`, hosts, SSL), hazlo con cambios mínimos y avísalo en el inbox para Desarrollo.
 
 ## Cuidado: esto toca cosas reales
 
@@ -27,7 +27,7 @@ La regla que las une: **montas la torre siguiendo solo la guía que escribes.** 
 - Producción usa SQLite (`storage/*.sqlite3`) y `solid_cable` (`storage/production_cable.sqlite3`): todo el estado vive en `storage/`, que debe ser un volumen persistente.
 - El repo es **privado** (`github.com/franwer-ranger/maker_tracker`). No hay `LICENSE` ni `README.md`. El historial está limpio de `master.key` y `.env` (revisado el 2026-10-16).
 - El código es la v1, todavía con Devise. Se despliega igual: el objetivo ahora es tener el camino montado, no esperar a la v2.
-- La landing A está diseñada en Paper (página `Landing`, artboard `[Elegida] Landing · A · Ship happens`) y descrita en `DESIGN.md`.
+- La landing A está diseñada en Paper (página `Landing`, artboard `Landing · Ship happens`) y descrita en `DESIGN.md`.
 
 ## Primeras tareas, en orden
 
@@ -37,7 +37,7 @@ La regla que las une: **montas la torre siguiendo solo la guía que escribes.** 
 4. **Copias de seguridad de SQLite desde el primer día** (Litestream o un volcado periódico con `sqlite3 .backup`), probando que se restauran.
 5. **Escribir `docs/SELF_HOSTING.md`** mientras haces 2–4: requisitos, instalación, actualización, copias de seguridad, restauración y tokens de agentes (cuando existan).
 6. **Preparar el repo para abrirse**: `LICENSE` (MIT), `README.md` en inglés (qué es, captura, instalación en pocas líneas, enlace a la guía) y una última revisión de secretos. Luego pregunta a Fran si se hace público y con qué nombre.
-7. **Construir la landing** en `site/` cuando Producto la valide: HTML y CSS estáticos, sin framework, con los tokens y fuentes de `DESIGN.md` (fuentes alojadas en el propio sitio, iconos Heroicons en SVG en línea). Alojamiento recomendado: GitHub Pages desde el propio repo (requiere repo público). Dominio: lo decide Fran.
+7. **Construir la landing** en un repo propio y público (Astro o similar, salida estática), validada por Producto el 2026-10-16: textos y enlaces en `DESIGN.md` → Landing. Tokens y fuentes de `DESIGN.md`, fuentes alojadas en el propio sitio e iconos Heroicons en SVG en línea. Crear el repo, publicarla y el dominio los decide Fran: prepáralo y pregunta.
 
 ## Cómo sabes que vas bien
 

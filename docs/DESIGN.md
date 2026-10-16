@@ -8,7 +8,7 @@ Archivo de Paper **Maker Tracker** (`01M50CA4S5CN4Z8ERVW36XWDHF`, https://app.pa
 
 | Página | Qué hay |
 |---|---|
-| **Landing** | `[Elegida] Landing · A · Ship happens` es la landing que construimos. `[Aparcada] Landing · B · What's next` no se usa por ahora; no se borra |
+| **Landing** | `Landing · Ship happens`, la landing que construimos (repo aparte) |
 | **Sistema** | `01 · Tipografía`, `02 · Color y forma`, `03 · Componentes` |
 | **App** | Pantallas de la app: `5.0 Proyectos`, `5.1 Tablero · M2`, `5.2 Tablero · Selector de hito`, `5.3 Roadmap`, `5.4 Historia · Lista (#49)`, `5.6 Historia · Editando (#49)` y `5.5 Brief`, con los datos de las seeds (Postgram). Debajo, los artboards `Pendiente · …` (Actividad, Stats, vista del agente, ejecución): son diseños antiguos que solo sirven de referencia hasta rehacerlos con el sistema |
 | v1 · … | Histórico. No se usa |
@@ -101,15 +101,27 @@ Regla: si una pantalla necesita una pieza nueva, primero se añade al sistema en
 
 ## Landing
 
-Elegida la **A · Ship happens**. Pública, en inglés, y su única acción es autoalojarlo:
+**Ship happens**. Pública, en inglés, en su propio repo, y su única acción es autoalojarlo:
 
 1. Nav: marca, enlaces (How it works, For agents, Self-host, Docs), GitHub y "Self-host it".
-2. Hero: "Ship happens." en serif con el subrayado hecho a mano en naranja; subtítulo; CTA "Self-host in two minutes" + "Read the source"; datos en mono (MIT, Rails + SQLite, en tu máquina, MCP + CLI).
-3. Producto: a la izquierda la vista Actividad ("For you"), a la derecha un terminal ("For your agents"): los mismos datos para los dos públicos.
+2. Hero: "Ship happens." en serif con el subrayado hecho a mano en naranja; subtítulo; CTA "Self-host it" + "Read the source"; datos en mono (MIT, Rails + SQLite en un contenedor, en tu máquina, MCP + CLI).
+3. Producto: a la izquierda la vista Actividad ("For you", con la navegación de la app: Activity · Board · Roadmap · Brief), a la derecha un terminal ("For your agents"): los mismos datos para los dos públicos.
 4. Frase grande: "You decide what's worth building. Agents build it…", con revelado palabra a palabra al hacer scroll (de 28 % a 100 % de opacidad).
 5. Tres pasos: Define with AI · Ask what's next · Ship and report.
 6. "Light, on purpose.": lo que no hay (sprints, puntos…) y cuatro principios.
-7. "Are we free?": MIT + bloque de instalación.
-8. Footer: "Made by Fran, Romer and Christian."
+7. "Are we free?": no es una FAQ sino la idea de fondo (ser dueño de tu código, tu infraestructura y tus datos, sin pagar a otros por lo que resuelves tú con tus agentes y tu hardware), dicha en una línea. MIT + bloque de instalación con `docker compose`.
+8. Footer: "Made by Christian, Romer and Fran." y enlaces GitHub · Docs · MIT License.
 
-Pendiente en la landing: la URL del repo es inventada (`github.com/maker-tracker/maker-tracker`); se cambia cuando exista la definitiva. Movimiento: transiciones con curva propia (`cubic-bezier(0.32, 0.72, 0, 1)`), revelados con `IntersectionObserver` y nada de escuchar `scroll` sin throttle.
+Enlaces:
+
+| Texto | Destino |
+|---|---|
+| How it works · For agents · Self-host | Anclas de la propia página |
+| GitHub · Read the source · Get it on GitHub | `https://github.com/franwer-ranger/maker_tracker` |
+| Docs · Read the setup guide | `docs/SELF_HOSTING.md` del repo de la app, en GitHub |
+| MIT License | `LICENSE` del repo de la app |
+| Self-host it (nav y hero) | Ancla al bloque de instalación |
+
+La landing describe el producto completo (CLI, MCP, Actividad) aunque aún no esté todo hecho: Fran decide cuándo se comunica.
+
+Movimiento: transiciones con curva propia (`cubic-bezier(0.32, 0.72, 0, 1)`), revelados con `IntersectionObserver` y nada de escuchar `scroll` sin throttle.

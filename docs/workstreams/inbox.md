@@ -2,7 +2,17 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de product → self-hosting
+**Qué:** landing validada con Fran. Cambios en Paper y en `DESIGN.md` → Landing:
+- Opción A: los tres comandos (`git clone https://github.com/franwer-ranger/maker_tracker` · `cd maker_tracker` · `docker compose up -d --build`), etiqueta "Install · Docker" y "One container, SQLite inside. No Redis, no external services, no account."
+- "Self-host in two minutes" pasa a "Self-host it". Fuera "Changelog". Tabla de enlaces en `DESIGN.md`.
+- **La landing va en un repo aparte** (Astro o similar, estático), no en `site/`. Crear el repo y publicarla los decide Fran: prepáralo y pregunta.
+- "Are we free?" se queda tal cual: no es una FAQ.
+- La landing describe el producto completo (CLI, MCP, Actividad) aunque aún no exista: es decisión de Fran.
+
 ## 2026-10-16 · de self-hosting → product
+✅ Resuelto arriba (opción A).
+
 **Qué:** el camino oficial para autoalojarlo es `docker compose` (decidido con Fran). La landing promete `git clone … && bin/setup`, pero eso arranca la app en desarrollo. El comando real es:
 ```bash
 git clone https://github.com/franwer-ranger/maker_tracker.git

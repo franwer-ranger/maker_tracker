@@ -30,7 +30,7 @@ Cada vertiente solo edita lo suyo. Si necesitas cambiar algo de otra, déjalo co
 |---|---|
 | Producto | `docs/PRODUCT.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/backlog/` (crear y definir historias) y el archivo de Paper |
 | Desarrollo | `app/`, `db/`, `config/` (salvo despliegue), `lib/`, `Gemfile`, `bin/` (salvo scripts de despliegue) y el campo de estado y el cierre de las historias en `docs/backlog/` |
-| Self-host | `Dockerfile`, `config/deploy*`, `.kamal/`, scripts de despliegue y backup, `docs/SELF_HOSTING.md`, `README.md`, `LICENSE`, `site/` (la landing estática) |
+| Self-host | `Dockerfile`, `config/deploy*`, `.kamal/`, scripts de despliegue y backup, `docs/SELF_HOSTING.md`, `README.md`, `LICENSE` y el repo de la landing (aparte) |
 
 Compartido con cuidado: `AGENTS.md` (cambios pequeños, y avisa en el resumen) y `config/` cuando un cambio de despliegue toque la app (lo hace Self-host y lo comenta para que Desarrollo lo sepa).
 
@@ -90,6 +90,6 @@ Cuando una vertiente necesita algo de otra, o una decisión de Fran:
 ## Dependencias conocidas entre vertientes
 
 1. **Login y red.** La v2 quita Devise y el login humano, y es de las primeras historias de M1 (decisión de Fran del 2026-10-16: así los agentes prueban su trabajo sin autenticarse). Por eso Self-host **no despliega nada accesible desde fuera** de la red local o Tailscale.
-2. **Fuentes e iconos.** Desarrollo integra Geist, Instrument Serif y Heroicons. Self-host usa los mismos valores en la landing estática: se comparten los tokens de `docs/DESIGN.md`.
+2. **Fuentes e iconos.** Desarrollo integra Geist, Instrument Serif y Heroicons. Self-host usa los mismos valores en la landing (su propio repo): se comparten los tokens de `docs/DESIGN.md`.
 3. **Repo público.** El repo es **privado** hoy. Hacerlo público lo decide Fran; Self-host lo prepara (licencia, README, revisión de secretos) y pregunta.
 4. **Seeds y datos.** El despliegue de la torre necesita saber si hay datos reales que conservar. Hoy no: solo seeds.

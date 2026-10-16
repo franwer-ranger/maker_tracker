@@ -12,7 +12,7 @@ Supuesto: no hay datos reales en la v1 que conservar, solo seeds. Si los hay, se
 
 Tres vertientes en paralelo, cada una con su agente: **producto y diseño**, **desarrollo** y **self-host y distribución**. Reglas y briefs en [`workstreams/`](workstreams/README.md). Hasta que M2 permita guardar el backlog en la propia app, las historias viven en [`backlog/`](backlog/) y este roadmap las enlaza en orden.
 
-En paralelo a los hitos, la vertiente de self-host despliega en la torre lo que haya en cada momento (se adelanta a M2), prepara el repo para hacerse público (MIT) y construye la landing pública.
+En paralelo a los hitos, la vertiente de self-host despliega en la torre lo que haya en cada momento (se adelanta a M2), prepara el repo para hacerse público (MIT) y construye la landing pública en su propio repo.
 
 ## M1 · Núcleo v2
 
