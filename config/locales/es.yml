@@ -1,0 +1,65 @@
+# Mensajes de la UI en castellano (#026). Solo lo que usa la app: los mensajes
+# de validación y los nombres de los atributos, con su artículo para que se lea
+# «El título no puede estar vacío». La API responde en inglés (en.yml).
+es:
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: "no puede estar vacío"
+      taken: "ya está en uso"
+      invalid: "no es válido"
+      inclusion: "no es válido"
+      required: "tiene que existir"
+      other_project: "es de otro proyecto"
+      not_http_url: "tiene que ser una URL http(s)"
+      not_texts: "tienen que ser textos"
+      not_a_list: "tiene que ser una lista de números de historia"
+      not_numbers: "solo admite números de historia (%{values})"
+      itself: "no puede incluir la propia historia"
+      missing_stories: "incluye historias que no existen en el proyecto (%{numbers})"
+      key_format: "tiene que tener de 2 a 5 letras"
+      name_format: "solo admite minúsculas, números, - y _"
+  activerecord:
+    errors:
+      messages:
+        record_invalid: "No se ha podido guardar: %{errors}"
+      models:
+        project:
+          attributes:
+            key:
+              blank: "no puede estar vacía"
+              taken: "ya está en uso en otro proyecto"
+    attributes:
+      project:
+        name: "El nombre"
+        key: "La clave"
+        slug: "El slug"
+        brief: "El brief"
+      milestone:
+        title: "El título"
+        goal: "El objetivo"
+        project: "El proyecto"
+      story:
+        title: "El título"
+        body: "El cuerpo"
+        state: "El estado"
+        number: "El número"
+        milestone: "El hito"
+        project: "El proyecto"
+        mockup: "El mockup"
+        labels: "Las labels"
+        blocked_by: "«Bloqueada por»"
+        claimed_by: "Quien la tiene"
+      decision:
+        title: "El título"
+        body: "El porqué"
+        story: "La historia"
+        supersedes: "La decisión que sustituye"
+        actor: "El actor"
+      comment:
+        body: "El comentario"
+        story: "La historia"
+        actor: "El actor"
+      actor:
+        name: "El nombre"
+        kind: "El tipo"

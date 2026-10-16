@@ -25,6 +25,11 @@ module MakerTracker
     # in config/environments, which are processed later.
     #
     config.time_zone = "Madrid"
+
+    # La UI va en castellano (config/locales/es.yml); la API fuerza inglés
+    # (Api::BaseController).
+    config.i18n.available_locales = %i[es en]
+    config.i18n.default_locale = :es
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

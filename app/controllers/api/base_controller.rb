@@ -35,6 +35,10 @@ class Api::BaseController < ActionController::API
     render_error reason_required_error
   end
 
+  # La API habla inglés aunque la UI vaya en castellano (docs/CLI.md → Idioma).
+  # Envuelve también los rescue_from, que construyen los mensajes de error.
+  def process_action(...) = I18n.with_locale(:en) { super }
+
   # /api/<lo que sea que no existe>
   def route_not_found
     raise Api::Error.not_found("no such operation: #{request.method} #{request.path}.", hint: "the operations are in GET /api.")

@@ -22,7 +22,7 @@ class Api::StoryDocument
     unknown = front.keys - FIELDS
     raise Api::Error.validation("unknown frontmatter keys: #{unknown.join(', ')}.", hint: "the keys are #{FIELDS.join(', ')}.") if unknown.any?
 
-    body = match[2].split(Api::Markdown::Story::READ_ONLY_MARK, 2).first.strip
+    body = match[2].split(Api::Markdown::Story::READ_ONLY_MARK, 2).first.to_s.strip
     front.transform_values { it.is_a?(String) ? it.strip.presence : it }.merge("body" => body)
   end
 
