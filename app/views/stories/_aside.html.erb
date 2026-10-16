@@ -1,0 +1,105 @@
+<%# Columna lateral de la Historia (5.4): estado, propiedades e historial. Local: story, form (al editar). %>
+<% form = local_assigns[:form] %>
+<aside class="flex w-[392px] shrink-0 flex-col gap-9 pt-9">
+  <section class="flex flex-col gap-3">
+    <%= section_label "Estado" %>
+    <% if form %>
+      <div class="pointer-events-none opacity-60"><%= state_selector "estado-solo-lectura", selected: story.state, compact: true, disabled: true %></div>
+      <p class="text-control leading-5 text-text-muted">El estado se cambia al guardar o cancelar la edición.</p>
+    <% else %>
+      <%= form_with url: project_story_state_path(@project, story), method: :patch, data: { controller: "autosubmit" } do %>
+        <%= state_selector "state", selected: story.state, compact: true, data: { action: "change->autosubmit#submit" } %>
+      <% end %>
+      <p class="text-control leading-5 text-text-muted"><%= state_explanation story, @project.next_story %></p>
+      <% ready_warnings(story).each do |warning| %>
+        <p class="flex items-start gap-2 text-control leading-5 text-state-defining" role="status">
+          <%= icon "exclamation-triangle", size: 16, class: "mt-0.5" %><%= warning %>
+        </p>
+      <% end %>
+    <% end %>
+  </section>
+
+  <section class="flex flex-col gap-1">
+    <%= section_label "Propiedades", class: "pb-2" %>
+
+    <div class="flex min-h-8 items-center gap-3">
+      <span class="w-28 shrink-0 text-control text-text-muted">Hito</span>
+      <% if form %>
+        <span class="text-control text-text"><%= story.milestone ? milestone_label(story.milestone) : "Bandeja de ideas" %></span>
+      <% else %>
+        <%= form_with url: project_story_position_path(@project, story), method: :patch, class: "min-w-0 grow", data: { controller: "autosubmit" } do %>
+          <label class="sr-only" for="story_milestone">Hito</label>
+          <%= select_tag :milestone,
+                options_for_select(@project.milestones.map { [ "#{milestone_label(it)}#{' · cerrado' if it.closed?}", it.id ] } + [ [ "Bandeja de ideas", "ideas" ] ],
+                                   story.milestone&.id || "ideas"),
+                id: "story_milestone", data: { action: "change->autosubmit#submit" },
+                class: "-ml-2 w-full cursor-pointer rounded-md border-0 bg-transparent py-1 pl-2 pr-8 text-control text-text hover:bg-surface focus:outline-none focus:ring-0 focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]" %>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="flex min-h-8 items-center gap-3">
+      <span class="w-28 shrink-0 text-control text-text-muted">Mockup</span>
+      <% if form %>
+        <%= form.url_field :mockup, placeholder: "https://app.paper.design/…", "aria-label": "Mockup",
+              class: "h-control-sm grow rounded-md border border-strong bg-surface-sunken px-2.5 text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+      <% elsif story.mockup.present? %>
+        <%= link_to story.mockup, target: "_blank", rel: "noopener",
+              class: "flex items-center gap-1.5 rounded-sm text-control text-text underline decoration-border-strong underline-offset-[3px] hover:decoration-text #{ComponentsHelper::FOCUS_RING}" do %>
+          <%= mockup_label story.mockup %>
+          <%= icon "arrow-top-right-on-square", size: 14, class: "text-text-muted" %>
+        <% end %>
+      <% else %>
+        <span class="text-control text-text-subtle">—</span>
+      <% end %>
+    </div>
+
+    <div class="flex min-h-8 items-center gap-3">
+      <span class="w-28 shrink-0 text-control text-text-muted">Labels</span>
+      <% if form %>
+        <%= form.text_field :labels, value: story.labels.join(", "), placeholder: "editor, ui", "aria-label": "Labels, separadas por comas",
+              class: "h-control-sm grow rounded-md border border-strong bg-surface-sunken px-2.5 font-mono text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+      <% elsif story.labels.any? %>
+        <span class="flex flex-wrap gap-1.5"><% story.labels.each do |label| %><%= ui_label label %><% end %></span>
+      <% else %>
+        <span class="text-control text-text-subtle">—</span>
+      <% end %>
+    </div>
+
+    <div class="flex min-h-8 items-center gap-3">
+      <span class="w-28 shrink-0 text-control text-text-muted">Bloqueada por</span>
+      <% if form %>
+        <%= form.text_field :blocked_by, value: Array(story.blocked_by).join(", "), placeholder: "47, 45", "aria-label": "Bloqueada por, números de historia",
+              class: "h-control-sm grow rounded-md border border-strong bg-surface-sunken px-2.5 font-mono text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+      <% else %>
+        <%= render "stories/related", stories: @project.stories.where(number: story.blocked_by).order(:number) %>
+      <% end %>
+    </div>
+
+    <div class="flex min-h-8 items-center gap-3">
+      <span class="w-28 shrink-0 text-control text-text-muted">Bloquea</span>
+      <%= render "stories/related", stories: story.blocking.order(:number) %>
+    </div>
+
+    <% if form && story.errors.any? %>
+      <ul class="flex flex-col gap-1 pt-2 text-control text-accent" role="alert">
+        <% story.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+      </ul>
+    <% end %>
+  </section>
+
+  <section class="flex flex-col gap-3">
+    <%= section_label "Historial" %>
+    <ol class="flex flex-col gap-3">
+      <% story.history.includes(:actor).each do |event| %>
+        <li class="flex flex-col gap-0.5 pl-3 <%= event_marker_class event %>">
+          <span class="text-control leading-[18px] text-text"><%= event_sentence event %></span>
+          <% if event.reason.present? %>
+            <span class="text-control leading-[18px] text-text-muted">«<%= event.reason %>»</span>
+          <% end %>
+          <span class="font-mono text-xs text-text-muted"><%= event.actor.name %> · <%= relative_day(event.occurred_at, time_of_day: true) %></span>
+        </li>
+      <% end %>
+    </ol>
+  </section>
+</aside>

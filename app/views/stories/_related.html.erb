@@ -1,0 +1,14 @@
+<%# Lista de historias relacionadas (bloqueos): #47 · punto · estado. %>
+<% if stories.any? %>
+  <span class="flex flex-wrap items-center gap-x-4 gap-y-1">
+    <% stories.each do |related| %>
+      <%= link_to project_story_path(@project, related), class: "flex items-center gap-2 rounded-sm text-control #{ComponentsHelper::FOCUS_RING}" do %>
+        <span class="font-mono text-text">#<%= related.number %></span>
+        <%= state_dot related.state, halo: false %>
+        <span class="text-text-muted"><%= related.human_state %></span>
+      <% end %>
+    <% end %>
+  </span>
+<% else %>
+  <span class="text-control text-text-subtle">—</span>
+<% end %>

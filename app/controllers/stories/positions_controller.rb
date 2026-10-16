@@ -8,9 +8,15 @@ class Stories::PositionsController < ApplicationController
     story = @project.stories.find_by!(number: params[:story_number])
     position, milestone = target
     story.reorder!(position: position, milestone: milestone, actor: Current.actor, reason: params[:reason])
-    head :no_content
+    respond_to do |format|
+      format.json { head :no_content }
+      format.html { redirect_to project_story_path(@project, story) } # selector de hito de la Historia
+    end
   rescue Eventable::ReasonRequired, ActiveRecord::RecordInvalid => e
-    render json: { error: e.message }, status: :unprocessable_entity
+    respond_to do |format|
+      format.json { render json: { error: e.message }, status: :unprocessable_entity }
+      format.html { redirect_to project_story_path(@project, story), alert: e.message }
+    end
   end
 
   private

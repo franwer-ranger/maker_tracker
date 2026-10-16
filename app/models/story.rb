@@ -52,6 +52,9 @@ class Story < ApplicationRecord
 
   def reference = "#{project.key}-#{number}"
 
+  # Las URLs usan el número de la historia en su proyecto: /p/postgram/stories/49.
+  def to_param = number&.to_s
+
   def labels = super || []
   def blocked_by = super || []
 

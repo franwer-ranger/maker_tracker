@@ -1,6 +1,40 @@
 <% content_for :title, "#{@story.reference} · #{@story.title}" %>
-<div class="flex flex-col gap-2 px-16 py-12">
-  <div class="font-mono text-control text-text-muted"><%= @story.reference %></div>
-  <h1 class="text-3xl font-semibold tracking-[-0.02em]"><%= @story.title %></h1>
-  <p class="text-sm text-text-muted">La página de la historia llega con la #010.</p>
+<div class="flex items-start gap-16 px-12 py-10">
+  <article class="flex min-w-0 grow basis-0 flex-col gap-7">
+    <%= render "stories/breadcrumb", story: @story %>
+
+    <div class="flex items-start justify-between gap-6">
+      <h1 class="text-3xl font-semibold leading-[38px] tracking-[-0.01em]"><%= @story.title %></h1>
+      <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_story_path(@project, @story), class: "mt-1" %>
+    </div>
+
+    <% if flash[:alert] %>
+      <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
+    <% end %>
+
+    <div data-controller="markdown">
+      <textarea hidden data-markdown-target="source"><%= @story.body %></textarea>
+      <div class="markdown" data-markdown-target="output"></div>
+    </div>
+
+    <section id="comentarios" class="flex flex-col gap-3.5 border-t border-border pt-6">
+      <%= section_label "Comentarios · #{@story.comments.size}" %>
+      <% @story.comments.includes(:actor).each do |comment| %>
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center gap-2">
+            <%= actor_dot comment.actor %>
+            <span class="font-mono text-control text-text"><%= comment.actor.name %></span>
+            <time class="font-mono text-xs text-text-muted" datetime="<%= comment.created_at.iso8601 %>"><%= relative_day(comment.created_at, time_of_day: true) %></time>
+          </div>
+          <div class="pl-3.5 text-sm leading-[22px] text-text-soft"><%= simple_format comment.body, {}, wrapper_tag: "p" %></div>
+        </div>
+      <% end %>
+      <%= form_with model: Comment.new, url: project_story_comments_path(@project, @story) do |form| %>
+        <%= form.text_field :body, required: true, placeholder: "Escribe un comentario…", "aria-label": "Escribe un comentario",
+              class: "h-control w-full rounded-md border border-strong bg-surface-sunken px-3 text-sm leading-[18px] text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+      <% end %>
+    </section>
+  </article>
+
+  <%= render "stories/aside", story: @story %>
 </div>

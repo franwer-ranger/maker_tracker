@@ -63,3 +63,61 @@
     font-synthesis: none;
   }
 }
+
+/* Markdown pintado (cuerpo de una historia, brief, previsualización). */
+@layer components {
+  .markdown {
+    @apply flex flex-col gap-4 text-base text-text-soft;
+  }
+  .markdown h1 {
+    @apply text-2xl font-semibold text-text;
+  }
+  .markdown h2 {
+    @apply mt-3 font-mono text-xs uppercase tracking-label text-text-muted first:mt-0;
+  }
+  .markdown h3 {
+    @apply mt-2 text-lg font-medium text-text;
+  }
+  .markdown p,
+  .markdown li {
+    @apply leading-6;
+  }
+  .markdown ul,
+  .markdown ol {
+    @apply flex flex-col gap-2 pl-5;
+  }
+  .markdown ul {
+    @apply list-disc marker:text-text-subtle;
+  }
+  .markdown ol {
+    @apply list-decimal marker:font-mono marker:text-xs marker:text-text-muted;
+  }
+  .markdown a {
+    @apply text-text underline decoration-border-strong underline-offset-[3px] hover:decoration-text;
+  }
+  .markdown code {
+    @apply rounded-sm bg-surface px-1 font-mono text-control text-text;
+  }
+  .markdown pre {
+    @apply overflow-x-auto rounded-lg border border-border bg-surface-sunken p-4;
+  }
+  .markdown pre code {
+    @apply bg-transparent p-0;
+  }
+  .markdown blockquote {
+    @apply border-l-2 border-strong pl-4 text-text-muted;
+  }
+  .markdown strong {
+    @apply font-semibold text-text;
+  }
+  /* Casillas de criterios (- [ ] / - [x]) */
+  .markdown li:has(> input[type="checkbox"]) {
+    @apply flex list-none items-start gap-3 text-text;
+  }
+  .markdown ul:has(> li > input[type="checkbox"]) {
+    @apply pl-0;
+  }
+  .markdown input[type="checkbox"] {
+    @apply mt-1 size-4 shrink-0 rounded-sm border border-strong bg-transparent text-state-done focus:ring-0;
+  }
+}

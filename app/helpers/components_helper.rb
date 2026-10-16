@@ -81,17 +81,20 @@ module ComponentsHelper
 
   # Control segmentado con los cinco estados. Son radios, así que funciona en
   # cualquier formulario: state_selector "story[state]", selected: story.state
-  def state_selector(name, selected: nil)
+  # `compact: true` aprieta el relleno para columnas estrechas (5.4). Los demás
+  # atributos van a cada radio (p. ej. data: { action: "change->…" }).
+  def state_selector(name, selected: nil, compact: false, **radio_attrs)
     tag.div role: "radiogroup", class: "inline-flex gap-0.5 rounded-[9px] border border-border bg-surface-sunken p-[3px]" do
       safe_join(STATES.map do |value, label|
-        tag.label class: "relative flex h-[30px] cursor-pointer items-center gap-2 rounded-md px-3 text-control leading-4 text-text-muted " \
+        tag.label class: "relative flex h-[30px] cursor-pointer items-center rounded-md text-control leading-4 text-text-muted " \
+                         "#{compact ? 'gap-[7px] px-[9px]' : 'gap-2 px-3'} " \
                          "transition-colors duration-150 ease-brand hover:text-text " \
                          "has-[:checked]:bg-surface has-[:checked]:font-medium has-[:checked]:text-text " \
                          "has-[:checked]:shadow-[inset_0_0_0_1px_var(--color-border-strong)] " \
                          "has-[:focus-visible]:shadow-[0_0_0_2px_var(--color-text)]" do
           safe_join([
-            radio_button_tag(name, value, selected.to_s == value.to_s, class: "sr-only"),
-            state_dot(value),
+            radio_button_tag(name, value, selected.to_s == value.to_s, class: "sr-only", **radio_attrs),
+            state_dot(value, halo: false),
             label
           ])
         end

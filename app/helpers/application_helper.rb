@@ -1,6 +1,9 @@
 module ApplicationHelper
   MONTHS = %w[ene feb mar abr may jun jul ago sep oct nov dic].freeze
 
+  # "a, b y c" (to_sentence usa el inglés por defecto).
+  def y_sentence(items) = items.to_sentence(words_connector: ", ", two_words_connector: " y ", last_word_connector: " y ")
+
   # "12 sep"
   def short_date(time) = "#{time.day} #{MONTHS[time.month - 1]}"
 

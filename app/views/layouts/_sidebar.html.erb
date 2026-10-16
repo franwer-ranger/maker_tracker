@@ -19,7 +19,7 @@
 
     <nav class="flex flex-col gap-0.5" aria-label="Secciones del proyecto">
       <%= nav_item "Tablero", project_path(project) %>
-      <%= nav_item "Roadmap", project_roadmap_path(project) %>
+      <%= nav_item "Roadmap", project_roadmap_path(project), active: current_page?(project_roadmap_path(project)) || controller_name == "stories" %>
       <%= nav_item "Brief", project_brief_path(project) %>
     </nav>
   </div>

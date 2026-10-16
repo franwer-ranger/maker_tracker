@@ -24,7 +24,8 @@ Rails.application.routes.draw do
       end
     end
     resource :brief, only: :show
-    resources :stories, param: :number, only: %i[show create] do
+    resources :stories, param: :number, only: %i[show create edit update] do
+      resources :comments, only: :create
       scope module: :stories do
         resource :state, only: :update
         resource :position, only: :update
