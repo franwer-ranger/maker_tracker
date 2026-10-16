@@ -1,0 +1,44 @@
+#!/bin/bash -e
+
+# Restores a backup made by bin/backup. Runs inside the container, with the app
+# stopped (see docs/SELF_HOSTING.md):
+#
+#   bin/restore          lists the backups
+#   bin/restore <name>   restores that backup
+
+STORAGE=/rails/storage
+BACKUPS=/rails/backups
+DATABASE="$STORAGE/production.sqlite3"
+
+if [ -z "$1" ]; then
+  echo "Backups (newest last):"
+  ls -1 "$BACKUPS" | grep -E '^[0-9]' || echo "  none yet"
+  exit 0
+fi
+
+source="$BACKUPS/$1/production.sqlite3"
+if [ ! -f "$source" ]; then
+  echo "restore: $source not found. Run bin/restore to list the backups." >&2
+  exit 1
+fi
+
+check="$(sqlite3 "$source" "PRAGMA integrity_check;")"
+if [ "$check" != "ok" ]; then
+  echo "restore: backup $1 is damaged: $check" >&2
+  exit 1
+fi
+
+# Keep the current database aside instead of overwriting it.
+if [ -f "$DATABASE" ]; then
+  aside="$DATABASE.before-restore-$(date -u +%Y%m%d-%H%M%S)"
+  sqlite3 "$DATABASE" ".backup '$aside'"
+  echo "restore: current database kept at $aside"
+fi
+
+rm -f "$DATABASE-wal" "$DATABASE-shm"
+cp "$source" "$DATABASE"
+if [ -f "$BACKUPS/$1/secret_key_base" ]; then
+  cp -p "$BACKUPS/$1/secret_key_base" "$STORAGE/secret_key_base"
+fi
+
+echo "restore: $1 restored. Start the app again."

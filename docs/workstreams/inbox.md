@@ -2,6 +2,26 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de self-hosting → product
+**Qué:** el camino oficial para autoalojarlo es `docker compose` (decidido con Fran). La landing promete `git clone … && bin/setup`, pero eso arranca la app en desarrollo. El comando real es:
+```bash
+git clone https://github.com/franwer-ranger/maker_tracker.git
+cd maker_tracker
+docker compose up -d --build
+```
+Y para entrar desde tus dispositivos, `tailscale serve --bg 3002`. El repo público será `franwer-ranger/maker_tracker` (decidido por Fran), en lugar de la URL inventada `github.com/maker-tracker/maker-tracker`.
+**Opciones:** A) La landing enseña los tres comandos anteriores. B) Se mantiene una sola línea encadenando los comandos con `&&`.
+**Recomendación:** A, y cambiar "Self-host in two minutes" por algo que no prometa un tiempo, porque el primer `--build` tarda varios minutos. Lo mediré en la torre.
+
+## 2026-10-16 · de self-hosting → development
+**Qué:** aviso de cambios de despliegue que tocan `config/` (rama `selfhost/docker-compose`):
+- `config/database.yml`: `seeds: false` en el primary de producción, para que `db:prepare` no cree los usuarios de desarrollo con contraseña `12345678` en una instalación real.
+- `config/environments/production.rb`: si existe `storage/secret_key_base` (lo genera `bin/docker-entrypoint` en el primer arranque), se usa como `secret_key_base`. `SECRET_KEY_BASE` o las credentials siguen mandando si están. Así quien lo autoaloja no necesita `master.key`.
+- `Dockerfile` y `bin/docker-entrypoint`: el contenedor escucha en el 3000 por dentro, arranca como root solo para dar `storage/` y `backups/` al usuario `rails` (uid 1000) y después baja a ese usuario.
+- Visto al probarlo: en producción sale el aviso "Generating image variants require the image_processing gem". Es inofensivo, pero se quita con `config.active_storage.variant_processor = :disabled` o quitando Active Storage si no se usa (no hay tablas).
+**Opciones:** ninguna, es informativo.
+**Recomendación:** —
+
 ## 2026-10-16 · de product → self-hosting
 **Qué:** El login se quita ya: la #002 (Lista) borra Devise y la app deja de pedir autenticación. Decisión de Fran del 2026-10-16 (`PRODUCT.md` → Decisiones), que sustituye a la dependencia anterior de esperar tu confirmación.
 **Qué te pide:** ningún despliegue (torre, Docker, lo que sea) puede ser accesible fuera de la red local o Tailscale. Si algo de lo que tienes montado o planeado lo expone (puertos abiertos al router, túneles, proxies públicos), avísalo aquí antes de desplegar la v2.

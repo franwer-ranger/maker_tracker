@@ -1,5 +1,19 @@
 #!/bin/bash -e
 
+# Started as root (the default): give the data volumes to the rails user, which
+# Docker may have created as root, then run everything else as that user.
+if [ "$(id -u)" = "0" ]; then
+  chown rails:rails /rails/storage /rails/backups
+  HOME=/home/rails exec setpriv --reuid=rails --regid=rails --init-groups "$0" "$@"
+fi
+
+# No secret given: generate one on first boot and keep it with the data, where
+# config/environments/production.rb reads it.
+secret_file=/rails/storage/secret_key_base
+if [ -z "${SECRET_KEY_BASE}" ] && [ -z "${RAILS_MASTER_KEY}" ] && [ ! -s "$secret_file" ]; then
+  (umask 077 && ruby -rsecurerandom -e 'print SecureRandom.hex(64)' > "$secret_file")
+fi
+
 # If running the rails server then create or migrate existing database
 if [ "${1}" == "./bin/rails" ] && [ "${2}" == "server" ]; then
   ./bin/rails db:prepare

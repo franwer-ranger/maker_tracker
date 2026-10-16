@@ -15,6 +15,7 @@ production:
   primary:
     <<: *default
     database: storage/production.sqlite3
+    seeds: false # db:prepare must not create the development users on a real install
   cable:
     <<: *default
     database: storage/production_cable.sqlite3

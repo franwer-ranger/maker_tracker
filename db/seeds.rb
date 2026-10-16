@@ -3,7 +3,7 @@
 puts "Creating seeds..."
 
 [
-  { email: "romerramos@gmail.com", name: "Romer", last_name: "Ramos", initials: "RR", username: "romerramos" },
+  { email: "romer@example.com", name: "Romer", last_name: "Ramos", initials: "RR", username: "romerramos" },
   { email: "fran@gmail.com", name: "Fran", last_name: "Barahona", initials: "FB", username: "fran" },
   { email: "chris@gmail.com", name: "Christian", last_name: "Benjumea", initials: "CB", username: "chris" }
 ].each do |attributes|

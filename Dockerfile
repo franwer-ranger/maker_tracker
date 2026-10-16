@@ -9,13 +9,14 @@ WORKDIR /rails
 
 # Set production environment
 ENV RAILS_ENV="production" \
+    PORT="3000" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development"
 
 
 # Throw-away build stage to reduce size of final image
-FROM base as build
+FROM base AS build
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
@@ -49,10 +50,11 @@ RUN apt-get update -qq && \
 COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY --from=build /rails /rails
 
-# Run and own only the runtime files as a non-root user for security
-RUN useradd rails --create-home --shell /bin/bash && \
-    chown -R rails:rails db log storage tmp
-USER rails:rails
+# Own only the runtime files as a non-root user for security. The entrypoint
+# starts as root just to fix the data volume's owner, then drops to this user.
+RUN useradd rails --uid 1000 --create-home --shell /bin/bash && \
+    mkdir -p backups && \
+    chown -R rails:rails db log storage tmp backups
 
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]

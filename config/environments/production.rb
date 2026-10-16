@@ -3,6 +3,11 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Self-hosted installs keep the secret that bin/docker-entrypoint generates next
+  # to their data. SECRET_KEY_BASE or the credentials still win when present.
+  secret_file = Rails.root.join("storage/secret_key_base")
+  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") { secret_file.read } if secret_file.exist?
+
   # Code is not reloaded between requests.
   config.enable_reloading = false
 
