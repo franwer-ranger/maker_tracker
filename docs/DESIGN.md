@@ -35,7 +35,7 @@ Para llevar un diseño a código, leer los valores exactos con el MCP de Paper (
 
 Todas son OFL (Google Fonts / Vercel). **Apple Garamond Light** fue la idea original, pero no tiene licencia web: Instrument Serif es la más parecida (estrecha, misma altura de x). SF Pro tampoco se usa en web.
 
-Escala: 12 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz) y 48 · 72 · 112 (display; el hero de la landing usa 184).
+Escala: 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 13 es `--text-control`, para controles pequeños, selector de estado, actor, metadatos y ayudas de campo) y 48 · 72 · 112 (display; el hero de la landing usa 184).
 
 ## Color
 
@@ -50,6 +50,7 @@ Escala: 12 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz) y 48 · 72 · 112 (dis
 --color-text-muted: #9E9C9C;      /* secundario */
 --color-text-subtle: #6E6E6E;     /* solo metadatos no esenciales, nunca texto de lectura */
 --color-accent: #FF3F01;          /* piloto: acción y atención */
+--color-accent-hover: #FF5A24;    /* solo hover del botón primario */
 --color-avatar: #3D89F6;          /* actor humano */
 --color-state-idea: #6B6B6B;      /* punto hueco */
 --color-state-defining: #E8B04A;
@@ -67,7 +68,8 @@ Escala: 12 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz) y 48 · 72 · 112 (dis
 - Espaciado base 4: 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96 · 128.
 - Radios: 4 · **6** (botones, inputs) · 8 · **12** (tarjetas, ventanas) · full. Anidados: radio interior = exterior − hueco.
 - Alturas de control: 32 (pequeño) · 36 (nav) · 40 (normal) · 44 (CTA de landing).
-- Sin degradados de fondo ni sombras decorativas. Foco visible siempre (anillo de 2px del color del control).
+- Sin degradados de fondo ni sombras decorativas (la única sombra es la del menú, funcional). Foco visible siempre: anillo de 2px del fondo + 2px de color. Naranja en el botón primario, blanco en el resto de controles.
+- Hover: primario a `accent-hover`; secundario a fondo `surface`; fantasma y nav item, texto a `text`.
 
 ## Iconos
 
@@ -86,7 +88,7 @@ En `Sistema → 03 · Componentes`:
 - **Terminal**: ventana `surface-sunken` con barra de título y contenido en mono.
 - **Línea de metadatos**: mono 12px, separada por ` · `.
 
-Piezas de las pantallas de M1 (en `App`; pendientes de llevar también a `03 · Componentes`):
+Piezas de las pantallas de la app (en `App` y, como referencia, en `03 · Componentes` → "Fila · Historias"):
 
 - **Barra lateral**: proyecto (clave en mono sobre `surface`), navegación Tablero · Roadmap · Brief y sección Agentes abajo.
 - **Tarjeta de historia** (Tablero): `#n` en mono, título, labels y metadato arriba a la derecha (actor, "Siguiente", bloqueo, "faltan criterios", mockup). Las Hechas, sin fondo y con el título atenuado.

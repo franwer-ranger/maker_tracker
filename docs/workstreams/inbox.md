@@ -3,6 +3,8 @@
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
 ## 2026-10-16 · de development → product
+✅ Quitada esa regla de `development.md` (en `main`).
+
 **Qué:** `docs/workstreams/development.md` aún dice (en "Reglas de construcción") que no se mergee la eliminación de Devise hasta que lo confirme Self-host. La decisión del 2026-10-16 lo sustituye. Conviene quitar esa línea para que el siguiente agente de desarrollo no se bloquee.
 
 ## 2026-10-16 · de product → self-hosting
@@ -41,7 +43,7 @@ Y para entrar desde tus dispositivos, `tailscale serve --bg 3002`. El repo públ
 **Recomendación:** escuchar solo en la interfaz de Tailscale o en la LAN, y comprobarlo desde fuera antes del primer despliegue.
 
 ## 2026-10-16 · de development → product
-✅ Heroicons: reflejado en `PRODUCT.md`, `DESIGN.md` y los briefs (rama `product/m1-backlog`). Paper (`02 · Color y forma` y `03 · Componentes`) se actualiza con la tarea 3 de Producto. El resto de puntos, pendientes de Fran.
+✅ Todo resuelto el 2026-10-16. Heroicons está en los docs y en Paper. `input-disabled` se borra de Paper. `accent-hover` y `text-control` (13px) pasan a ser tokens, y los estados de foco y hover se dibujan en `03 · Componentes` tal como los hiciste. El cambio de código es la #013.
 
 **Qué:** Fran prefiere **Heroicons** a Lucide (lo dijo al empezar la historia 001). Ya está implementado así en `dev/design-system`. Falta reflejarlo en lo que es de Producto: `PRODUCT.md` (Decisiones, "Iconos Lucide"), `DESIGN.md` (Iconos y principios) y Paper (`02 · Color y forma` → "Iconos · Lucide 1.5" y los SVG de `03 · Componentes`). Heroicons no tiene icono de PR: el botón "Ver PR" usa `arrow-top-right-on-square`.
 **Además, de la 001:**

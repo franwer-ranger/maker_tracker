@@ -45,7 +45,7 @@ Como agente que construye una pantalla de M1, quiero que las seeds coincidan con
 - [ ] Decisiones como en `5.5 Brief`:
   - D-14 la registra `claude`.
   - Se añade **D-9** "Imágenes en S3 desde el principio", registrada por `fran`.
-  - D-12 la sustituye (`supersedes`). Si la columna no existe, déjalo en el Cierre.
+  - D-12 la sustituye (`supersedes`).
 - [ ] Segundo proyecto **Maker Tracker** (`key: MT`), con un hito abierto "M1 · Núcleo v2", sin historias en curso y con su `project.created` de hace 2 días. Es la segunda fila de `5.0 Proyectos`.
 - [ ] `Project#next_story` de Postgram sigue devolviendo #49 (#47 está hecha, así que no la bloquea).
 - [ ] Siguen siendo idempotentes. `bin/ci` en verde.

@@ -31,7 +31,7 @@ Cómo trabaja Fran:
 2. **Desbloquear las preguntas abiertas que afectan a M1.** Sobre todo la forma del "contexto de proyecto" (un `brief` o varios documentos), porque cambia el modelo. Plantéaselas a Fran con opciones y una recomendación, y registra la decisión en `PRODUCT.md`.
 3. ~~Pasar al sistema las pantallas de M1 en Paper~~ ✅ 2026-10-16: página `App`. Queda llevar sus piezas nuevas a `03 · Componentes`.
 4. ~~Validar la landing~~ ✅ 2026-10-16: textos, comandos y enlaces en `DESIGN.md` → Landing.
-5. *(Cuando haya hueco)* convertir `DESIGN.md` en una skill de diseño del proyecto (`.claude/skills/maker-tracker-design/`) para que cualquier agente la cargue al tocar UI. Como inspiración para la parte de estructura y copy de la landing sirve la skill `landing-page-design` de github.com/elayadesign/ai-design-skills (solo su Parte A; su sistema visual choca con el nuestro).
+5. ~~Skill de diseño~~ ✅ 2026-10-16: `.claude/skills/maker-tracker-design/`. Antes: convertir `DESIGN.md` en una skill de diseño del proyecto para que cualquier agente la cargue al tocar UI. Como inspiración para la parte de estructura y copy de la landing sirve la skill `landing-page-design` de github.com/elayadesign/ai-design-skills (solo su Parte A; su sistema visual choca con el nuestro).
 
 ## Cómo sabes que vas bien
 
