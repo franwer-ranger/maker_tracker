@@ -41,7 +41,7 @@ La regla que las une: **montas la torre siguiendo solo la guía que escribes.** 
 
 ## En M2
 
-- [#021 La v2 en la torre, con API para los agentes](../backlog/021-tower-v2.md) es tuya: la torre con la v2 y `mt` del Mac conectado a ella. Puede ir en cuanto exista la API (#015), aunque M1 no esté terminado.
+- MT-21 La v2 en la torre, con API para los agentes, fue tuya (hecha): la torre con la v2 y `mt` del Mac conectado a ella. Puede ir en cuanto exista la API (#015), aunque M1 no esté terminado.
 
 ## Cómo sabes que vas bien
 

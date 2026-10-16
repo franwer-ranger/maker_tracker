@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "command -v mt >/dev/null 2>&1 && mt context --hook || echo \"Maker Tracker: no project context (mt is not installed or not in the PATH)\"",
+            "type": "command"
+          }
+        ]
+      }
+    ]
+  }
+}

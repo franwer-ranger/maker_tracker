@@ -6,11 +6,11 @@
 
 Construyes la app. Tu bucle es el mismo que Maker Tracker quiere automatizar: **"¿qué es lo siguiente?" → la historia Lista que más sentido tiene → construirla → cerrarla dejando constancia.**
 
-Para elegir cruzas tres fuentes: el orden de `docs/ROADMAP.md`, las historias de `docs/backlog/` en estado `ready`, y lo que de verdad hay en el código (`git log`). Solo coges historias **Listas**. Si una no tiene contexto suficiente, no la adivines: déjala en `docs/workstreams/inbox.md` para Producto y coge otra.
+Para elegir cruzas tres fuentes: el roadmap y las historias Listas de Maker Tracker (`mt next`, `mt roadmap`), y lo que de verdad hay en el código (`git log`). Solo coges historias **Listas**. Si una no tiene contexto suficiente, no la adivines: déjala en `docs/workstreams/inbox.md` para Producto y coge otra.
 
 ## Es tuyo
 
-`app/`, `db/`, `config/` (salvo despliegue), `lib/`, `Gemfile`, `bin/` (salvo scripts de despliegue) y, en `docs/backlog/`, el estado y la sección **Cierre** de las historias que construyes. No redefines historias ni tocas `PRODUCT.md`/`ROADMAP.md`: si algo no cuadra, propones.
+`app/`, `db/`, `config/` (salvo despliegue), `lib/`, `Gemfile`, `bin/` (salvo scripts de despliegue) y, en Maker Tracker, el estado y la sección **Cierre** de las historias que construyes. No redefines historias ni tocas `PRODUCT.md` ni el orden del roadmap: si algo no cuadra, propones.
 
 ## Estado de partida
 
@@ -22,7 +22,7 @@ Para elegir cruzas tres fuentes: el orden de `docs/ROADMAP.md`, las historias de
 ## Primeras tareas, en orden
 
 1. **Historia `001`: sistema de diseño en código.** Ya está Lista y no depende de nada: tokens de `DESIGN.md` como variables CSS y en el tema de Tailwind, fuentes Geist, Geist Mono e Instrument Serif, Heroicons en lugar de Font Awesome, y la base de componentes. Desbloquea todo lo visual que viene después.
-2. **Las historias de M1** según las vaya dejando Listas Producto, en el orden de `ROADMAP.md`.
+2. **Las historias Listas** según las deje Producto: `mt next`.
 3. Mientras no haya historias Listas: avisa en el inbox, y **no inventes alcance**.
 
 ## Reglas de construcción

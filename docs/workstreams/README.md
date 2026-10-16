@@ -8,12 +8,12 @@
 | **Desarrollo de la app** | [`development.md`](development.md) | El agente, según el backlog | Alta: coge historias Listas y las construye |
 | **Self-host y distribución** | [`self-hosting.md`](self-hosting.md) | El agente, con Fran supervisando | Media: toca la torre de Fran y cosas públicas, así que confirma antes de cada paso irreversible |
 
-Contexto que todos deben haber leído: [`../PRODUCT.md`](../PRODUCT.md) (manda sobre todo lo demás), [`../ROADMAP.md`](../ROADMAP.md), [`../ARCHITECTURE.md`](../ARCHITECTURE.md) y [`../DESIGN.md`](../DESIGN.md).
+Contexto que todos deben haber leído: [`../PRODUCT.md`](../PRODUCT.md) (manda sobre todo lo demás), `mt context` y `mt roadmap` (el roadmap vive en Maker Tracker, proyecto `MT`), [`../ARCHITECTURE.md`](../ARCHITECTURE.md) y [`../DESIGN.md`](../DESIGN.md).
 
 ## Cómo se reparte
 
 ```
-  Producto ──(historias Listas en docs/backlog/)──► Desarrollo ──(app desplegable)──► Self-host
+  Producto ──(historias Listas en MT)──► Desarrollo ──(app desplegable)──► Self-host
      ▲                                                  │                                │
      └──────────── preguntas, propuestas, decisiones ───┴────────────────────────────────┘
 ```
@@ -28,48 +28,23 @@ Cada vertiente solo edita lo suyo. Si necesitas cambiar algo de otra, déjalo co
 
 | Vertiente | Es suyo |
 |---|---|
-| Producto | `docs/PRODUCT.md`, `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/backlog/` (crear y definir historias) y el archivo de Paper |
-| Desarrollo | `app/`, `db/`, `config/` (salvo despliegue), `lib/`, `Gemfile`, `bin/` (salvo scripts de despliegue) y el campo de estado y el cierre de las historias en `docs/backlog/` |
+| Producto | `docs/PRODUCT.md`, `docs/ARCHITECTURE.md`, `docs/DESIGN.md`, `docs/CLI.md`, el roadmap, las historias y las decisiones en Maker Tracker (crearlas, definirlas, ordenarlas y pasarlas a Lista) y el archivo de Paper |
+| Desarrollo | `app/`, `db/`, `config/` (salvo despliegue), `lib/`, `Gemfile`, `bin/` (salvo scripts de despliegue) y, en Maker Tracker, el estado y el Cierre de las historias que construye |
 | Self-host | `Dockerfile`, `config/deploy*`, `.kamal/`, scripts de despliegue y backup, `docs/SELF_HOSTING.md`, `README.md`, `LICENSE` y el repo de la landing (aparte) |
 
 Compartido con cuidado: `AGENTS.md` (cambios pequeños, y avisa en el resumen) y `config/` cuando un cambio de despliegue toque la app (lo hace Self-host y lo comenta para que Desarrollo lo sepa).
 
-## Backlog en el repo (hasta que exista la v2)
+## Backlog en Maker Tracker
 
-Maker Tracker todavía no puede guardar su propio backlog (eso llega en M2). Mientras tanto, **cada historia es un fichero en `docs/backlog/`**, con la misma forma que el modelo `Story`, para que migrarlas luego sea trivial:
+Desde el 2026-10-16 (MT-22), Maker Tracker se gestiona en Maker Tracker: proyecto `MT` en la torre. Este repo tiene `.mt`, así que `mt` sabe el proyecto. Formato de cada comando en [`../CLI.md`](../CLI.md); la skill `maker-tracker` explica el ciclo.
 
-```markdown
----
-number: 7
-title: Tokens del sistema de diseño en Tailwind
-milestone: M1
-state: ready            # idea | defining | ready | in_progress | done
-claimed_by:             # development | self-hosting (al empezar)
-mockup:                 # url de Paper; obligatoria para ready si tiene UI
-labels: []              # lista libre: ui, modelo, agentes…
-blocked_by: []          # números de historia que tienen que estar done antes
----
-
-## Contexto
-<!-- por qué, y qué existe ya -->
-## Historia
-Como …, quiero …, para …
-## Criterios de aceptación
-- [ ] …
-## Fuera de alcance
-## Notas para quien lo construya
-## Preguntas abiertas
-<!-- si hay alguna, la historia no puede estar ready -->
-## Cierre
-<!-- lo rellena quien la construye: commits, decisiones tomadas, lo que quedó fuera -->
-```
-
-- Nombre del fichero: `NNN-slug.md` (`007-design-tokens.md`). Numeración global y correlativa.
-- El orden dentro de un hito lo da `docs/ROADMAP.md`, que enlaza las historias.
-- Una historia con `blocked_by` no se empieza hasta que esas historias estén `done`.
-- Solo Producto crea historias y las pasa a `ready`. Desarrollo y Self-host pueden crear historias en `idea` para proponer algo.
-- Quien construye pasa a `in_progress` al empezar y a `done` al terminar, y rellena **Cierre**.
-- Las decisiones van a `docs/PRODUCT.md` (sección Decisiones) si son de producto, o al **Cierre** de la historia si son de implementación.
+- **Antes de empezar**: `mt context` (lo carga el hook al abrir sesión) y `mt roadmap`.
+- **Coger trabajo**: `mt next` → `mt start MT-n`. Solo se cogen historias Listas y sin bloquear.
+- **Terminar**: rellena la sección `## Cierre` del cuerpo (`mt show MT-n > f.md`, editar, `mt edit MT-n --file f.md`): commits, decisiones de implementación y lo que quedó fuera. Después, `mt done MT-n --commit <sha>`.
+- **Dudas**: `mt comment MT-n "…"` y, si bloquean, `mt release MT-n --reason "…"` y otra historia. Lo que necesita a otra vertiente o a Fran sigue yendo también al inbox.
+- **Decisiones de producto**: `mt decide "…" --why "…"` (antes iban a `PRODUCT.md`).
+- Solo Producto crea historias Listas y ordena el roadmap. Desarrollo y Self-host pueden crear historias como Idea (`mt create "…"`) para proponer algo.
+- Plantilla del cuerpo: Contexto · Historia · Criterios de aceptación · Fuera de alcance · Notas para quien lo construya · Preguntas abiertas · Cierre. Con preguntas abiertas, no está Lista.
 
 ## Propuestas y preguntas
 
@@ -91,5 +66,5 @@ Cuando una vertiente necesita algo de otra, o una decisión de Fran:
 
 1. **Login y red.** La v2 quita Devise y el login humano, y es de las primeras historias de M1 (decisión de Fran del 2026-10-16: así los agentes prueban su trabajo sin autenticarse). Por eso Self-host **no despliega nada accesible desde fuera** de la red local o Tailscale.
 2. **Fuentes e iconos.** Desarrollo integra Geist, Instrument Serif y Heroicons. Self-host usa los mismos valores en la landing (su propio repo): se comparten los tokens de `docs/DESIGN.md`.
-3. **Repo público.** El repo es **privado** hoy. Hacerlo público lo decide Fran; Self-host lo prepara (licencia, README, revisión de secretos) y pregunta.
+3. **Repo público.** `franwer-ranger/maker_tracker` es público desde el 2026-10-16. Lo que se publica fuera (landing, binarios, dominio) lo sigue decidiendo Fran.
 4. **Seeds y datos.** El despliegue de la torre necesita saber si hay datos reales que conservar. Hoy no: solo seeds.
