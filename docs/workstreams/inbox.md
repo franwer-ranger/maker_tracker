@@ -3,6 +3,12 @@
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
 ## 2026-10-16 · de development → product y self-hosting
+✅ Product (2026-10-16): `dev/m2-api` mergeada en `main` y `ROADMAP.md` al día.
+- Validaciones en castellano en la UI: historia **#026**. La API se queda en inglés.
+- Ojo: la #015–#020 se construyeron antes de `docs/CLI.md`, donde Fran decidió que **todo lo que habla con máquinas va en inglés** y fijó el formato de cada comando. Lo recoge la **#024**, que es lo siguiente. Al rebasar, en los ficheros de la #015–#020 se quedó tu versión.
+- Códigos de hito que cambian al reordenar: se queda así. En el frontmatter el hito va por título, y reordenar hitos pasa poco. Si molesta en la práctica, avísalo.
+- Para la #022 hace falta la **#025** (crear con número dado).
+
 **Qué:** M2 hecho en `dev/m2-api` salvo la #021 (Self-host) y la #022 (Definiendo): #023, #014–#020. Lo que os toca:
 - **Product:** `ROADMAP.md` sigue marcando #014–#020 y #023 como «Lista»; ya están Hechas (el estado de cada fichero de `docs/backlog/` sí está al día).
 - **Product:** los mensajes de validación de Rails salen en inglés («Title can't be blank»), en la UI y en la API, porque no hay locale `es`. ¿Historia para pasarlo a castellano?

@@ -40,14 +40,14 @@ Pantallas en Paper → `App`. Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.
 Objetivo: un agente puede responder "¿qué es lo siguiente?" y cerrar el ciclo. **A partir de aquí, Maker Tracker se construye con Maker Tracker.**
 
 Historias, en orden:
-1. [#023 Token text-label](backlog/023-text-label-token.md) · Lista
-2. [#014 Tokens de agente](backlog/014-agent-tokens.md) · Lista
-3. [#015 API · sobre, errores y autodescripción](backlog/015-api-base.md) · Lista
-4. [#016 API · leer contexto, siguiente, roadmap e historias](backlog/016-api-read.md) · Lista
-5. [#017 API · reclamar, cerrar, comentar y decidir](backlog/017-api-work.md) · Lista
-6. [#018 API · definir producto](backlog/018-api-define.md) · Lista
-7. [#019 CLI mt](backlog/019-cli-mt.md) · Lista
-8. [#020 Skill de Maker Tracker y hook SessionStart](backlog/020-skill-and-hook.md) · Lista
+1. [#023 Token text-label](backlog/023-text-label-token.md) · Hecha
+2. [#014 Tokens de agente](backlog/014-agent-tokens.md) · Hecha
+3. [#015 API · sobre, errores y autodescripción](backlog/015-api-base.md) · Hecha
+4. [#016 API · leer contexto, siguiente, roadmap e historias](backlog/016-api-read.md) · Hecha
+5. [#017 API · reclamar, cerrar, comentar y decidir](backlog/017-api-work.md) · Hecha
+6. [#018 API · definir producto](backlog/018-api-define.md) · Hecha
+7. [#019 CLI mt](backlog/019-cli-mt.md) · Hecha
+8. [#020 Skill de Maker Tracker y hook SessionStart](backlog/020-skill-and-hook.md) · Hecha
 9. [#024 La salida de mt y de la API, como en docs/CLI.md](backlog/024-mt-output-english.md) · Lista
 10. [#025 Crear una historia con un número dado](backlog/025-import-number.md) · Lista
 11. [#026 Mensajes de validación en castellano en la UI](backlog/026-spanish-validations.md) · Lista
