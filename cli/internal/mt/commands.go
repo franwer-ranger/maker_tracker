@@ -227,12 +227,19 @@ func init() {
 			return e.projectCall("POST", "/decisions", nil, body)
 		}}, "why the why", "story the story it comes from", "supersedes the decision it replaces (D-9)")
 
-	def(&command{name: "create", group: defineGroup, usage: "mt create [\"Title\"] [--milestone M2] [--state …] [--file f.md]", maxArgs: 1,
+	def(&command{name: "create", group: defineGroup, usage: "mt create [\"Title\"] [--milestone M2] [--state …] [--number n] [--file f.md]", maxArgs: 1,
 		summary:     "Creates a story: from a title or from a file in the mt show format",
-		description: "Without --state it is an idea, and without --milestone it goes to the inbox. The options win over the file.",
+		description: "Without --state it is an idea, and without --milestone it goes to the inbox. --number (or number: in the file) keeps a number if it is free, to migrate a backlog; without it, the next one. The options win over the file.",
 		example:     "mt create \"Shared templates\" --milestone M3 --state defining",
 		run: func(e *env) error {
 			body := optional(map[string]any{}, e, "milestone", "state")
+			if e.opts.has("number") {
+				n, err := strconv.Atoi(strings.TrimPrefix(e.opts.get("number"), "#"))
+				if err != nil {
+					return usageErrorf("--number must be a number.")
+				}
+				body["number"] = n
+			}
 			if e.arg(0) != "" {
 				body["title"] = e.arg(0)
 			}
@@ -246,7 +253,7 @@ func init() {
 				return usageHint("mt create \"Title\" or mt create --file f.md", "missing the title or --file.")
 			}
 			return e.projectCall("POST", "/stories", nil, body)
-		}}, "milestone M2, its title or inbox", "state idea | defining | ready", "file file with the story (- for standard input)")
+		}}, "milestone M2, its title or inbox", "state idea | defining | ready", "number the story's number, if it is free", "file file with the story (- for standard input)")
 	def(&command{name: "edit", group: defineGroup, usage: "mt edit <story> --file f.md", minArgs: 1, maxArgs: 1,
 		summary:     "Edits title, body and properties from a file in the mt show format",
 		description: "Editing does not change the state or the milestone: use mt move and mt reorder. What comes after the read-only mark is ignored.",

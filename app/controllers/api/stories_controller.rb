@@ -30,11 +30,13 @@ class Api::StoriesController < Api::BaseController
       breadcrumbs: story_breadcrumbs)
   end
 
-  # `mt create "Título" [--milestone M2] [--state …] [--file f.md]`: con
-  # campos o con `markdown` en el formato de ver. Nace como Idea y en la bandeja
-  # si no se dice otra cosa; sin cuerpo, con la plantilla.
+  # `mt create "Título" [--milestone M2] [--state …] [--number 14] [--file f.md]`:
+  # con campos o con `markdown` en el formato de ver. Nace como Idea y en la
+  # bandeja si no se dice otra cosa; sin cuerpo, con la plantilla. Con `number`
+  # (#025, para migrar un backlog) usa ese número si está libre.
   def create
     attributes = story_attributes
+    number = requested_number(attributes.delete("number"))
     state = attributes.delete("state").presence || "idea"
     unless CREATABLE_STATES.include?(state)
       raise Api::Error.validation("a new story starts as #{CREATABLE_STATES.to_sentence(two_words_connector: ' or ', last_word_connector: ' or ')}, not #{state}.",
@@ -43,7 +45,7 @@ class Api::StoriesController < Api::BaseController
     milestone = attributes.key?("milestone") ? milestone_or_inbox(attributes.delete("milestone")) : nil
     attributes.delete("body") if attributes["body"].blank?
 
-    created = project.create_story!(attributes.merge("state" => state, "milestone" => milestone), actor: Current.actor)
+    created = project.create_story!(attributes.merge("state" => state, "milestone" => milestone, "number" => number).compact, actor: Current.actor)
     render_ok({ story: Api::Markdown::Formatting.story_data(created) },
       status: :created, warnings: created.ready? ? Api::Markdown::Formatting.readiness_warnings(created) : [],
       summary: "#{created.reference} created as #{state_words(created.state)} in #{Api::Markdown::Formatting.milestone_label(created.milestone)}.",
@@ -99,11 +101,25 @@ class Api::StoriesController < Api::BaseController
 
   # Atributos desde `markdown` (formato de ver), desde campos sueltos o ambos.
   def story_attributes
-    fields = params.permit(:title, :milestone, :state, :body, :mockup, :blocked_by, :labels, labels: [], blocked_by: []).to_h
+    fields = params.permit(:number, :title, :milestone, :state, :body, :mockup, :blocked_by, :labels, labels: [], blocked_by: []).to_h
     return fields if params[:markdown].blank?
 
     # Los campos sueltos mandan sobre el documento: mt create --file f.md --milestone M2.
-    Api::StoryDocument.parse(params[:markdown]).except("number", "claimed_by").merge(fields)
+    Api::StoryDocument.parse(params[:markdown]).except("claimed_by").merge(fields)
+  end
+
+  # El número pedido al crear, si está libre. Editar lo ignora.
+  def requested_number(value)
+    return if value.blank?
+
+    number = Integer(value.to_s, exception: false)
+    raise Api::Error.validation("number must be a whole number from 1, not #{value}.", hint: "leave it out to get the next one.") unless number&.positive?
+
+    if project.stories.exists?(number: number)
+      raise Api::Error.validation("#{project.key}-#{number} already exists.",
+        hint: "leave number out to get the next one (#{project.key}-#{project.last_story_number + 1}), or see it with mt show #{project.key}-#{number}.")
+    end
+    number
   end
 
   def reject_fact_changes!(attributes)

@@ -37,13 +37,14 @@ module Api::Operations
       command: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", description: "Records a decision. Returns its reference (D-15)" },
 
     # Definir producto (#018). Nada se borra; cada cambio deja su evento.
-    { method: "POST", path: "/api/projects/:key/stories", command: "mt create \"Title\" [--milestone M2] [--state …] [--file f.md]",
+    { method: "POST", path: "/api/projects/:key/stories", command: "mt create \"Title\" [--milestone M2] [--state …] [--number 14] [--file f.md]",
       params: { markdown: "the story in the mt show format (or the separate fields)", title: "", milestone: "M2, its title or inbox", state: "idea | defining | ready",
-                body: "markdown; without it, the template", mockup: "url", labels: "list", blocked_by: "list of numbers" },
+                body: "markdown; without it, the template", mockup: "url", labels: "list", blocked_by: "list of numbers",
+                number: "keeps this number if it is free (to migrate a backlog); without it, the next one" },
       description: "Creates a story. Without state it is an idea, and without milestone it goes to the inbox" },
     { method: "PATCH", path: "/api/projects/:key/stories/:number", command: "mt edit PG-49 --file f.md",
       params: { markdown: "the story in the mt show format", title: "", body: "", mockup: "", labels: "", blocked_by: "" },
-      description: "Edits title, body and properties. Changing state or milestone is an error: use move or reorder" },
+      description: "Edits title, body and properties; number is ignored. Changing state or milestone is an error: use move or reorder" },
     { method: "POST", path: "/api/projects/:key/stories/:number/move", params: { state: "idea | defining | ready | in_progress | done" },
       command: "mt move PG-49 ready", description: "Changes the state. Moving to ready without meeting the rule gives warnings" },
     { method: "POST", path: "/api/projects/:key/stories/:number/reorder", command: "mt reorder PG-49 --position 1 [--milestone M3] --reason \"…\"",
