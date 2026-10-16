@@ -14,6 +14,13 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     get "/", to: "root#show"
     resources :projects, param: :key, only: :index
+    scope "projects/:project_key", as: :project do
+      get "context", to: "contexts#show"
+      get "next", to: "next_stories#show"
+      get "roadmap", to: "roadmaps#show"
+      resources :stories, param: :number, only: %i[index show]
+      resources :decisions, only: :index
+    end
     match "*path", to: "base#route_not_found", via: :all
   end
 

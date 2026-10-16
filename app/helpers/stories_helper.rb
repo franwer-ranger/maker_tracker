@@ -57,12 +57,7 @@ module StoriesHelper
 
   # Avisos al estar Lista (no bloquean): preguntas abiertas o UI sin mockup.
   def ready_warnings(story)
-    return [] unless story.ready?
-
-    warnings = []
-    warnings << "Tiene preguntas abiertas sin responder." if open_questions?(story.body)
-    warnings << "Tiene la label «ui» y no tiene mockup." if story.labels.include?("ui") && story.mockup.blank?
-    warnings
+    story.ready? ? story.readiness_issues : []
   end
 
   # "Paper" para enlaces de Paper; si no, el dominio.
@@ -89,10 +84,5 @@ module StoriesHelper
   def ready_queue(project)
     done = project.stories.done.pluck(:number)
     project.milestones.open.flat_map { it.stories.ready.ordered.to_a }.reject { it.blocked?(done_numbers: done) }
-  end
-
-  def open_questions?(body)
-    section = body[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1]
-    section.to_s.strip.present?
   end
 end

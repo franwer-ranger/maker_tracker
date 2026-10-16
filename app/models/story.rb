@@ -90,6 +90,19 @@ class Story < ApplicationRecord
     defining? && !body.match?(/^\s*[-*] \[[ xX]\]/)
   end
 
+  # Lo que incumple la regla para pasar a Lista (`PRODUCT.md`). Es un aviso,
+  # no una validación: la UI lo enseña y la API lo devuelve como warning.
+  def readiness_issues
+    issues = []
+    issues << "Tiene preguntas abiertas sin responder." if open_questions?
+    issues << "Tiene la label «ui» y no tiene mockup." if labels.include?("ui") && mockup.blank?
+    issues
+  end
+
+  def open_questions?
+    body.to_s[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip.present?
+  end
+
   # Las historias que tienen a esta en su `blocked_by`.
   def blocking
     project.stories.where(<<~SQL.squish, number)

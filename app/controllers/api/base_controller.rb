@@ -83,6 +83,14 @@ class Api::BaseController < ActionController::API
     @story ||= find_story(params[:story_number] || params[:number])
   end
 
+  # Hito por su código (M2) o su título.
+  def find_milestone(value)
+    value = value.to_s.strip
+    milestone = project.milestones.find_by(position: value[/\AM(\d+)\z/i, 1]) if value.match?(/\AM\d+\z/i)
+    milestone ||= project.milestones.find_by("LOWER(title) = ?", value.downcase)
+    milestone || raise(Api::Error.not_found("No existe el hito #{value} en #{project.key}", hint: "Los hitos están en mt roadmap --closed"))
+  end
+
   def find_story(reference)
     number = reference.to_s.sub(/\A#{Regexp.escape(project.key)}-/i, "")
     project.stories.find_by(number: Integer(number, exception: false)) ||
