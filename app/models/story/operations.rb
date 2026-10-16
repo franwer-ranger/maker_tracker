@@ -39,18 +39,18 @@ module Story::Operations
 
   # Pasar a En curso la reclama para el actor (si es de otro, falla). Volver
   # de En curso a un estado anterior la libera. Pasar a Hecha mantiene el dueño.
-  def move_to!(new_state, actor:)
+  # `data` se añade al evento (commits y PR al terminar) y `reason`, su motivo.
+  def move_to!(new_state, actor:, data: {}, reason: nil)
     new_state = new_state.to_s
     raise ArgumentError, "Estado desconocido: #{new_state}" unless self.class.states.key?(new_state)
 
     with_lock do
       from = state
+      raise ClaimedByOther, self if new_state == "in_progress" && claimed_by && claimed_by != actor
       next false if from == new_state
 
-      data = { from: from, to: new_state }
+      data = { from: from, to: new_state }.merge(data.compact_blank)
       if new_state == "in_progress"
-        raise ClaimedByOther, self if claimed_by && claimed_by != actor
-
         unless claimed_by
           assign_attributes(claimed_by: actor, claimed_at: Time.current)
           data[:claimed] = true
@@ -61,7 +61,7 @@ module Story::Operations
       end
 
       update!(state: new_state)
-      record_event!("story.state_changed", actor: actor, story: self, data: data)
+      record_event!("story.state_changed", actor: actor, story: self, data: data, reason: reason)
     end
   end
 
@@ -75,13 +75,13 @@ module Story::Operations
     end
   end
 
-  def release!(actor:)
+  def release!(actor:, reason: nil)
     with_lock do
       next false unless claimed_by
 
       from = claimed_by.name
       update!(claimed_by: nil, claimed_at: nil)
-      record_event!("story.released", actor: actor, story: self, data: { from: from })
+      record_event!("story.released", actor: actor, story: self, data: { from: from }, reason: reason)
     end
   end
 

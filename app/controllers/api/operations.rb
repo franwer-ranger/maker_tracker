@@ -22,6 +22,18 @@ module Api::Operations
     { method: "GET", path: "/api/projects/:key/stories/:number", params: {}, command: "mt show PG-49",
       description: "Una historia en markdown con frontmatter (formato de docs/backlog/), con sus comentarios y últimos eventos" },
     { method: "GET", path: "/api/projects/:key/decisions", params: {}, command: "mt decisions",
-      description: "Todas las decisiones, de la más reciente a la más antigua, marcando las sustituidas" }
+      description: "Todas las decisiones, de la más reciente a la más antigua, marcando las sustituidas" },
+
+    # Trabajar (#017). Todo queda a nombre del actor del token, con su evento.
+    { method: "POST", path: "/api/projects/:key/stories/:number/start", params: {}, command: "mt start PG-49",
+      description: "Reclama la historia y la pasa a En curso. CLAIMED_BY_OTHER si es de otro; warnings si no está Lista o está bloqueada" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/done", params: { commits: "lista de shas (opcional)", pr: "url de la PR (opcional)" },
+      command: "mt done PG-49 [--commit sha]… [--pr url]", description: "Pasa la historia a Hecha con sus commits y su PR en el evento" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/release", params: { reason: "por qué la sueltas (obligatorio para agentes)" },
+      command: "mt release PG-49 --reason \"…\"", description: "La devuelve a Lista y la libera" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/comments", params: { body: "markdown" },
+      command: "mt comment PG-49 \"…\"", description: "Comenta en la historia" },
+    { method: "POST", path: "/api/projects/:key/decisions", params: { title: "la decisión", body: "el porqué (markdown)", story: "PG-49 (opcional)", supersedes: "D-9 (opcional)" },
+      command: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", description: "Registra una decisión. Devuelve su referencia (D-15)" }
   ].freeze
 end
