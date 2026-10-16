@@ -9,6 +9,9 @@ CI.run do
   step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
+  step "CLI: gofmt", "test -z \"$(gofmt -l cli)\""
+  step "CLI: go vet y compilar", "make -C cli vet build"
+
   # Optional: Run system tests
   # step "Tests: System", "bin/rails test:system"
 

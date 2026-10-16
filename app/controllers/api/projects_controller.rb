@@ -13,7 +13,7 @@ class Api::ProjectsController < Api::BaseController
       "- **#{p[:key]}** #{p[:name]} · #{milestone} · #{p[:in_progress]} en curso"
     end.join("\n")
 
-    render_ok({ projects: data, markdown: markdown },
+    render_ok({ actor: Current.actor.name, projects: data, markdown: markdown },
       summary: "#{data.size} #{data.size == 1 ? 'proyecto' : 'proyectos'}",
       breadcrumbs: data.first(3).map { "mt init #{it[:key]}" })
   end

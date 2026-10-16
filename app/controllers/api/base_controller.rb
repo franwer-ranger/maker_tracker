@@ -7,6 +7,8 @@
 #
 # Los breadcrumbs son comandos de `mt`: es lo que el agente va a ejecutar.
 class Api::BaseController < ActionController::API
+  # mt comprueba en cada respuesta que conoce esta versión.
+  before_action { response.set_header("X-MT-API-Version", Api::Operations::VERSION.to_s) }
   before_action :authenticate_actor
   skip_before_action :authenticate_actor, only: :route_not_found
 

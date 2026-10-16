@@ -17,6 +17,7 @@ Herramienta para definir y organizar productos junto a agentes de IA. La v1 (est
 - SQLite (`storage/*.sqlite3`): no hace falta Docker ni ningún servicio externo
 - Hotwire (Turbo + Stimulus) con importmap · Tailwind CSS v3 (`tailwindcss-rails` 3.x) · Sprockets
 - Sin login: la app solo es accesible por red local o Tailscale · `positioning` para ordenar
+- API para agentes en `/api` (token por actor: `bin/rails "mt:token[claude]"`) y CLI `mt` en Go dentro de `cli/` (solo biblioteca estándar; `make -C cli install`). Go lo instala cada uno (`brew install go`); `bin/setup` avisa si falta
 
 ## Comandos
 

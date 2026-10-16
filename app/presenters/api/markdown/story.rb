@@ -2,20 +2,19 @@
 # y el cuerpo debajo. Es el mismo formato que acepta la escritura (#018,
 # Api::StoryDocument): lo que se lee se puede editar y devolver.
 #
-# Con `extras: true` añade, tras READ_ONLY_MARK, lo que no se edita: bloqueos,
-# comentarios e historial. La escritura ignora todo lo que va después de la marca.
+# Tras READ_ONLY_MARK añade lo que no se edita: bloqueos, comentarios e
+# historial. La escritura ignora todo lo que va después de la marca.
 class Api::Markdown::Story
   include Api::Markdown::Formatting
 
   READ_ONLY_MARK = "<!-- mt: lo que sigue es solo lectura; mt edit lo ignora -->".freeze
 
-  def initialize(story, extras: true)
+  def initialize(story)
     @story = story
-    @extras = extras
   end
 
   def to_s
-    [ frontmatter, @story.body.to_s.strip, (read_only if @extras) ].compact.join("\n\n") + "\n"
+    [ frontmatter, @story.body.to_s.strip, read_only ].compact.join("\n\n") + "\n"
   end
 
   private

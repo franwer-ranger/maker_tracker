@@ -40,7 +40,7 @@ class Api::StoriesController < Api::BaseController
     attributes.delete("body") if attributes["body"].blank?
 
     created = project.create_story!(attributes.merge("state" => state, "milestone" => milestone), actor: Current.actor)
-    render_ok({ story: Api::Markdown::Formatting.story_data(created), markdown: Api::Markdown::Story.new(created, extras: false).to_s },
+    render_ok({ story: Api::Markdown::Formatting.story_data(created) },
       status: :created, warnings: created.ready? ? created.readiness_issues : [],
       summary: "#{created.reference} creada en #{Api::Markdown::Formatting.milestone_label(created.milestone)} (#{created.human_state})",
       breadcrumbs: [ "mt show #{created.reference}", "mt edit #{created.reference} --file <f.md>" ])
@@ -89,13 +89,13 @@ class Api::StoriesController < Api::BaseController
 
   private
 
-  # Atributos desde `markdown` (formato de ver) o desde campos sueltos.
+  # Atributos desde `markdown` (formato de ver), desde campos sueltos o ambos.
   def story_attributes
-    if params[:markdown].present?
-      Api::StoryDocument.parse(params[:markdown]).except("number", "claimed_by")
-    else
-      params.permit(:title, :milestone, :state, :body, :mockup, :blocked_by, :labels, labels: [], blocked_by: []).to_h
-    end
+    fields = params.permit(:title, :milestone, :state, :body, :mockup, :blocked_by, :labels, labels: [], blocked_by: []).to_h
+    return fields if params[:markdown].blank?
+
+    # Los campos sueltos mandan sobre el documento: mt create --file f.md --milestone M2.
+    Api::StoryDocument.parse(params[:markdown]).except("number", "claimed_by").merge(fields)
   end
 
   def reject_fact_changes!(attributes)

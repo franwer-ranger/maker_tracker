@@ -44,3 +44,6 @@
 
 # Self-hosted data (database, secret and backups) from docker compose.
 /data/
+
+# Binario del CLI mt (make -C cli build).
+/cli/bin/
