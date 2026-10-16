@@ -160,7 +160,7 @@ class Api::StoriesController < Api::BaseController
   # Con --state no hace falta la columna del estado.
   def list_lines(stories)
     rows = stories.map do |story|
-      [ (state_words(story.state) unless params[:state].present?), story.reference, Api::Markdown::Formatting.truncate(story.title),
+      [ (state_words(story.state) unless params[:state].present?), story.reference, story.title,
         story.milestone&.code || "inbox", story.labels.join(", ") ].compact
     end
     min = params[:state].present? ? [ 0, Api::Markdown::Formatting::TITLE_WIDTH ] : [ Api::Markdown::Roadmap::STATE_WIDTH, 0, Api::Markdown::Formatting::TITLE_WIDTH ]

@@ -55,6 +55,9 @@ func Main(argv []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if cmd == nil && argv[0] == "milestone" {
 		return fail(stderr, &UsageError{msg: "mt milestone needs a subcommand.", hint: "mt milestone create | edit | reorder | close | reopen. See mt help."})
 	}
+	if cmd == nil && (argv[0] == "project" || argv[0] == "skill") {
+		return fail(stderr, &UsageError{msg: "mt " + argv[0] + " needs a subcommand.", hint: map[string]string{"project": "mt project create \"Name\" --key PG", "skill": "mt skill install"}[argv[0]]})
+	}
 	if cmd == nil {
 		return fail(stderr, unknownCommand(argv[0]))
 	}

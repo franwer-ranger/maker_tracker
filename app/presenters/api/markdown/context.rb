@@ -57,7 +57,7 @@ class Api::Markdown::Context
     return "## Current milestone\n\nNo open milestone." unless milestone
 
     lines = [ "## Current milestone · #{milestone_label(milestone)}", "" ]
-    lines << "Goal: #{goal(milestone.goal)}" if milestone.goal.present?
+    lines << "Goal: #{milestone.goal.strip}" if milestone.goal.present?
     lines << counts(milestone.stories.group(:state).count)
     lines.join("\n")
   end
@@ -65,6 +65,8 @@ class Api::Markdown::Context
   # "4 of 12 done · 2 in progress · 2 ready · 2 defining · 2 ideas"
   def counts(by_state)
     total = by_state.values.sum
+    return "No stories yet." if total.zero?
+
     parts = [ "#{by_state.fetch('done', 0)} of #{total} done" ]
     parts << "#{by_state['in_progress']} in progress" if by_state["in_progress"]
     parts << "#{by_state['ready']} ready" if by_state["ready"]

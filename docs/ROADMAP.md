@@ -51,7 +51,7 @@ Historias, en orden:
 9. [#024 La salida de mt y de la API, como en docs/CLI.md](backlog/024-mt-output-english.md) · Hecha
 10. [#025 Crear una historia con un número dado](backlog/025-import-number.md) · Hecha
 11. [#026 Mensajes de validación en castellano en la UI](backlog/026-spanish-validations.md) · Hecha
-12. [#027 Llevar un proyecto existente a Maker Tracker](backlog/027-onboard-existing-project.md) · Lista
+12. [#027 Llevar un proyecto existente a Maker Tracker](backlog/027-onboard-existing-project.md) · Hecha
 13. [#021 La v2 en la torre, con API para los agentes](backlog/021-tower-v2.md) · Lista (self-host)
 14. [#022 Maker Tracker se gestiona en Maker Tracker](backlog/022-dogfooding.md) · Lista (producto)
 

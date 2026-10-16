@@ -13,7 +13,7 @@ Rails.application.routes.draw do
   # GET /api describe todas las operaciones (Api::Operations).
   namespace :api, defaults: { format: :json } do
     get "/", to: "root#show"
-    resources :projects, param: :key, only: :index
+    resources :projects, param: :key, only: %i[index create]
     scope "projects/:project_key", as: :project do
       get "context", to: "contexts#show"
       get "next", to: "next_stories#show"

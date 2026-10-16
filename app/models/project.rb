@@ -21,7 +21,8 @@ class Project < ApplicationRecord
   normalizes :key, with: -> { it.strip.upcase }
 
   validates :name, presence: true
-  validates :slug, presence: true, uniqueness: true
+  # Sale del nombre: sin nombre, el error que importa es el del nombre.
+  validates :slug, presence: true, uniqueness: true, if: -> { name.present? }
   validates :key, presence: true, uniqueness: true, format: { with: /\A[A-Z]{2,5}\z/, message: :key_format }
 
   attribute :brief, default: BRIEF_TEMPLATE

@@ -56,11 +56,13 @@ m4 = seed_milestone(postgram, "Equipos", "Varias personas publicando en la misma
 # es la de creación.
 
 # Crea la historia o la pone al día (título, hito, estado, propiedades…).
-# `on_create` solo se asigna al crearla (fechas que no deben moverse).
-def seed_story(project, number, title, milestone: nil, state: :idea, on_create: {}, **attributes)
+# `on_create` solo se asigna al crearla (fechas que no deben moverse). Sin
+# `claimed_by`, no la tiene nadie: así se deshace lo que dejen las pruebas.
+def seed_story(project, number, title, milestone: nil, state: :idea, claimed_by: nil, on_create: {}, **attributes)
   story = project.stories.find_or_initialize_by(number: number)
   story.assign_attributes(on_create) if story.new_record?
-  story.assign_attributes(title: title, milestone: milestone, state: state, **attributes)
+  story.assign_attributes(title: title, milestone: milestone, state: state, claimed_by: claimed_by, **attributes)
+  story.claimed_at = claimed_by ? story.claimed_at || on_create[:claimed_at] : nil
   story.save!
   story
 end

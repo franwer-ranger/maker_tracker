@@ -8,6 +8,8 @@ module Api::Operations
       description: "API version and list of operations. Needs no token" },
     { method: "GET", path: "/api/projects", params: {}, command: "mt projects",
       description: "Projects: key, name, current milestone and how many stories are in progress" },
+    { method: "POST", path: "/api/projects", params: { name: "the project's name", key: "2 to 5 letters, like PG" },
+      command: "mt project create \"Name\" --key PG", description: "Creates a project with the brief template. VALIDATION_FAILED if the key exists" },
 
     # Leer (#016). Lo que lee un agente va también en data.markdown (docs/CLI.md).
     { method: "GET", path: "/api/projects/:key/context", params: {}, command: "mt context",

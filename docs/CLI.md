@@ -174,7 +174,7 @@ idea         PG-53  Programar desde el móvil
 done         PG-47 PG-43 PG-42 PG-41
 
 ## M3 · Analítica para makers · 6 stories
-Goal: saber qué post funciona y por qué.
+Goal: Saber qué post funciona y por qué.
 
 ready        PG-31  Exportar métricas a CSV
 defining     PG-27  Panel de rendimiento por post               no criteria
@@ -275,6 +275,33 @@ Warning: it has open questions.
 Next:
   mt edit PG-52 --file <f.md>
   mt next
+```
+
+Crear un proyecto (#027). La clave tiene de 2 a 5 letras y da nombre a sus historias:
+
+```text
+$ mt project create "Postgram" --key PG
+PG · Postgram created by claude.
+
+Next:
+  mt init PG --claude
+  mt brief --file <f.md>
+```
+
+```text
+$ mt project create "Postgram" --key PG
+Error: project PG already exists.
+Hint: pick another key, or use mt init PG if it is yours.
+```
+
+La skill de Maker Tracker se instala una vez, de forma global, para que un agente la tenga en cualquier carpeta (`$CLAUDE_CONFIG_DIR` si está definida). Repetirlo la actualiza (`… skill updated`) o dice `already up to date`. `mt init PG --claude` deja en el repo `.mt` y el hook `SessionStart`, y la skill solo si no está la global:
+
+```text
+$ mt skill install
+/Users/fran/.claude/skills/maker-tracker/SKILL.md: maker-tracker skill installed
+
+Next:
+  mt init <KEY> --claude   (at the root of the project's repo)
 ```
 
 Si la historia es de otro actor (aquí, lanzado como codex; si es tuya, `PG-48 was already in progress and is yours.`):

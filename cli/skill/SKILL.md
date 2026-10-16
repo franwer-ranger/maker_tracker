@@ -1,13 +1,13 @@
 ---
 name: maker-tracker
-description: How to work with Maker Tracker from this repo using the mt CLI. Use it when asked "what's next?", when picking up, building or closing a story, when leaving a question or a decision, and when writing or reordering the backlog (stories, milestones, brief).
+description: How to work with Maker Tracker using the mt CLI. Use it when asked "what's next?", when picking up, building or closing a story, when leaving a question or a decision, when writing or reordering the backlog (stories, milestones, brief), and when asked to bring a project to Maker Tracker ("lleva este proyecto a Maker Tracker", "onboard this repo").
 ---
 
 # Maker Tracker with `mt`
 
 Maker Tracker holds the product definition of this repo: brief, decisions, roadmap (milestones in order) and stories. The code lives here; the what and the why, there. `mt` talks to its API. The project comes from `.mt` at the root of the repo, and stories are named `PG-49` or just `49`.
 
-When the session starts you already have the output of `mt context` (brief, decisions in force, current milestone and what is in progress). If it is missing, run it before recommending anything: the decisions and the principles in the brief come first.
+In a repo that is already in Maker Tracker (it has `.mt`), the session starts with the output of `mt context` (brief, decisions in force, current milestone and what is in progress). If it is missing, run it before recommending anything: the decisions and the principles in the brief come first. If the repo has no `.mt` and you are asked to bring it in, follow "Onboard an existing project".
 
 `mt` speaks English; the content (titles, story bodies, brief, decisions) comes in the language it was written in. Keep writing content in that language.
 
@@ -49,8 +49,33 @@ Agents also write the backlog, directly and on the record (every change is logge
 - **Order**: order is priority. `mt reorder PG-49 --position 1 [--milestone M3] --reason "…"` and `mt milestone reorder M3 --position 2 --reason "…"`. **Always with a reason**: it's what gets read later. If the change matters, also record it with `mt decide`.
 - **Milestones and brief**: `mt milestone create|edit|close|reopen`, `mt brief` to read it and `mt brief --file f.md` to replace it.
 
+## Onboard an existing project
+
+When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Maker Tracker: la visión, las decisiones y todo"). Whoever defines the product decides; you propose.
+
+1. **Check `mt`**: `mt projects`. If it says `mt` is not configured (or the token is not valid), ask the person to run `mt setup <url> <token>` themselves and stop there: the token never goes through the chat. If the project is already listed, use `mt init <KEY> --claude` and skip to step 5.
+2. **Read the repo**: `README`, `AGENTS.md` / `CLAUDE.md`, `docs/` (product, roadmap, decisions, ADRs, backlog) and recent `git log`. Add what the person tells you.
+3. **Propose, in the chat and before writing anything** (no `mt` command that writes yet):
+   - the **key** (2 to 5 letters, it names every story: `PG-49`) and the **name**;
+   - the **brief** in markdown, with its four sections: `## Visión` · `## Principios` · `## Fuera de alcance` · `## Glosario` (headings in the project's language; these are Maker Tracker's template in Spanish). Short: it is read by every agent at the start of every session;
+   - the **milestones** in order, each with a one-line goal;
+   - the **decisions** already taken, each with its why (one sentence). Only those that someone would want to know later.
+
+   Say where each thing comes from (which file) and what you made up or left out. Then wait for the OK, and apply the changes the person asks for.
+4. **With the OK**, write it:
+   ```
+   mt project create "Postgram" --key PG
+   mt init PG --claude                 # at the root of the repo: .mt and the SessionStart hook
+   mt brief --file brief.md
+   mt milestone create "Publicar sin fricción" --goal "…"   # one per milestone, in order
+   mt decide "PDFs con Prawn" --why "…"                     # one per decision, oldest first
+   ```
+   Write the files in a temporary place, not in the repo. If a command fails, read the `Hint:` and fix it before going on.
+5. **Finish with `mt context`**, show it, and offer to start writing stories with the body template (see "Writing the product"). Stories come afterwards, with the person: don't import them from the repo's docs on your own.
+
 ## Commands
 
+- Set up: `mt setup` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
 - Read: `mt context` · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions`
 - Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt decide --why`
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`

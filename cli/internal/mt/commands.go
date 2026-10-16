@@ -144,8 +144,22 @@ func init() {
 		example:     "mt setup https://tower.your-tailnet.ts.net mt_…", run: runSetup})
 	def(&command{name: "init", group: setupGroup, usage: "mt init <KEY> [--claude]", minArgs: 1, maxArgs: 1,
 		summary:     "Creates .mt with the project in the current directory (the root of the repo)",
-		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the Maker Tracker skill and the SessionStart hook to .claude/.",
-		example:     "mt init PG --claude", run: runInit}, "claude! installs the Claude Code skill and hook in the repo")
+		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart hook (mt context) to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skill to .claude/skills/.",
+		example:     "mt init PG --claude", run: runInit}, "claude! adds the Claude Code hook (and the skill, if it is not installed globally) to the repo")
+	def(&command{name: "project create", group: setupGroup, usage: "mt project create \"Name\" --key <KEY>", minArgs: 1, maxArgs: 1,
+		summary:     "Creates a project, with the brief template",
+		description: "The key has 2 to 5 letters and names its stories (PG-49). Then mt init <KEY> --claude at the root of its repo and mt brief --file f.md.",
+		example:     "mt project create \"Postgram\" --key PG",
+		run: func(e *env) error {
+			if !e.opts.has("key") {
+				return usageHint("mt project create \"Postgram\" --key PG", "missing --key.")
+			}
+			return e.call("POST", "/api/projects", nil, map[string]any{"name": e.arg(0), "key": strings.ToUpper(e.opts.get("key"))})
+		}}, "key 2 to 5 letters, like PG")
+	def(&command{name: "skill install", group: setupGroup, usage: "mt skill install", maxArgs: 0,
+		summary:     "Installs (or updates) the Maker Tracker skill for Claude Code in ~/.claude/skills/",
+		description: "With the skill installed globally, an agent knows Maker Tracker in any folder, also in a repo that is not in Maker Tracker yet. Uses $CLAUDE_CONFIG_DIR if it is set.",
+		example:     "mt skill install", run: runSkillInstall})
 	def(&command{name: "projects", group: setupGroup, usage: "mt projects", maxArgs: 0,
 		summary: "Lists the projects of the instance", example: "mt projects",
 		run: func(e *env) error { return e.call("GET", "/api/projects", nil, nil) }})
@@ -371,7 +385,11 @@ func runSetup(e *env) error {
 	if os.Getenv("MT_URL") != "" || os.Getenv("MT_TOKEN") != "" {
 		warnings = append(warnings, "MT_URL or MT_TOKEN are set and take precedence over this file.")
 	}
-	printFooter(e.stdout, warnings, []string{"mt init <KEY>   (at the root of the project's repo)"})
+	next := []string{"mt init <KEY> --claude   (at the root of the project's repo)"}
+	if installed, _ := globalSkillState(); installed != skillCurrent {
+		next = append([]string{"mt skill install"}, next...)
+	}
+	printFooter(e.stdout, warnings, next)
 	return nil
 }
 
@@ -401,7 +419,8 @@ func runInit(e *env) error {
 				found = found || p.Key == key
 			}
 			if !found {
-				return &APIError{Code: "NOT_FOUND", Message: "no project " + key + ".", Hint: "see them with mt projects."}
+				return &APIError{Code: "NOT_FOUND", Message: "no project " + key + ".",
+					Hint: "create it with mt project create \"Name\" --key " + key + ", or see them with mt projects."}
 			}
 		}
 	}
@@ -417,8 +436,12 @@ func runInit(e *env) error {
 	fmt.Fprintf(e.stdout, "%s: project: %s\n", path, key)
 
 	if e.opts.has("claude") {
-		if err := installClaude(e, dir); err != nil {
+		warning, err := installClaude(e, dir)
+		if err != nil {
 			return err
+		}
+		if warning != "" {
+			warnings = append(warnings, warning)
 		}
 	}
 	printFooter(e.stdout, warnings, []string{"mt context", "mt next"})

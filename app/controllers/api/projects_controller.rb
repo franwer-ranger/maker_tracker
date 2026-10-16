@@ -20,4 +20,24 @@ class Api::ProjectsController < Api::BaseController
       summary: summary,
       breadcrumbs: data.first(3).map { "mt init #{it[:key]}" })
   end
+
+  # `mt project create "Postgram" --key PG` (#027): un agente puede crear
+  # proyectos. El brief nace con su plantilla.
+  def create
+    attributes = params.permit(:name, :key).to_h.with_defaults("name" => nil, "key" => nil)
+    key = attributes["key"].to_s.strip.upcase
+    if key.present? && Project.exists?(key: key)
+      raise Api::Error.validation("project #{key} already exists.", hint: "pick another key, or use mt init #{key} if it is yours.")
+    end
+
+    project = begin
+      Project.create_with_event!(attributes, actor: Current.actor)
+    rescue ActiveRecord::RecordInvalid => e
+      raise Api::Error.validation("#{e.record.errors.full_messages.to_sentence}.", details: e.record.errors.to_hash(true),
+        hint: "mt project create \"Name\" --key PG (the key has 2 to 5 letters and names the stories: PG-49).")
+    end
+    render_ok({ project: { key: project.key, name: project.name } }, status: :created,
+      summary: "#{project.key} · #{project.name} created by #{Current.actor.name}.",
+      breadcrumbs: [ "mt init #{project.key} --claude", "mt brief --file <f.md>" ])
+  end
 end

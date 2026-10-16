@@ -4,7 +4,7 @@
 module Api::Markdown::Formatting
   module_function
 
-  TITLE_WIDTH = 42
+  TITLE_WIDTH = 42 # mínimo: la columna crece si un título es más largo
 
   # Un valor de frontmatter: tal cual si YAML lo lee igual; si no, entre
   # comillas dobles (JSON es YAML válido).
@@ -30,10 +30,6 @@ module Api::Markdown::Formatting
 
   def milestone_label(milestone) = milestone ? "#{milestone.code} · #{milestone.title}" : "the inbox"
 
-  # El objetivo tras "Goal:", con la primera letra en minúscula como en la UI
-  # ("Objetivo: un maker…"). Las siglas (API, PDF) se quedan como están.
-  def goal(text) = text.to_s.strip.sub(/\A(\p{Lu})(?=\p{Ll})/) { it.downcase }
-
   def date(time) = time.localtime.strftime("%Y-%m-%d")
 
   # Fechas absolutas, y solo la hora si es de hoy: "11:42", "2026-10-15 22:40".
@@ -44,8 +40,6 @@ module Api::Markdown::Formatting
 
   # "PR #63" si la url es de una PR de GitHub; si no, "PR <url>".
   def pr_label(url) = (number = url.to_s[%r{/pull/(\d+)}, 1]) ? "PR ##{number}" : "PR #{url}"
-
-  def truncate(text, width = TITLE_WIDTH) = text.length > width ? "#{text[0, width - 1]}…" : text
 
   # Columnas alineadas con espacios (dos entre columnas). Cada columna mide lo
   # que su celda más larga o, como poco, `min[i]`. La última no se rellena.

@@ -36,7 +36,7 @@ class Api::Markdown::Roadmap
   def milestone_section(milestone)
     stories = milestone.stories.to_a
     header = "## #{milestone_label(milestone)} · #{status(milestone, stories)}"
-    header += "\nGoal: #{goal(milestone.goal)}" if milestone.goal.present?
+    header += "\nGoal: #{milestone.goal.strip}" if milestone.goal.present?
     [ header, story_lines(stories).presence ].compact.join("\n\n")
   end
 
@@ -53,7 +53,7 @@ class Api::Markdown::Roadmap
   def story_lines(stories)
     open, done = stories.partition { !it.done? }
     rows = open.map do |story|
-      [ state_words(story.state), story.reference, truncate(story.title), story_meta(story, next_story: next_story, done_numbers: done_numbers) ]
+      [ state_words(story.state), story.reference, story.title, story_meta(story, next_story: next_story, done_numbers: done_numbers) ]
     end
     lines = table(rows, min: [ STATE_WIDTH, 0, TITLE_WIDTH ])
     lines << "#{'done'.ljust(STATE_WIDTH)}  #{done.map(&:reference).join(' ')}" if done.any?
