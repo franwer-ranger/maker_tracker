@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_094343) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_094500) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -45,6 +45,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_094343) do
     t.index ["project_id"], name: "index_decisions_on_project_id"
     t.index ["story_id"], name: "index_decisions_on_story_id"
     t.index ["supersedes_id"], name: "index_decisions_on_supersedes_id"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.integer "project_id", null: false
+    t.integer "story_id"
+    t.integer "actor_id", null: false
+    t.string "action", null: false
+    t.json "data", default: {}, null: false
+    t.text "reason"
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.index ["actor_id"], name: "index_events_on_actor_id"
+    t.index ["project_id", "occurred_at"], name: "index_events_on_project_id_and_occurred_at"
+    t.index ["project_id"], name: "index_events_on_project_id"
+    t.index ["story_id", "occurred_at"], name: "index_events_on_story_id_and_occurred_at"
+    t.index ["story_id"], name: "index_events_on_story_id"
   end
 
   create_table "milestones", force: :cascade do |t|
@@ -100,6 +116,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_094343) do
   add_foreign_key "decisions", "decisions", column: "supersedes_id"
   add_foreign_key "decisions", "projects"
   add_foreign_key "decisions", "stories"
+  add_foreign_key "events", "actors"
+  add_foreign_key "events", "projects"
+  add_foreign_key "events", "stories"
   add_foreign_key "milestones", "projects"
   add_foreign_key "stories", "actors", column: "claimed_by_id"
   add_foreign_key "stories", "milestones"

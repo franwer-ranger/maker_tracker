@@ -2,8 +2,8 @@
 number: 5
 title: Eventos · el registro de los hechos
 milestone: M1
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup:
 labels: [modelo]
 blocked_by: [3, 4]
@@ -62,3 +62,18 @@ Como Fran, quiero que cada cambio de estado, reclamación y reordenación quede 
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/v2-model`, commit «Añade los eventos y las operaciones de dominio».
+
+**Hecho**
+- Migración `CreateEvents` y modelo `Event`: `readonly?` una vez guardado (`update!` / `destroy!` lanzan `ReadOnlyRecord`), `occurred_at` por defecto ahora y el scope `recent_first`.
+- Concern `Eventable` con `record_event!` (es público para que las seeds puedan añadir eventos a mano) y `Eventable::ReasonRequired`.
+- Operaciones con su evento, todas en una transacción, en este orden de la tabla: `Project.create_with_event!`, `Project#create_story!`, `Story#edit!` (solo título, cuerpo y propiedades; guarda los nombres de los campos cambiados), `#move_to!`, `#claim!` / `#release!`, `#reorder!` (`story.reordered` o `story.moved`, también a la bandeja con `milestone: nil`), `Project#create_milestone!`, `Milestone#reorder!` / `#close!` / `#reopen!`, `Project#edit_brief!`, `Project#record_decision!` y `Story#add_comment!`. Las de la historia viven en `app/models/story/operations.rb`.
+- Reglas: pasar a En curso reclama la historia o falla con `Story::ClaimedByOther` («EV-1 la tiene claude»). Salir de En curso hacia atrás la libera; a Hecha mantiene el dueño. `claim!` y `move_to!` usan `with_lock`. Los agentes tienen que dar motivo al reordenar. Si una operación no cambia nada, no hay evento y devuelve `false`. `Story#history`.
+- Comprobado en `bin/rails runner` (en una transacción que se deshace): cada operación de la tabla deja exactamente un evento; los no-cambios no dejan ninguno; dos agentes no cogen la misma historia; reordenar como agente sin motivo falla; los eventos no se pueden modificar.
+
+**Decisiones**
+- `move_to!` deja un único evento `story.state_changed` aunque reclame o libere, y lo indica en `data` (`claimed: true` / `released: true`). Así se cumple «un evento por operación» y el historial sigue diciendo quién la cogió.
+- `story.released` guarda en `data.from` quién la tenía: la UI puede liberar la historia de otro actor y hace falta saberlo.
+- Los eventos de hito no tienen `story`; el hito va en `data.milestone_id`. En `data` se guardan ids, no títulos, porque los títulos cambian.
+- `Milestone#close!` / `#reopen!` (de la #003) piden ahora `actor:`.

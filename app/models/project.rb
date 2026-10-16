@@ -1,6 +1,8 @@
 # Un producto. Su contexto vive en `brief` (markdown) y su roadmap son los
 # hitos ordenados, cada uno con sus historias ordenadas.
 class Project < ApplicationRecord
+  include Eventable
+
   BRIEF_TEMPLATE = <<~MARKDOWN.freeze
     ## Visión
 
@@ -14,6 +16,7 @@ class Project < ApplicationRecord
   has_many :milestones, -> { order(:position) }, inverse_of: :project
   has_many :stories, inverse_of: :project
   has_many :decisions, -> { order(:number) }, inverse_of: :project
+  has_many :events, inverse_of: :project
 
   normalizes :key, with: -> { it.strip.upcase }
 
@@ -25,6 +28,47 @@ class Project < ApplicationRecord
   before_validation :generate_slug, on: :create
 
   def to_param = slug
+
+  # Operaciones de dominio: cada una hace su cambio y registra su evento.
+
+  def self.create_with_event!(attributes, actor:)
+    transaction do
+      create!(attributes).tap { it.record_event!("project.created", actor: actor) }
+    end
+  end
+
+  def create_milestone!(attributes, actor:)
+    transaction do
+      milestones.create!(attributes).tap do |milestone|
+        record_event!("milestone.created", actor: actor, data: { milestone_id: milestone.id, title: milestone.title })
+      end
+    end
+  end
+
+  def create_story!(attributes, actor:)
+    transaction do
+      stories.create!(attributes).tap do |story|
+        record_event!("story.created", actor: actor, story: story, data: { state: story.state, milestone_id: story.milestone_id })
+      end
+    end
+  end
+
+  def edit_brief!(text, actor:)
+    return false if text == brief
+
+    transaction do
+      update!(brief: text)
+      record_event!("brief.edited", actor: actor)
+    end
+  end
+
+  def record_decision!(attributes, actor:)
+    transaction do
+      decisions.create!(attributes.merge(actor: actor)).tap do |decision|
+        record_event!("decision.recorded", actor: actor, story: decision.story, data: { number: decision.number })
+      end
+    end
+  end
 
   # Historias sin hito.
   def ideas = stories.where(milestone: nil).ordered
