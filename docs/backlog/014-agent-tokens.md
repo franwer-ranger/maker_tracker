@@ -2,8 +2,8 @@
 number: 14
 title: Tokens de agente
 milestone: M2
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup:
 labels: [api, agentes]
 blocked_by: []
@@ -19,14 +19,14 @@ Como Fran, quiero darle a cada agente su token con un comando, para que todo lo 
 
 ## Criterios de aceptación
 
-- [ ] `Actor` guarda `token_digest` (SHA-256 del token, nunca el token en claro). Un token tiene el prefijo `mt_` seguido de 32 caracteres aleatorios.
-- [ ] `bin/rails "mt:token[claude]"` imprime el token **una sola vez** y cómo usarlo (`mt setup <url> <token>`). Si el actor no existe, lo crea como `agent`.
-- [ ] Repetir el comando para el mismo actor genera un token nuevo y el anterior deja de valer.
-- [ ] También vale para el actor humano (`mt:token[fran]`), para que Fran pueda usar `mt` desde su terminal.
-- [ ] `bin/rails mt:tokens` lista los actores con token y cuándo se usó cada uno por última vez (`token_used_at`), sin enseñar el token.
-- [ ] `Actor.authenticate(token)` devuelve el actor o `nil`, comparando en tiempo constante.
-- [ ] Funciona igual dentro del contenedor: `docker compose exec -u rails app bin/rails "mt:token[claude]"`.
-- [ ] `bin/ci` en verde.
+- [x] `Actor` guarda `token_digest` (SHA-256 del token, nunca el token en claro). Un token tiene el prefijo `mt_` seguido de 32 caracteres aleatorios.
+- [x] `bin/rails "mt:token[claude]"` imprime el token **una sola vez** y cómo usarlo (`mt setup <url> <token>`). Si el actor no existe, lo crea como `agent`.
+- [x] Repetir el comando para el mismo actor genera un token nuevo y el anterior deja de valer.
+- [x] También vale para el actor humano (`mt:token[fran]`), para que Fran pueda usar `mt` desde su terminal.
+- [x] `bin/rails mt:tokens` lista los actores con token y cuándo se usó cada uno por última vez (`token_used_at`), sin enseñar el token.
+- [x] `Actor.authenticate(token)` devuelve el actor o `nil`, comparando en tiempo constante.
+- [x] Funciona igual dentro del contenedor: `docker compose exec -u rails app bin/rails "mt:token[claude]"`.
+- [x] `bin/ci` en verde.
 
 ## Fuera de alcance
 
@@ -41,3 +41,19 @@ Como Fran, quiero darle a cada agente su token con un comando, para que todo lo 
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/m2-api`, commit «Añade los tokens de agente».
+
+**Hecho**
+- Migración: `actors.token_used_at` e índice único en `token_digest`.
+- `Actor#regenerate_token!` crea `mt_` + 32 alfanuméricos (`SecureRandom.alphanumeric`), guarda solo el SHA-256 y devuelve el token en claro. Renovarlo invalida el anterior y pone `token_used_at` a nil.
+- `Actor.authenticate(token)` busca por el digest y compara con `secure_compare`. Devuelve nil sin token, sin prefijo `mt_` o si no existe.
+- `Actor#token_used!` lo usará la API (#015): escribe `token_used_at` como mucho una vez por minuto.
+- `bin/rails "mt:token[claude]"` (en `lib/tasks/mt.rake`) crea el actor como `agent` si no existe, imprime el token una vez y `mt setup <url> <token>`. Si existe `MT_URL`, la usa en lugar de `<url>`. Vale igual para `fran` (humano).
+- `bin/rails mt:tokens` lista nombre, tipo y último uso.
+
+**Decisiones**
+- El nombre se normaliza como en `Actor` (minúsculas, sin espacios), así que `mt:token[Claude]` es el mismo actor que `claude`.
+
+**Sin comprobar**
+- Dentro del contenedor (`docker compose exec -u rails app …`): no tengo Docker aquí. Es una tarea rake normal sin dependencias nuevas, así que debería funcionar igual; lo comprueba Self-host en la #021.

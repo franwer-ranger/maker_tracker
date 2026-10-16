@@ -10,14 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_094500) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
     t.string "token_digest"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "token_used_at"
     t.index ["name"], name: "index_actors_on_name", unique: true
+    t.index ["token_digest"], name: "index_actors_on_token_digest", unique: true
   end
 
   create_table "comments", force: :cascade do |t|
