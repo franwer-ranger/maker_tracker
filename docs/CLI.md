@@ -61,7 +61,7 @@ D-12  Imágenes en Active Storage local
 
 ## Current milestone · M2 · Publicar sin fricción
 
-Goal: un maker programa una semana de posts en menos de 10 minutos.
+Goal: Un maker programa una semana de posts en menos de 10 minutos.
 4 of 12 done · 2 in progress · 2 ready · 2 defining · 2 ideas
 
 ## In progress
@@ -74,7 +74,7 @@ Next:
   mt roadmap
 ```
 
-- Las decisiones sustituidas no salen. Si hay más de 5 vigentes, se añade `… and 8 more: mt decisions`.
+- Las decisiones sustituidas no salen. Los objetivos de hito y los porqués son contenido: salen tal cual, sin cambiar mayúsculas. Si hay más de 5 vigentes, se añade `… and 8 more: mt decisions`.
 - Sin hito abierto, `## Current milestone` dice `No open milestone.` y sugiere `mt roadmap`.
 
 ## `mt next`
@@ -137,10 +137,10 @@ Next:
 
 Si se salta alguna por bloqueo: `Why this one: first ready, unblocked story in M2. PG-50 comes first but is blocked by PG-46 (in progress).`
 
-Si no hay ninguna (error, por stderr):
+Si no hay ninguna en ningún hito abierto (error, por stderr; nombra todos los hitos abiertos):
 
 ```text
-Error: no ready, unblocked story in M2.
+Error: no ready, unblocked story in M2, M3 or M4.
 Hint: 2 stories are being defined (PG-51, PG-54). See them with mt list --state defining, or ask fran.
 ```
 
@@ -150,7 +150,8 @@ Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar
 
 - `milestone` es el título del hito, sin el código (`M2`), porque el código cambia al reordenar. En la bandeja de ideas, vacío.
 - `state` y `milestone` se pueden leer, pero `mt edit` no los cambia: para eso están `mt move` y `mt reorder` (decisión de la #018).
-- El historial muestra los 10 últimos eventos.
+- El historial muestra los 10 últimos eventos. Si un evento tiene motivo, va al final de su línea: `reordered it in its milestone: "lo pide la beta"`.
+- `## Related` lista lo que la bloquea y lo que bloquea, cada una con su estado: `Blocked by PG-45 Programar publicaciones (in progress).` / `Blocks PG-54 Reprogramar arrastrando en el calendario (defining).`
 
 ## `mt roadmap`
 
@@ -160,7 +161,7 @@ Los hitos abiertos en orden, cada uno con sus historias en orden. Columnas fijas
 # Roadmap · Postgram
 
 ## M2 · Publicar sin fricción · in progress · 4/12
-Goal: un maker programa una semana de posts en menos de 10 minutos.
+Goal: Un maker programa una semana de posts en menos de 10 minutos.
 
 in progress  PG-48  Exportar post a PDF                         claude
 in progress  PG-45  Programar publicaciones                     codex
@@ -183,7 +184,7 @@ defining     PG-30  Mejores horas para publicar                 no criteria
 idea         PG-32  Alertas cuando un post despega
 
 ## M4 · Equipos · 3 ideas
-Goal: varias personas publicando en la misma cuenta.
+Goal: Varias personas publicando en la misma cuenta.
 
 idea         PG-24  Invitar a otra persona a la cuenta
 idea         PG-25  Roles: editor y publicador
@@ -205,11 +206,11 @@ Next:
 
 - Las Hechas de un hito abierto van en una sola línea (en la app también van plegadas).
 - La bandeja enseña las 3 primeras: es lo que menos importa al decidir qué hacer.
-- Los títulos más largos de 42 caracteres se cortan con `…`.
+- Los anchos de columna son mínimos (título 42 en roadmap y `list`): si un título es más largo, la columna crece en ese listado y no se corta nada. Así se alinean las filas sin perder texto.
 
 ## `mt list`
 
-Para buscar. Una línea por historia, con las mismas columnas que el roadmap más el hito.
+Para buscar. Una línea por historia, con las mismas columnas que el roadmap más el hito. Sin `--state`, la primera columna es el estado.
 
 ```text
 $ mt list --state ready
@@ -235,7 +236,7 @@ D-9   Imágenes en S3 desde el principio                fran    2026-09-16  supe
 
 ## Escribir
 
-Una línea con lo que ha pasado, los avisos y `Next:`.
+Una línea con lo que ha pasado, los avisos y `Next:`. Con una historia con la label `ui` y sin mockup, `move … ready` añade también `Warning: it has the ui label but no mockup.`
 
 ```text
 $ mt start PG-49
@@ -270,12 +271,13 @@ Next:
 $ mt move PG-52 ready
 PG-52 moved to ready.
 Warning: it has open questions.
-Warning: it has the ui label but no mockup.
 
 Next:
   mt edit PG-52 --file <f.md>
   mt next
 ```
+
+Si la historia es de otro actor (aquí, lanzado como codex; si es tuya, `PG-48 was already in progress and is yours.`):
 
 ```text
 $ mt start PG-48
