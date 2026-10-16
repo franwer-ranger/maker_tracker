@@ -38,6 +38,7 @@ class Api::Markdown::Story
   def read_only
     sections = [ READ_ONLY_MARK ]
     sections << "**Bloqueada por** #{sentence(blockers)}" if blockers.any?
+    sections << "**Ya no la bloquean** (hechas): #{sentence(resolved_blockers)}" if resolved_blockers.any?
     sections << "**Bloquea a** #{sentence(blocking)}" if blocking.any?
     sections << comments if @story.comments.any?
     sections << history
@@ -50,6 +51,10 @@ class Api::Markdown::Story
       pending = @story.pending_blockers
       @story.project.stories.where(number: pending).order(:number).map { "#{it.reference} (#{it.state})" }
     end
+  end
+
+  def resolved_blockers
+    @resolved_blockers ||= (@story.blocked_by - @story.pending_blockers).sort.map { "#{@story.project.key}-#{it}" }
   end
 
   def blocking

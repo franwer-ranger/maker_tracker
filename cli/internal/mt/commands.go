@@ -150,9 +150,20 @@ func init() {
 		summary: "Lista los proyectos de la instancia", example: "mt projects",
 		run: func(e *env) error { return e.call("GET", "/api/projects", nil, nil) }})
 
-	def(&command{name: "context", group: readGroup, usage: "mt context", maxArgs: 0,
-		summary: "Brief, últimas decisiones, hito actual y lo que está en curso: el onboarding del agente", example: "mt context",
-		run: func(e *env) error { return e.projectCall("GET", "/context", nil, nil) }})
+	def(&command{name: "context", group: readGroup, usage: "mt context [--hook]", maxArgs: 0,
+		summary:     "Brief, últimas decisiones, hito actual y lo que está en curso: el onboarding del agente",
+		description: "Con --hook (el hook SessionStart de mt init --claude) nunca falla: si no puede, imprime una línea con el motivo y sale con 0.",
+		example:     "mt context",
+		run: func(e *env) error {
+			err := e.projectCall("GET", "/context", nil, nil)
+			if err != nil && e.opts.has("hook") {
+				if _, ok := err.(silentError); !ok {
+					fmt.Fprintf(e.stdout, "Maker Tracker: sin contexto del proyecto (%s)\n", oneLine(err))
+				}
+				return nil
+			}
+			return err
+		}}, "hook! modo hook: no falla nunca")
 	def(&command{name: "next", group: readGroup, usage: "mt next", maxArgs: 0,
 		summary: "La siguiente historia Lista y no bloqueada, entera y con el motivo", example: "mt next",
 		run: func(e *env) error { return e.projectCall("GET", "/next", nil, nil) }})
@@ -308,6 +319,13 @@ func init() {
 	def(&command{name: "milestone reopen", group: defineGroup, usage: "mt milestone reopen <hito>", minArgs: 1, maxArgs: 1,
 		summary: "Reabre un hito", example: "mt milestone reopen M2",
 		run: func(e *env) error { return milestone(e, "/reopen", map[string]any{}) }})
+}
+
+func oneLine(err error) string {
+	if apiErr, ok := err.(*APIError); ok {
+		return apiErr.Code + ": " + apiErr.Message
+	}
+	return strings.Join(strings.Fields(err.Error()), " ")
 }
 
 // mt setup <url> <token>: comprueba la API y el token antes de guardarlos.
