@@ -67,7 +67,8 @@ La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de pri
 - **Lo que habla con máquinas va en inglés**: salida de `mt`, mensajes de la API, claves, comandos y la skill, como los nombres de tablas o el código. El contenido (títulos, historias, brief, decisiones) va en el idioma en que se escribe, y la app sigue en español. Formato de la salida en [`CLI.md`](CLI.md).
 - **Frontmatter YAML + cuerpo markdown** para leer y escribir una historia; JSON solo en la API y con `--json`.
 - **Al migrar a la app (#022), las historias conservan su número** (`MT-14` es la #014), para que valgan las referencias de commits y documentos, y **las decisiones de este documento se mueven a la app** (`D-n`): una sola fuente, que leen `mt context` y `mt decisions`.
-- **Skill y hook por repo**: `mt init PG --claude` deja `.mt`, la skill y el hook `SessionStart` en el repo del proyecto, no en la configuración global.
+- ~~Skill y hook por repo~~ → **Skill global, hook por carpeta** (2026-10-16): `mt skill install` deja la skill en `~/.claude/skills/`, para que en cualquier carpeta el agente sepa usar `mt`; `mt init PG --claude` deja `.mt` y el hook `SessionStart` en el repo.
+- **Un agente puede crear proyectos** (`mt project create`, 2026-10-16), a su nombre y con su evento. Sustituye a "crear proyectos solo desde la UI" de la #018. Así funciona "lleva este proyecto a Maker Tracker" desde cualquier repo (#027): el agente lee el repo, propone brief, hitos y decisiones, y escribe con el OK de Fran.
 
 ### 2026-10-16 · Arranque de M1
 
