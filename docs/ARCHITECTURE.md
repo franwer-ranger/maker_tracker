@@ -64,11 +64,11 @@ No es una tabla: se deriva al consultar.
 - Preguntas que un agente deja en un comentario dirigido a mí.
 - (Si se decide) propuestas de cambio de producto pendientes de aprobar.
 
-## Interfaz para agentes (propuesta)
+## Interfaz para agentes
 
 Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 
-**API JSON** (`/api/...`, token de agente en `Authorization`). Toda respuesta va en un sobre:
+**API JSON** (`/api/...`, token de agente en `Authorization: Bearer`, creado con `bin/rails "mt:token[claude]"`). Los proyectos se identifican por su clave (`/api/projects/PG/stories/49`). Toda respuesta va en un sobre:
 
 ```json
 {
@@ -81,22 +81,25 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 
 - `breadcrumbs`: lo que tiene sentido hacer después, para que el agente no adivine.
 - Errores con código tipado, `hint` de cómo arreglarlo y si se puede reintentar.
-- La API se describe a sí misma (lista de comandos y su esquema).
+- La API se describe a sí misma (`GET /api`: versión y lista de operaciones).
+- `warnings`: avisos que no bloquean (pasar a Lista con preguntas abiertas, empezar una historia bloqueada…).
+- Lo que lee un agente (contexto, roadmap, una historia) va además en `data.markdown`. Una historia se lee y se escribe en el mismo formato que `docs/backlog/`: frontmatter con sus propiedades y el cuerpo debajo.
 
-**CLI `mt`** (en el Mac, habla con la torre por Tailscale). Salida legible en terminal y JSON cuando se encadena:
+**CLI `mt`**: binario en Go, en `cli/` de este repo. En el Mac, habla con la torre por Tailscale. Configuración en `~/.config/mt/config` (`mt setup <url> <token>`) y proyecto por repo en `.mt` (`mt init PG`). Imprime texto legible por defecto, también dentro de un agente; `--json` da el sobre. Historias en [`backlog/`](backlog/) #014–#020. Los principales:
 
 | Comando | Qué hace |
 |---|---|
 | `mt context` | Brief, últimas decisiones, hito actual y lo que está en curso, en markdown compacto. Es el onboarding del agente |
-| `mt next` | Primera historia **Lista** y no bloqueada (`blocked_by` sin terminar) del primer hito abierto, con su motivo, contexto y commits relacionados para contrastar con el repo |
+| `mt next` | Primera historia **Lista** y no bloqueada (`blocked_by` sin terminar) del primer hito abierto, entera y con el motivo de que sea esa |
 | `mt roadmap` | El roadmap en markdown, generado en vivo |
 | `mt show <n>` | Una historia completa en markdown |
 | `mt start <n>` | Reclama la historia y la pasa a En curso |
 | `mt done <n> --commit <sha>` | La cierra enlazando commits o PR |
 | `mt comment <n> "…"` | Comenta en la historia |
 | `mt decide "…" --why "…"` | Registra una decisión |
+| `mt create` · `mt edit` · `mt move` · `mt reorder` · `mt brief` | Escriben producto (crear y editar historias con `--file`, cambiar estado, ordenar con motivo, editar el brief) |
 
-**Skill + hook SessionStart**: la skill enseña al agente a usar `mt` y el hook inyecta `mt context` al empezar cada sesión, así cada conversación arranca sabiendo la filosofía del proyecto.
+**Skill + hook SessionStart**: la skill enseña al agente a usar `mt` y el hook inyecta `mt context` al empezar cada sesión, así cada conversación arranca sabiendo la filosofía del proyecto. `mt init PG --claude` los deja en el repo del proyecto.
 
 **MCP**: al final, fino, como envoltorio de la misma API. Pocas herramientas, una por dominio (`mt_stories`, `mt_roadmap`…), con varias acciones cada una. Modo solo lectura disponible. Sirve para Claude Desktop o el móvil.
 
@@ -104,9 +107,9 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 
 Genérico: lo usa wflow, pero no menciona wflow. Cualquier herramienta con un token de agente puede usarlo.
 
-**1. Leer una historia**: `GET /api/projects/:slug/stories/:number` → markdown (o JSON con `body` en markdown): título, qué, por qué, criterios, enlaces a Paper y decisiones relacionadas.
+**1. Leer una historia**: `GET /api/projects/:key/stories/:number` → markdown (o JSON con `body` en markdown): título, qué, por qué, criterios, enlaces a Paper y decisiones relacionadas.
 
-**2. Reportar eventos**: `POST /api/projects/:slug/stories/:number/runs/:external_id/events`
+**2. Reportar eventos**: `POST /api/projects/:key/stories/:number/runs/:external_id/events`
 
 ```json
 {

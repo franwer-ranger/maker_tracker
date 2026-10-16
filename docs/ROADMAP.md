@@ -39,11 +39,18 @@ Pantallas en Paper → `App`. Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.
 
 Objetivo: un agente puede responder "¿qué es lo siguiente?" y cerrar el ciclo. **A partir de aquí, Maker Tracker se construye con Maker Tracker.**
 
-- API JSON con sobre (`ok`, `data`, `summary`, `breadcrumbs`), errores con `hint` y tokens por agente.
-- CLI `mt`: `context`, `next`, `roadmap`, `show`, `start`, `done`, `comment`, `decide`.
-- Skill para Claude Code y hook SessionStart con `mt context`.
-- Desplegar la v2 en la torre (red local / Tailscale), usando el camino que ya habrá montado la vertiente de self-host.
-- Migrar este roadmap y el backlog de Maker Tracker a la propia app.
+Historias, en orden:
+1. [#014 Tokens de agente](backlog/014-agent-tokens.md) · Lista
+2. [#015 API · sobre, errores y autodescripción](backlog/015-api-base.md) · Lista
+3. [#016 API · leer contexto, siguiente, roadmap e historias](backlog/016-api-read.md) · Lista
+4. [#017 API · reclamar, cerrar, comentar y decidir](backlog/017-api-work.md) · Lista
+5. [#018 API · definir producto](backlog/018-api-define.md) · Lista
+6. [#019 CLI mt](backlog/019-cli-mt.md) · Lista
+7. [#020 Skill de Maker Tracker y hook SessionStart](backlog/020-skill-and-hook.md) · Lista
+8. [#021 La v2 en la torre, con API para los agentes](backlog/021-tower-v2.md) · Lista (self-host)
+9. [#022 Maker Tracker se gestiona en Maker Tracker](backlog/022-dogfooding.md) · Definiendo
+
+Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.md#2026-10-16--definición-de-m2).
 
 ## M3 · Actividad
 

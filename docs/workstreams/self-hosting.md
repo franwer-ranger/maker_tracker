@@ -39,6 +39,10 @@ La regla que las une: **montas la torre siguiendo solo la guía que escribes.** 
 6. **Preparar el repo para abrirse**: `LICENSE` (MIT), `README.md` en inglés (qué es, captura, instalación en pocas líneas, enlace a la guía) y una última revisión de secretos. Luego pregunta a Fran si se hace público y con qué nombre.
 7. **Construir la landing** en un repo propio y público (Astro o similar, salida estática), validada por Producto el 2026-10-16: textos y enlaces en `DESIGN.md` → Landing. Tokens y fuentes de `DESIGN.md`, fuentes alojadas en el propio sitio e iconos Heroicons en SVG en línea. Crear el repo, publicarla y el dominio los decide Fran: prepáralo y pregunta.
 
+## En M2
+
+- [#021 La v2 en la torre, con API para los agentes](../backlog/021-tower-v2.md) es tuya: la torre con la v2 y `mt` del Mac conectado a ella. Puede ir en cuanto exista la API (#015), aunque M1 no esté terminado.
+
 ## Cómo sabes que vas bien
 
 - Alguien que no es Fran podría autoalojarlo leyendo solo `docs/SELF_HOSTING.md`.

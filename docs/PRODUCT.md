@@ -53,9 +53,18 @@ La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de pri
 
 - Colaboración: tras cerrar el MVP, el tablero podrá ser colaborativo (varias personas). Cómo, se piensa entonces; hasta ahí, un único actor humano.
 - ¿Cómo se migra el backlog actual de Notion?
-- ¿Los cambios de producto que hace un agente (reordenar el roadmap, tocar el brief, marcar una historia como Lista) se aplican directamente o llegan como **propuesta** que apruebo desde "Necesita tu atención"? Lo segundo me deja de editor, pero añade un paso y choca con "ligero".
+- ¿Los cambios de producto que hace un agente (reordenar el roadmap, tocar el brief, marcar una historia como Lista) deberían pasar a ser **propuestas** que apruebo desde "Necesita tu atención"? En M2 se aplican directamente y quedan registrados (ver Decisiones); se revisa en M3 con la pantalla Actividad delante.
 
 ## Decisiones
+
+### 2026-10-16 · Definición de M2
+
+- **Los agentes escriben producto directamente, con registro**: crean y editan historias, las mueven de estado (también a Lista), las reordenan con motivo y editan el brief. Cada cambio deja su evento a su nombre. Sin esto, Maker Tracker no se puede construir con Maker Tracker. Si hacen falta propuestas que apruebe, se decide en M3.
+- **El CLI `mt` es un binario en Go**, en este mismo repo (`cli/`), para que cambie a la vez que la API. Sin dependencias para quien lo instala. Publicar binarios (Releases, Homebrew) se decide después.
+- **Tokens de agente con un comando en el servidor** (`bin/rails "mt:token[claude]"`), sin pantalla. El token identifica, no protege: la app sigue solo en la red local o Tailscale. La UI de agentes llega más adelante.
+- **Lo que lee un agente es markdown.** La API devuelve el sobre en JSON, pero contexto, roadmap e historias van en markdown, y `mt` imprime texto legible por defecto (`--json` para el sobre). Una historia se lee y se escribe en el mismo formato que `docs/backlog/` (frontmatter + cuerpo).
+- **Proyectos por su clave** en la API y en `mt` (`PG`, `PG-49`), no por el slug.
+- **Skill y hook por repo**: `mt init PG --claude` deja `.mt`, la skill y el hook `SessionStart` en el repo del proyecto, no en la configuración global.
 
 ### 2026-10-16 · Arranque de M1
 
