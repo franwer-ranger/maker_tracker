@@ -9,6 +9,14 @@ Rails.application.routes.draw do
 
   get "design" => "design#show" if Rails.env.development?
 
+  # API para agentes (mt, MCP). Proyectos por su clave: /api/projects/PG/stories/49.
+  # GET /api describe todas las operaciones (Api::Operations).
+  namespace :api, defaults: { format: :json } do
+    get "/", to: "root#show"
+    resources :projects, param: :key, only: :index
+    match "*path", to: "base#route_not_found", via: :all
+  end
+
   # "/" redirige al proyecto si solo hay uno; "/p" lista siempre los proyectos.
   root "projects#index"
   resources :projects, path: "p", only: %i[index create]
