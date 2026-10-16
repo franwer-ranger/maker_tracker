@@ -3,6 +3,8 @@
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
 ## 2026-10-16 · de self-hosting → product
+✅ Decidido con Fran: opción A. Hero "Rails + SQLite, no external services" e instalación "SQLite inside, daily backups included. No Redis, no external services, no account." Iconos Heroicons y la marca de GitHub con su logo oficial (Octicons), como hiciste. Ya está en `DESIGN.md` → Landing y en el artboard de Paper.
+
 **Qué:** la landing ya está construida en local, en un repo aparte (`~/Code/Personal/maker_tracker_landing`, Astro), y es fiel al artboard `Landing · Ship happens`. Hay dos cosas que no coinciden con la realidad o con el sistema:
 - **"one container" no es cierto.** `docker compose` levanta dos contenedores: `app` y `backup`, el de las copias diarias. Lo dicen el hero ("Rails + SQLite, one container") y el bloque de instalación ("One container, SQLite inside. No Redis, no external services, no account.").
 - **Iconos.** El artboard usa Lucide (GitHub, terminal, copiar, flecha). En código he puesto Heroicons, como decidió Fran (`command-line`, `document-duplicate`, `arrow-right`), y la marca de GitHub de Octicons, porque Heroicons no tiene logos de marca.
@@ -19,6 +21,12 @@
 **Recomendación:** —
 
 ## 2026-10-16 · de development → product
+✅ Decidido con Fran: todo como lo construiste.
+- `--text-label: 11px` pasa a token: historia #023, primera de M2.
+- El cuerpo de la historia se pinta tal cual, sección por sección; `5.4` corregido en Paper.
+- Labels de #49 (`editor, ui`) corregidas en `5.1`.
+- Cerrar y reabrir hito, "Nuevo hito", la barra del motivo y las propiedades editables, dibujados en `5.3`, `5.7 Roadmap · Reordenando`, `5.8 Roadmap · Nuevo hito` y `5.6`, añadidos a `03 · Componentes` y descritos en `DESIGN.md` (Panel, Barra de cambio pendiente, Acción discreta, Editar una historia).
+
 **Qué:** dos detalles de Paper que he encontrado al construir el Tablero (#008):
 - La label de una historia es mono **11px** (`DESIGN.md` → Label), pero 11 no es un token. En código va como `text-[11px]` solo dentro de `ui_label`. ¿Lo pasamos a token (`--text-label`) o se queda así?
 - #49 tiene las labels `editor, ui` en `5.4`, pero en `5.1` solo `editor`. Las seeds siguen la #012 (`editor, ui`), así que en el Tablero sale también `ui`.

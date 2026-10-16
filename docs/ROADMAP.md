@@ -25,13 +25,13 @@ Historias, en orden:
 4. [#004 Modelo v2 · actores, decisiones y comentarios](backlog/004-actors-decisions-comments.md) · Hecha
 5. [#005 Eventos · el registro de los hechos](backlog/005-events.md) · Hecha
 6. [#006 Seeds · Postgram como en los mockups](backlog/006-seeds-postgram.md) · Hecha
-7. [#013 Token text-control y estados en /design](backlog/013-design-tokens-cleanup.md) · Lista
-8. [#012 Seeds · alinear con las pantallas de App](backlog/012-seeds-match-app-screens.md) · Lista
-9. [#007 Proyectos y estructura de la app](backlog/007-projects-and-shell.md) · Lista
-10. [#008 Tablero por estados](backlog/008-board.md) · Lista
-11. [#009 Roadmap · hitos e historias en orden](backlog/009-roadmap.md) · Lista
-12. [#010 Historia · ver y definir una historia](backlog/010-story-page.md) · Lista
-13. [#011 Brief · visión y decisiones del proyecto](backlog/011-brief.md) · Lista
+7. [#013 Token text-control y estados en /design](backlog/013-design-tokens-cleanup.md) · Hecha
+8. [#012 Seeds · alinear con las pantallas de App](backlog/012-seeds-match-app-screens.md) · Hecha
+9. [#007 Proyectos y estructura de la app](backlog/007-projects-and-shell.md) · Hecha
+10. [#008 Tablero por estados](backlog/008-board.md) · Hecha
+11. [#009 Roadmap · hitos e historias en orden](backlog/009-roadmap.md) · Hecha
+12. [#010 Historia · ver y definir una historia](backlog/010-story-page.md) · Hecha
+13. [#011 Brief · visión y decisiones del proyecto](backlog/011-brief.md) · Hecha
 
 Pantallas en Paper → `App`. Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.md#2026-10-16--arranque-de-m1).
 
@@ -40,15 +40,16 @@ Pantallas en Paper → `App`. Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.
 Objetivo: un agente puede responder "¿qué es lo siguiente?" y cerrar el ciclo. **A partir de aquí, Maker Tracker se construye con Maker Tracker.**
 
 Historias, en orden:
-1. [#014 Tokens de agente](backlog/014-agent-tokens.md) · Lista
-2. [#015 API · sobre, errores y autodescripción](backlog/015-api-base.md) · Lista
-3. [#016 API · leer contexto, siguiente, roadmap e historias](backlog/016-api-read.md) · Lista
-4. [#017 API · reclamar, cerrar, comentar y decidir](backlog/017-api-work.md) · Lista
-5. [#018 API · definir producto](backlog/018-api-define.md) · Lista
-6. [#019 CLI mt](backlog/019-cli-mt.md) · Lista
-7. [#020 Skill de Maker Tracker y hook SessionStart](backlog/020-skill-and-hook.md) · Lista
-8. [#021 La v2 en la torre, con API para los agentes](backlog/021-tower-v2.md) · Lista (self-host)
-9. [#022 Maker Tracker se gestiona en Maker Tracker](backlog/022-dogfooding.md) · Definiendo
+1. [#023 Token text-label](backlog/023-text-label-token.md) · Lista
+2. [#014 Tokens de agente](backlog/014-agent-tokens.md) · Lista
+3. [#015 API · sobre, errores y autodescripción](backlog/015-api-base.md) · Lista
+4. [#016 API · leer contexto, siguiente, roadmap e historias](backlog/016-api-read.md) · Lista
+5. [#017 API · reclamar, cerrar, comentar y decidir](backlog/017-api-work.md) · Lista
+6. [#018 API · definir producto](backlog/018-api-define.md) · Lista
+7. [#019 CLI mt](backlog/019-cli-mt.md) · Lista
+8. [#020 Skill de Maker Tracker y hook SessionStart](backlog/020-skill-and-hook.md) · Lista
+9. [#021 La v2 en la torre, con API para los agentes](backlog/021-tower-v2.md) · Lista (self-host)
+10. [#022 Maker Tracker se gestiona en Maker Tracker](backlog/022-dogfooding.md) · Definiendo
 
 Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.md#2026-10-16--definición-de-m2).
 

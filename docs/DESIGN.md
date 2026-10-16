@@ -35,7 +35,7 @@ Para llevar un diseño a código, leer los valores exactos con el MCP de Paper (
 
 Todas son OFL (Google Fonts / Vercel). **Apple Garamond Light** fue la idea original, pero no tiene licencia web: Instrument Serif es la más parecida (estrecha, misma altura de x). SF Pro tampoco se usa en web.
 
-Escala: 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 13 es `--text-control`, para controles pequeños, selector de estado, actor, metadatos y ayudas de campo) y 48 · 72 · 112 (display; el hero de la landing usa 184).
+Escala: 11 · 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 11 es `--text-label`, solo para las labels de historia; el 13 es `--text-control`, para controles pequeños, selector de estado, actor, metadatos y ayudas de campo) y 48 · 72 · 112 (display; el hero de la landing usa 184).
 
 ## Color
 
@@ -94,10 +94,15 @@ Piezas de las pantallas de la app (en `App` y, como referencia, en `03 · Compon
 - **Tarjeta de historia** (Tablero): `#n` en mono, título, labels y metadato arriba a la derecha (actor, "Siguiente", bloqueo, "faltan criterios", mockup). Las Hechas, sin fondo y con el título atenuado.
 - **Fila de historia** (Roadmap): estado (104px) · `#n` (40px) · título · metadato, con columnas de ancho fijo.
 - **Badge "Siguiente"**: píldora `state-ready` con texto negro. Solo una por proyecto.
-- **Label**: mono 11px sobre `surface`, radio 4.
+- **Label**: mono `text-label` (11px, interlineado 14) sobre `surface`, radio 4.
 - **Propiedad**: etiqueta de 112px y valor.
 - **Menú**: `surface` con borde `border-strong` y la única sombra funcional del sistema (`0 12px 32px rgba(0,0,0,.6)`).
 - **Evento del historial**: marca lateral de 2px (`inset`) con el color del estado al que pasa, o `border-strong` si no es un cambio de estado.
+- **Panel**: un formulario que se abre bajo su botón (p. ej. "Nuevo hito"), con el mismo fondo, borde y sombra que el menú. Inputs sobre `bg` y el botón de enviar pequeño, a la derecha.
+- **Barra de cambio pendiente**: tras soltar algo que pide motivo (reordenar en el Roadmap), una barra `surface-sunken` con borde `border-strong`: qué ha cambiado, el motivo (opcional en la UI), "Deshacer" (fantasma) y "Guardar orden" (primario), ambos pequeños. Se guarda al confirmar, porque el motivo va en el evento y los eventos no se editan.
+- **Acción discreta**: lo que se hace poco y no debe competir (cerrar o reabrir un hito) es un botón fantasma pequeño, al pie de su bloque, separado por un borde.
+- **Cuerpo de una historia**: el markdown tal cual, sección por sección. Cada `##` se pinta como etiqueta de sección y las secciones vacías no se muestran. No se destaca ninguna sección.
+- **Editar una historia**: el título pasa a input, el cuerpo al editor (Escribir / Vista previa) y las propiedades de la columna (mockup, labels, "Bloqueada por") a campos que se guardan con el mismo botón. El estado no se cambia mientras se edita.
 
 Regla: si una pantalla necesita una pieza nueva, primero se añade al sistema en Paper y aquí.
 
@@ -106,12 +111,12 @@ Regla: si una pantalla necesita una pieza nueva, primero se añade al sistema en
 **Ship happens**. Pública, en inglés, en su propio repo, y su única acción es autoalojarlo:
 
 1. Nav: marca, enlaces (How it works, For agents, Self-host, Docs), GitHub y "Self-host it".
-2. Hero: "Ship happens." en serif con el subrayado hecho a mano en naranja; subtítulo; CTA "Self-host it" + "Read the source"; datos en mono (MIT, Rails + SQLite en un contenedor, en tu máquina, MCP + CLI).
+2. Hero: "Ship happens." en serif con el subrayado hecho a mano en naranja; subtítulo; CTA "Self-host it" + "Read the source"; datos en mono (MIT, Rails + SQLite sin servicios externos, en tu máquina, MCP + CLI). Nada de "one container": `docker compose` levanta la app y el contenedor de las copias.
 3. Producto: a la izquierda la vista Actividad ("For you", con la navegación de la app: Activity · Board · Roadmap · Brief), a la derecha un terminal ("For your agents"): los mismos datos para los dos públicos.
 4. Frase grande: "You decide what's worth building. Agents build it…", con revelado palabra a palabra al hacer scroll (de 28 % a 100 % de opacidad).
 5. Tres pasos: Define with AI · Ask what's next · Ship and report.
 6. "Light, on purpose.": lo que no hay (sprints, puntos…) y cuatro principios.
-7. "Are we free?": no es una FAQ sino la idea de fondo (ser dueño de tu código, tu infraestructura y tus datos, sin pagar a otros por lo que resuelves tú con tus agentes y tu hardware), dicha en una línea. MIT + bloque de instalación con `docker compose`.
+7. "Are we free?": no es una FAQ sino la idea de fondo (ser dueño de tu código, tu infraestructura y tus datos, sin pagar a otros por lo que resuelves tú con tus agentes y tu hardware), dicha en una línea. MIT + bloque de instalación con `docker compose` y "SQLite inside, daily backups included. No Redis, no external services, no account."
 8. Footer: "Made by Christian, Romer and Fran." y enlaces GitHub · Docs · MIT License.
 
 Enlaces:
@@ -125,5 +130,7 @@ Enlaces:
 | Self-host it (nav y hero) | Ancla al bloque de instalación |
 
 La landing describe el producto completo (CLI, MCP, Actividad) aunque aún no esté todo hecho: Fran decide cuándo se comunica.
+
+Iconos: Heroicons, como en la app. Las marcas (GitHub) no están en Heroicons: van con su logo oficial (Octicons).
 
 Movimiento: transiciones con curva propia (`cubic-bezier(0.32, 0.72, 0, 1)`), revelados con `IntersectionObserver` y nada de escuchar `scroll` sin throttle.
