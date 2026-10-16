@@ -1,6 +1,14 @@
 # Maker Tracker
 
-Gestor de proyectos estilo Pivotal Tracker: proyectos, sprints, items (historias/bugs) y comentarios.
+Herramienta para definir y organizar productos junto a agentes de IA. El código actual es todavía la v1 (estilo Pivotal Tracker: proyectos, sprints, items y comentarios); la v2 está en diseño.
+
+**Antes de proponer, priorizar o construir nada, lee [`docs/PRODUCT.md`](docs/PRODUCT.md)**: visión, filosofía (agent-first, ligero), decisiones y preguntas abiertas. Si una decisión lo cambia, actualízalo.
+
+- [`docs/ROADMAP.md`](docs/ROADMAP.md): qué construimos y en qué orden.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): modelo de datos v2, interfaz para agentes (`mt`, API, MCP), contrato de eventos y módulo de wflow.
+- [`docs/DESIGN.md`](docs/DESIGN.md): sistema de diseño v3 (tokens, tipografía, componentes, landing). Léelo antes de tocar UI.
+- [`docs/workstreams/`](docs/workstreams/README.md): el trabajo va en tres vertientes paralelas (producto, desarrollo, self-host), cada una con su brief, su worktree y lo que es suyo. Si eres uno de esos agentes, lee el README y tu brief antes de empezar.
+- [`docs/backlog/`](docs/backlog/): historias en markdown hasta que la v2 guarde su propio backlog.
 
 ## Stack
 

@@ -1,0 +1,65 @@
+# Maker Tracker · Roadmap
+
+> Qué construimos y en qué orden. Cuando Maker Tracker pueda guardar su propio roadmap (M2), este fichero se migra allí y queda solo como enlace (dogfooding). Contexto en [`PRODUCT.md`](PRODUCT.md) y diseño en [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
+## Punto de partida
+
+La v1: proyectos, sprints, items y comentarios en un kanban estilo Pivotal Tracker, con Devise. Ya está en Ruby 3.4.8 y Rails 8.1. Tiene bugs conocidos (velocidad calculada con el último sprint de cualquier proyecto, redirección rota al borrar items, falta `done_controller.js`, sin autorización), pero **no se arreglan**: la v2 sustituye ese modelo.
+
+Supuesto: no hay datos reales en la v1 que conservar, solo seeds. Si los hay, se añade una migración de datos a M1.
+
+## Cómo se trabaja
+
+Tres vertientes en paralelo, cada una con su agente: **producto y diseño**, **desarrollo** y **self-host y distribución**. Reglas y briefs en [`workstreams/`](workstreams/README.md). Hasta que M2 permita guardar el backlog en la propia app, las historias viven en [`backlog/`](backlog/) y este roadmap las enlaza en orden.
+
+En paralelo a los hitos, la vertiente de self-host despliega en la torre lo que haya en cada momento (se adelanta a M2), prepara el repo para hacerse público (MIT) y construye la landing pública.
+
+## M1 · Núcleo v2
+
+Objetivo: el modelo nuevo funcionando, con la UI mínima para definir producto.
+
+Historias, en orden:
+1. [#001 Sistema de diseño v3 en código](backlog/001-design-system-tokens.md) · Lista
+
+Pendiente de escribir como historias:
+
+- Quitar Devise, sprints, puntos y velocidad.
+- Modelo nuevo: `Project` (con `brief`), `Milestone`, `Story` (estados Idea → Definiendo → Lista → En curso → Hecha), `Decision`, `Comment`, `Actor`, `Event`.
+- Cada cambio de estado, reclamación y reordenación genera un `Event`.
+- UI: Roadmap (hitos y sus historias, reordenables con motivo), Historia (definición en markdown) y Brief (visión y decisiones).
+- Seeds con un proyecto de ejemplo coherente con los mockups.
+
+## M2 · Interfaz para agentes
+
+Objetivo: un agente puede responder "¿qué es lo siguiente?" y cerrar el ciclo. **A partir de aquí, Maker Tracker se construye con Maker Tracker.**
+
+- API JSON con sobre (`ok`, `data`, `summary`, `breadcrumbs`), errores con `hint` y tokens por agente.
+- CLI `mt`: `context`, `next`, `roadmap`, `show`, `start`, `done`, `comment`, `decide`.
+- Skill para Claude Code y hook SessionStart con `mt context`.
+- Desplegar la v2 en la torre (red local / Tailscale), usando el camino que ya habrá montado la vertiente de self-host.
+- Migrar este roadmap y el backlog de Maker Tracker a la propia app.
+
+## M3 · Actividad
+
+Objetivo: enterarme de qué está pasando sin preguntar.
+
+- Pantalla Actividad como portada: "Necesita tu atención", "En curso ahora" y el registro cronológico.
+- Atención derivada de los datos: historias atascadas en Definiendo, preguntas de agentes.
+- Decidir la pregunta abierta de las propuestas: ¿los cambios de producto de un agente se aplican directamente o pasan por mí?
+
+## M4 · Ejecución y wflow
+
+Objetivo: el flujo completo de producto a tecnología, con cada pieza viviendo sola.
+
+- Maker Tracker: entidad `Run`, endpoint de eventos (genérico, idempotente) y vista genérica de runs en la historia.
+- Maker Tracker: módulo `app/integrations/wflow/` con interruptor por proyecto (pestaña Ejecución, tarjetas de parada con sus comandos).
+- Stats: coste total, por historia y por hito; tiempo de agente frente a tiempo esperando por mí. El desglose por fase y modelo, en el módulo de wflow.
+- wflow (en su repo): fuente de historias intercambiable (Notion / markdown local / Maker Tracker), emisor de eventos opcional, registrar entrada y salida de cada parada, quitar lo específico de Webel.
+
+## Después
+
+Sin orden decidido:
+
+- MCP fino sobre la API (Claude Desktop, móvil).
+- Migrar los backlogs desde Notion.
+- Paradas nivel 2: Maker Tracker guarda la decisión y wflow la recoge al reanudar.
