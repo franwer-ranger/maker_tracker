@@ -1,0 +1,15 @@
+<div class="flex flex-col overflow-clip rounded-xl border border-border bg-surface-sunken" data-controller="clipboard">
+  <div class="flex h-control shrink-0 items-center justify-between border-b border-border px-4">
+    <div class="flex gap-1.5" aria-hidden="true">
+      <span class="size-2.5 rounded-full bg-border-strong"></span>
+      <span class="size-2.5 rounded-full bg-border-strong"></span>
+      <span class="size-2.5 rounded-full bg-border-strong"></span>
+    </div>
+    <span class="font-mono text-xs text-text-subtle"><%= title %></span>
+    <button type="button" class="rounded-sm text-text-subtle transition-colors duration-150 ease-brand hover:text-text <%= ComponentsHelper::FOCUS_RING %>"
+            data-action="clipboard#copy" aria-label="Copiar">
+      <%= icon "document-duplicate", size: 14 %>
+    </button>
+  </div>
+  <pre class="overflow-x-auto p-5 font-mono text-[13px] leading-[22px] text-text-muted" data-clipboard-target="source"><%= body %></pre>
+</div>

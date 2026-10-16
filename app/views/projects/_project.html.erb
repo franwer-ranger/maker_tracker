@@ -4,8 +4,8 @@
       <%= project.name %>
     <% end %>
     <div class="font-semibold text-lg">
-      <%= link_to edit_project_path(project), class: 'font-semibold text-lg' do %>
-        <i class="fa-solid fa-gear"></i>
+      <%= link_to edit_project_path(project), class: 'font-semibold text-lg', aria: { label: 'Settings' } do %>
+        <%= icon "cog-6-tooth" %>
       <% end %>
     </div>
   </div>

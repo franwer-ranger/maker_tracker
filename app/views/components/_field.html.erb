@@ -1,0 +1,24 @@
+<%
+  hint_id = "#{attribute}_hint" if hint
+  input_options = input_attrs.merge(
+    class: class_names(
+      "h-control w-full rounded-md border border-strong bg-surface-sunken px-3 text-sm leading-[18px] text-text",
+      "placeholder:text-text-subtle transition-shadow duration-150 ease-brand",
+      "focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]",
+      input_attrs[:class]
+    ),
+    aria: { describedby: hint_id }
+  )
+%>
+<div class="flex flex-col gap-2">
+  <% if form %>
+    <%= form.label attribute, label, class: "text-sm font-medium leading-[18px] text-text" %>
+    <%= form.text_field attribute, **input_options %>
+  <% else %>
+    <%= label_tag attribute, label, class: "text-sm font-medium leading-[18px] text-text" %>
+    <%= text_field_tag attribute, input_options.delete(:value), **input_options %>
+  <% end %>
+  <% if hint %>
+    <p id="<%= hint_id %>" class="text-[13px] leading-4 text-text-muted"><%= hint %></p>
+  <% end %>
+</div>

@@ -2,8 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens del sistema de diseño v3: mismos nombres y valores que en Paper (docs/DESIGN.md). */
 :root {
+  --color-bg: #000000;
+  --color-surface-sunken: #0A0A0A;
+  --color-surface: #1D1D1D;
+  --color-border: #2A2A2A;
+  --color-border-strong: #3A3A3A;
+  --color-text: #FFFFFF;
+  --color-text-soft: #EDEDED;
+  --color-text-muted: #9E9C9C;
+  --color-text-subtle: #6E6E6E;
+  --color-accent: #FF3F01;
+  --color-accent-hover: #FF5A24;
+  --color-avatar: #3D89F6;
+  --color-state-idea: #6B6B6B;
+  --color-state-defining: #E8B04A;
+  --color-state-ready: #F5F5F5;
+  --color-state-done: #5FB37A;
+
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-display-sm: 48px;
+  --text-display: 72px;
+  --text-display-lg: 112px;
+
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-24: 96px;
+  --spacing-32: 128px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
   --header-height: 70px;
+
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    @apply bg-bg font-sans text-text antialiased;
+    font-synthesis: none;
+  }
 }
 
 html, body {

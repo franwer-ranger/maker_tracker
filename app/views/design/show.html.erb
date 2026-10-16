@@ -1,0 +1,153 @@
+<div class="mx-auto flex w-full max-w-[1440px] flex-col gap-24 p-24">
+  <header class="flex flex-wrap items-end justify-between gap-16">
+    <div class="flex flex-col gap-3">
+      <div class="font-mono text-xs uppercase tracking-label text-accent">Sistema de diseño v3</div>
+      <h1 class="font-display text-display text-text">Pocas piezas, bien hechas</h1>
+    </div>
+    <p class="max-w-[420px] text-base text-text-muted">
+      Catálogo para revisar contra Paper → <span class="font-mono text-sm">v3 · Sistema</span>.
+      Si una pantalla necesita una pieza nueva, primero se añade allí y aquí.
+    </p>
+  </header>
+
+  <%# 01 · Tipografía %>
+  <section class="flex flex-wrap items-start gap-16">
+    <div class="flex min-w-0 flex-[1.7] flex-col gap-6">
+      <%= section_label "Display · Instrument Serif 400" %>
+      <div class="flex flex-col gap-3">
+        <div class="font-display text-display-lg">Ship happens.</div>
+        <div class="font-mono text-xs text-text-subtle">display-lg · 112 / 104 · solo hero</div>
+      </div>
+      <div class="flex flex-col gap-3">
+        <div class="font-display text-display">Made by makers.</div>
+        <div class="font-mono text-xs text-text-subtle">display · 72 / 72 · secciones de landing</div>
+      </div>
+      <div class="flex flex-col gap-3">
+        <div class="font-display text-display-sm">Publicar sin fricción</div>
+        <div class="font-mono text-xs text-text-subtle">display-sm · 48 / 52 · Brief, hitos</div>
+      </div>
+    </div>
+    <div class="flex flex-1 flex-col gap-5">
+      <%= section_label "Interfaz · Geist" %>
+      <% [
+           ["text-3xl font-semibold tracking-[-0.02em]", "Actividad", "3xl · 600"],
+           ["text-2xl font-medium tracking-[-0.01em]", "Plantillas de post", "2xl · 500"],
+           ["text-lg font-medium", "Exportar post a PDF", "lg · 500"],
+           ["text-base text-text-soft", "Como maker quiero guardar un post como plantilla.", "base · 400"],
+           ["text-sm text-text-muted", "3 findings aplicados, 1 descartado", "sm · 400"]
+         ].each do |classes, sample, spec| %>
+        <div class="flex items-baseline justify-between gap-4">
+          <div class="<%= classes %>"><%= sample %></div>
+          <div class="shrink-0 font-mono text-xs text-text-subtle"><%= spec %></div>
+        </div>
+      <% end %>
+    </div>
+    <div class="flex flex-[0.8] flex-col gap-5">
+      <%= section_label "Máquina · Geist Mono" %>
+      <div class="font-mono text-sm">$ mt next</div>
+      <div class="font-mono text-[13px] leading-5 text-text-muted">claude · #48 · hace 18 min</div>
+      <%= section_label "Necesita tu atención" %>
+    </div>
+  </section>
+
+  <%# 02 · Color y forma %>
+  <section class="flex flex-col gap-6">
+    <%= section_label "Color" %>
+    <div class="grid grid-cols-8 overflow-clip rounded-xl border border-border">
+      <% %w[bg surface-sunken surface border border-strong text-subtle text-muted text].each_with_index do |token, i| %>
+        <div class="flex h-40 flex-col justify-end gap-1 p-4" style="background: var(--color-<%= token %>)">
+          <span class="text-sm font-medium <%= i < 5 ? "text-text" : "text-bg" %>"><%= token %></span>
+        </div>
+      <% end %>
+    </div>
+    <div class="flex flex-wrap gap-16">
+      <div class="flex flex-col gap-4">
+        <%= section_label "Estados de una historia" %>
+        <% ComponentsHelper::STATES.each do |state, label| %>
+          <div class="flex items-center gap-3 text-sm"><%= state_dot state, size: 8 %> <%= label %></div>
+        <% end %>
+      </div>
+      <div class="flex flex-col gap-4">
+        <%= section_label "Radios" %>
+        <div class="flex gap-3">
+          <% { "sm · 4" => "rounded-sm", "md · 6" => "rounded-md", "lg · 8" => "rounded-lg", "xl · 12" => "rounded-xl" }.each do |label, radius| %>
+            <div class="flex flex-col items-center gap-2">
+              <div class="size-12 <%= radius %> border border-strong"></div>
+              <span class="font-mono text-xs text-text-subtle"><%= label %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <%= section_label "Iconos · Heroicons 1.5" %>
+        <div class="flex gap-4 text-text">
+          <% Dir[IconsHelper::ICONS_PATH.join("*.svg")].map { File.basename(it, ".svg") }.sort.each do |name| %>
+            <span title="<%= name %>"><%= icon name %></span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <%# 03 · Componentes %>
+  <section class="flex flex-col gap-5">
+    <%= section_label "Botón · primario, secundario, fantasma" %>
+    <div class="flex flex-wrap items-center gap-12">
+      <%= ui_button "Decidir" %>
+      <div class="flex items-center gap-3">
+        <%= ui_button "Ver PR", variant: :secondary, icon: "arrow-top-right-on-square" %>
+      </div>
+      <div class="flex items-center gap-3">
+        <%= ui_button "Abrir sesión", variant: :ghost, icon_trailing: "arrow-right" %>
+        <%= ui_button "Desactivado", disabled: true %>
+      </div>
+      <%= ui_button "Pequeño · 32", variant: :secondary, size: :sm %>
+      <%= ui_button "Decidir", size: :sm %>
+    </div>
+  </section>
+
+  <section class="flex flex-wrap items-start gap-16">
+    <nav class="flex w-60 shrink-0 flex-col gap-0.5">
+      <%= section_label "Nav item", class: "pb-[18px]" %>
+      <%= nav_item "Actividad", design_path, count: 3 %>
+      <%= nav_item "Roadmap", "#roadmap", active: false %>
+      <%= nav_item "Historias", "#historias", active: false %>
+      <%= nav_item "Brief", "#brief", active: false %>
+    </nav>
+
+    <div class="flex flex-1 flex-col gap-10">
+      <div class="flex flex-col gap-[18px]">
+        <%= section_label "Selector de estado" %>
+        <div><%= state_selector "story_state", selected: :ready %></div>
+      </div>
+      <div class="w-[420px]">
+        <%= ui_field nil, :story_title, label: "Título de la historia",
+                                       value: "Plantillas de post reutilizables",
+                                       hint: "Qué, no cómo. El cómo lo decide quien lo construye." %>
+      </div>
+    </div>
+
+    <div class="flex w-[280px] shrink-0 flex-col gap-[18px]">
+      <%= section_label "Actor y metadato" %>
+      <div class="flex flex-col gap-3">
+        <%= actor "claude", detail: "en #48", active: true %>
+        <%= actor "codex", detail: "inactivo · 2 h" %>
+        <%= actor "tú", kind: :human, detail: "humano" %>
+        <%= meta_line "wflow", "implement", "41 min", "$3.12", class: "pt-2" %>
+      </div>
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-[18px]">
+    <%= section_label "Terminal · lo que lee el agente" %>
+    <div class="max-w-[540px]">
+      <%= terminal "~/postgram" do %>$ mt next
+#49  Plantillas de post reutilizables
+     M2 · Publicar sin fricción · Lista
+     3 criterios · 2 mockups · D-12
+
+$ mt start 49 --as claude
+→ en curso · claude · 22:41<% end %>
+    </div>
+  </section>
+</div>

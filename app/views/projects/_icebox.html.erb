@@ -1,6 +1,6 @@
 <turbo-frame id="icebox" class="relative flex h-[calc(100%-30px)] w-full items-start">
-  <%= link_to new_project_item_path(project), class: 'absolute -top-10 right-8' do %>
-    <i class="fa-solid fa-plus text-[#FF3F01] text-lg"></i>
+  <%= link_to new_project_item_path(project), class: 'absolute -top-10 right-8 text-accent', aria: { label: 'New item' } do %>
+    <%= icon "plus" %>
   <% end %>
   <div class="flex flex-col w-full h-full gap-1 z-20" data-controller="icebox" data-icebox-items-outlet=".item" data-list="icebox">
     <%= render project.items.on_icebox.order(:position) %>
