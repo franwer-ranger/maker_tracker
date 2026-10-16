@@ -1,0 +1,11 @@
+<div class="flex flex-1 flex-col justify-center gap-6 px-24 py-24">
+  <%= section_label "v2 · en construcción" %>
+  <h1 class="font-display text-display text-text">Maker Tracker</h1>
+  <p class="max-w-[560px] text-lg text-text-muted">
+    Donde se definen y organizan productos junto a agentes de IA.
+    La v2 se está construyendo; de momento no hay nada que usar aquí.
+  </p>
+  <% if Rails.env.development? %>
+    <div><%= ui_button "Ver el sistema de diseño", variant: :secondary, icon_trailing: "arrow-right", href: design_path %></div>
+  <% end %>
+</div>

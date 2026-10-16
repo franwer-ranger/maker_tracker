@@ -2,6 +2,9 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de development → product
+**Qué:** `docs/workstreams/development.md` aún dice (en "Reglas de construcción") que no se mergee la eliminación de Devise hasta que lo confirme Self-host. La decisión del 2026-10-16 lo sustituye. Conviene quitar esa línea para que el siguiente agente de desarrollo no se bloquee.
+
 ## 2026-10-16 · de product → self-hosting
 **Qué:** landing validada con Fran. Cambios en Paper y en `DESIGN.md` → Landing:
 - Opción A: los tres comandos (`git clone https://github.com/franwer-ranger/maker_tracker` · `cd maker_tracker` · `docker compose up -d --build`), etiqueta "Install · Docker" y "One container, SQLite inside. No Redis, no external services, no account."

@@ -1,6 +1,6 @@
 # Maker Tracker
 
-Herramienta para definir y organizar productos junto a agentes de IA. El código actual es todavía la v1 (estilo Pivotal Tracker: proyectos, sprints, items y comentarios); la v2 está en diseño.
+Herramienta para definir y organizar productos junto a agentes de IA. La v1 (estilo Pivotal Tracker) se ha retirado; la v2 se está construyendo según el roadmap.
 
 **Antes de proponer, priorizar o construir nada, lee [`docs/PRODUCT.md`](docs/PRODUCT.md)**: visión, filosofía (agent-first, ligero), decisiones y preguntas abiertas. Si una decisión lo cambia, actualízalo.
 
@@ -15,7 +15,7 @@ Herramienta para definir y organizar productos junto a agentes de IA. El código
 - Ruby 3.4.8 (`.ruby-version`, gestionado con rbenv) · Rails 8.1
 - SQLite (`storage/*.sqlite3`): no hace falta Docker ni ningún servicio externo
 - Hotwire (Turbo + Stimulus) con importmap · Tailwind CSS v3 (`tailwindcss-rails` 3.x) · Sprockets
-- Devise para autenticación · `positioning` para ordenar items
+- Sin login: la app solo es accesible por red local o Tailscale · `positioning` para ordenar
 
 ## Comandos
 
@@ -29,8 +29,7 @@ bin/ci                  # setup + lint + auditorías de seguridad + seeds (confi
 ```
 
 - Puerto **3002** (fijo para poder levantarlo a la vez que el resto de proyectos). Se cambia con `PORT=...`.
-- Usuario de desarrollo (seeds): `fran@gmail.com` / `12345678`.
-- Los emails no se envían en desarrollo: se ven en http://localhost:3002/letter_opener.
+- `/design` (solo en development) muestra el sistema de diseño y sus componentes.
 - `bin/dev` es un solo proceso en primer plano; `debugger` funciona directamente en esa terminal.
 
 ## Notas

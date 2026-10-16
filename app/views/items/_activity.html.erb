@@ -1,7 +1,0 @@
-<label class="font-medium">Activity</label>
-
-<div class="my-3 px-3 py-1 bg-white rounded-lg">
-  <%= render 'comments/form', item: item, project: project, comment: item.comments.new %>
-</div>
-
-<%= render partial: 'comments/comment', collection: item.comments.order(created_at: :desc), locals: { item: item, project: project } %>

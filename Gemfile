@@ -66,9 +66,7 @@ group :development do
   gem "ruby-lsp"
   gem "better_errors"
   gem "binding_of_caller"
-  gem "letter_opener_web"
 end
 
 
-gem "devise", "~> 4.9"
 gem "positioning"

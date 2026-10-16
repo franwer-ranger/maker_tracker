@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Marker Tracker</title>
+    <title>Maker Tracker</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
@@ -23,18 +23,7 @@
 
   <body class="bg-bg font-sans text-text">
     <div class="flex items-center px-4 app-header justify-between">
-      <%= image_tag 'logo.svg' %>
-      <% if current_user %>
-        <div class="flex">
-          <%= current_user.full_name %>
-          <%= button_to(
-                '(Sign out)',
-                destroy_user_session_path,
-                class: 'text-white underline ml-1 text-sm',
-                method: :delete
-              ) %>
-        </div>
-      <% end %>
+      <%= link_to image_tag("logo.svg", alt: "Maker Tracker"), root_path %>
     </div>
     <main class="app-container w-full flex flex-col">
       <%= yield %>

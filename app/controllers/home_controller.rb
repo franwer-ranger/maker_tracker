@@ -1,8 +1,5 @@
+# Portada provisional mientras se construye la v2.
 class HomeController < ApplicationController
-  def index; end
-
-
-  def test
-    puts "Hola mundo"
+  def show
   end
 end

@@ -2,8 +2,8 @@
 number: 2
 title: Quitar el login y la v1
 milestone: M1
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup:
 labels: [limpieza]
 blocked_by: [1]
@@ -45,3 +45,16 @@ Como agente que construye Maker Tracker, quiero que la app arranque sin login y 
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/remove-login`, commit «Quita el login y la v1».
+
+**Hecho**
+- Fuera Devise (gema, inicializador, locale, rutas, vistas, layout `devise`, `configure_permitted_parameters`) y `letter_opener_web` (gema, ruta y `delivery_method` de development), porque nada más envía emails. `ApplicationMailer` y los layouts de mailer se quedan: son los de serie de Rails.
+- Fuera la v1: modelos, controladores (`home` incluido), helpers, vistas, jbuilders, layout `project`, controladores Stimulus (`backlog`, `icebox`, `iteration`, `override`, `items`, `items/description` y `sortable`), imágenes `*_empty.svg` y el CSS que solo usaba ella (`app-scroll-container` y el `text-gray-800` en inputs).
+- Migración `DropV1Tables`: borra `comments`, `items`, `sprints`, `users` y `projects` (es irreversible). Después de `bin/setup --reset` solo quedan `schema_migrations` y `ar_internal_metadata`.
+- `/` es `HomeController#show`: nombre, texto de "en construcción" y, en development, un botón a `/design`. `/`, `/design` y `/up` responden 200; las rutas antiguas, 404.
+- `db/seeds.rb` no crea nada. `AGENTS.md` ya no habla de Devise, del usuario de desarrollo ni de letter_opener.
+
+**Decisiones**
+- Se quedan los pins de `marked` y `dompurify`, aunque los usaba `items/description`: la v2 pinta markdown en todas partes. Se quedan también `sortablejs` (lo pide la historia), `positioning` y `jbuilder` (la API de M2).
+- La migración usa `if_exists: true`, así que también funciona en una base de datos a medias.

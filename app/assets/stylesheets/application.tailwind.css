@@ -69,10 +69,6 @@ html, body {
 	@apply h-full;
 }
 
-input, textarea, select, button {
-  @apply text-gray-800;
-}
-
 .app-header {
   height: var(--header-height);
 }
@@ -81,29 +77,3 @@ input, textarea, select, button {
   @apply overflow-y-auto;
   height: calc(100svh - var(--header-height));
 }
-
-/* Define the scrollbar style */
-.app-scroll-container::-webkit-scrollbar {
-  @apply w-2 h-2;
-}
-/* Define the thumb style */
-.app-scroll-container::-webkit-scrollbar-thumb {
-  @apply bg-gray-500 rounded;
-}
-/* Define the track style */
-.app-scroll-container::-webkit-scrollbar-track {
-  @apply bg-[#1D1D1D];
-}
-/* Define the button style */
-.app-scroll-container::-webkit-scrollbar-button {
-  @apply hidden;
-}
-/*
-
-@layer components {
-  .btn-primary {
-    @apply py-2 px-4 bg-blue-200;
-  }
-}
-
-*/
