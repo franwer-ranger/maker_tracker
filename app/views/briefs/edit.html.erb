@@ -1,0 +1,19 @@
+<% content_for :title, "Editar brief · #{@project.name}" %>
+<div class="flex items-start gap-16 px-12 py-10">
+  <%= form_with model: @project, url: project_brief_path(@project), method: :patch, class: "flex min-w-0 grow basis-0 flex-col gap-5" do |form| %>
+    <header class="flex flex-col gap-2.5">
+      <h1 class="font-display text-display tracking-[-0.02em]">Brief</h1>
+      <p class="text-sm text-text-muted">Visión, principios, fuera de alcance y glosario. Lo primero que lee cualquier agente.</p>
+    </header>
+
+    <%= render "components/markdown_editor", form: form, attribute: :brief, label: "Brief en markdown", doc: true %>
+
+    <div class="flex items-center justify-end gap-2">
+      <span class="grow font-mono text-xs text-text-subtle">Se guarda como <%= Current.actor.name %> · queda en el historial</span>
+      <%= ui_button "Cancelar", variant: :ghost, href: project_brief_path(@project) %>
+      <%= ui_button "Guardar", type: "submit" %>
+    </div>
+  <% end %>
+
+  <%= render "briefs/decisions" %>
+</div>

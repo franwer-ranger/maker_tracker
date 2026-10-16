@@ -157,6 +157,23 @@
     <% end %>
   </section>
 
+  <section class="flex flex-wrap items-start gap-16">
+    <div class="flex flex-col gap-[18px]">
+      <%= section_label "Label y Siguiente" %>
+      <div class="flex items-center gap-3">
+        <%= ui_label "editor" %>
+        <%= ui_label "ui" %>
+        <%= next_badge %>
+      </div>
+    </div>
+    <div class="flex w-[540px] max-w-full flex-col gap-[18px]">
+      <%= section_label "Editor de markdown" %>
+      <%= form_with url: "#", scope: :demo do |form| %>
+        <%= render "components/markdown_editor", form: form, attribute: :body, label: "Markdown de ejemplo" %>
+      <% end %>
+    </div>
+  </section>
+
   <section class="flex flex-col gap-[18px]">
     <%= section_label "Terminal · lo que lee el agente" %>
     <div class="max-w-[540px]">

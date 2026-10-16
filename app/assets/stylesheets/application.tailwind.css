@@ -120,4 +120,22 @@
   .markdown input[type="checkbox"] {
     @apply mt-1 size-4 shrink-0 rounded-sm border border-strong bg-transparent text-state-done focus:ring-0;
   }
+
+  /* Variante documento (Brief, 5.5): los ## son titulares y las listas van con raya. */
+  .markdown-doc {
+    @apply gap-2.5;
+  }
+  .markdown-doc h2 {
+    @apply mt-[18px] font-sans text-xl font-semibold normal-case leading-[26px] tracking-normal text-text first:mt-0;
+  }
+  .markdown-doc p,
+  .markdown-doc li {
+    @apply leading-[26px];
+  }
+  .markdown-doc ul {
+    @apply list-none pl-0;
+  }
+  .markdown-doc ul > li::before {
+    content: "— ";
+  }
 }

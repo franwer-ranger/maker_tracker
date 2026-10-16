@@ -178,7 +178,8 @@ seed_story(postgram, 30, "Mejores horas para publicar", milestone: m3, state: :d
 seed_story(postgram, 31, "Exportar métricas a CSV", milestone: m3, state: :ready, labels: %w[exportación])
 seed_story(postgram, 32, "Alertas cuando un post despega", milestone: m3)
 
-# Decisiones (4.6) ------------------------------------------------------------
+# Decisiones (5.5) ------------------------------------------------------------
+# El cuerpo es el porqué; se pinta tras «Por qué:», así que empieza en minúscula.
 
 def seed_decision(project, number, title, body, actor:, at:, story: nil, supersedes: nil)
   project.decisions.find_or_create_by!(number: number) do |decision|
@@ -186,11 +187,11 @@ def seed_decision(project, number, title, body, actor:, at:, story: nil, superse
   end
 end
 
-seed_decision(postgram, 9, "Imágenes en S3 desde el principio", "Para no migrar cuando crezca el número de imágenes.", actor: fran, at: 30.days.ago)
-seed_decision(postgram, 12, "Imágenes en Active Storage local", "Un solo servidor; S3 cuando haga falta.", actor: fran, at: 14.days.ago,
+seed_decision(postgram, 9, "Imágenes en S3 desde el principio", "para no migrar cuando crezca el número de imágenes.", actor: fran, at: 30.days.ago)
+seed_decision(postgram, 12, "Imágenes en Active Storage local", "un solo servidor; S3 cuando haga falta.", actor: fran, at: 14.days.ago,
               supersedes: postgram.decisions.find_by!(number: 9))
-seed_decision(postgram, 13, "Publicar sin fricción va antes que Analítica", "Los usuarios beta lo piden primero.", actor: fran, at: 1.day.ago)
-seed_decision(postgram, 14, "PDFs con Prawn, sin servicios externos", "Autoalojado y sin coste por documento.",
+seed_decision(postgram, 13, "Publicar sin fricción va antes que Analítica", "los usuarios beta lo piden primero.", actor: fran, at: 1.day.ago)
+seed_decision(postgram, 14, "PDFs con Prawn, sin servicios externos", "autoalojado y sin coste por documento.",
               actor: claude, at: 2.hours.ago, story: postgram.stories.find_by!(number: 48))
 
 # Comentarios -----------------------------------------------------------------
@@ -228,6 +229,9 @@ seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 1.day.a
 
 seed_event(postgram, "story.claimed", story: s48, actor: claude, at: s48.claimed_at)
 seed_event(postgram, "story.claimed", story: s45, actor: codex, at: s45.claimed_at)
+
+# Brief editado hace 3 días (5.5).
+seed_event(postgram, "brief.edited", actor: fran, at: 3.days.ago)
 
 # Segundo proyecto (5.0 Proyectos): un hito abierto, sin historias y sin actividad desde hace 2 días.
 

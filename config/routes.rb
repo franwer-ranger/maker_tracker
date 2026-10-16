@@ -23,7 +23,8 @@ Rails.application.routes.draw do
         resource :closure, only: %i[create destroy]
       end
     end
-    resource :brief, only: :show
+    resource :brief, only: %i[show edit update]
+    resources :decisions, only: :create
     resources :stories, param: :number, only: %i[show create edit update] do
       resources :comments, only: :create
       scope module: :stories do

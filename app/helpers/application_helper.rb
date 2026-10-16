@@ -7,6 +7,16 @@ module ApplicationHelper
   # "12 sep"
   def short_date(time) = "#{time.day} #{MONTHS[time.month - 1]}"
 
+  # "hace 5 min", "hace 2 h", "ayer", "hace 3 días".
+  def ago_in_words(time)
+    seconds = Time.current - time
+    if seconds < 1.hour then "hace #{[ (seconds / 60).floor, 1 ].max} min"
+    elsif seconds < 1.day then "hace #{(seconds / 1.hour).floor} h"
+    elsif time.to_date == Date.yesterday then "ayer"
+    else "hace #{(Date.current - time.to_date).to_i} días"
+    end
+  end
+
   # "hoy", "ayer" o "3 oct"; con `time: true`, "ayer 22:40" (hoy: "hoy 09:12").
   def relative_day(time, time_of_day: false)
     day = if time.to_date == Date.current then "hoy"

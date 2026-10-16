@@ -1,0 +1,41 @@
+<%# Columna de decisiones (5.5): la más reciente sobre surface; las sustituidas, atenuadas. %>
+<aside class="flex w-[392px] shrink-0 flex-col gap-3 pt-2">
+  <div class="flex items-center justify-between pb-1">
+    <%= section_label "Decisiones · #{@project.last_decision_number}" %>
+    <%= render "briefs/new_decision" %>
+  </div>
+
+  <% if flash[:alert] %>
+    <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
+  <% end %>
+
+  <% @decisions.each_with_index do |decision, index| %>
+    <% if decision.superseded_by %>
+      <article class="flex flex-col gap-1.5 rounded-lg border border-dashed border-border px-4 py-3">
+        <div class="flex items-center justify-between font-mono text-xs text-text-subtle">
+          <span><%= decision.reference %></span>
+          <span>sustituida por <%= decision.superseded_by.reference %></span>
+        </div>
+        <h3 class="text-sm text-text-subtle line-through decoration-1"><%= decision.title %></h3>
+      </article>
+    <% else %>
+      <article class="<%= class_names("flex flex-col gap-1.5 rounded-lg border p-4", index.zero? ? "border-strong bg-surface" : "border-border") %>">
+        <div class="flex items-center justify-between font-mono text-xs">
+          <span class="text-text"><%= decision.reference %></span>
+          <span class="text-text-muted"><%= decision.actor.name %> · <%= relative_day(decision.created_at) %></span>
+        </div>
+        <h3 class="text-base font-medium leading-5 text-text"><%= decision.title %></h3>
+        <% if decision.body.present? || decision.story || decision.supersedes %>
+          <p class="text-control leading-5 text-text-muted">
+            <% if decision.body.present? %>Por qué: <%= decision.body %><% end %>
+            <% if decision.story %>
+              Vinculada a <%= link_to "##{decision.story.number}", project_story_path(@project, decision.story),
+                                class: "rounded-sm text-text underline decoration-border-strong underline-offset-[3px] hover:decoration-text #{ComponentsHelper::FOCUS_RING}" %>.
+            <% end %>
+            <% if decision.supersedes %>Sustituye a <%= decision.supersedes.reference %>.<% end %>
+          </p>
+        <% end %>
+      </article>
+    <% end %>
+  <% end %>
+</aside>

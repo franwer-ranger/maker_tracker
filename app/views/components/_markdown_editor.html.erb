@@ -1,0 +1,16 @@
+<%# Editor de markdown con pestañas Escribir / Vista previa (5.6). Locals: form, attribute, label, doc (variante documento) %>
+<div class="flex flex-col rounded-lg border border-strong bg-surface-sunken focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]"
+     data-controller="markdown editor">
+  <div class="flex h-control shrink-0 items-center justify-between border-b border-border pl-2 pr-3" role="tablist">
+    <div class="flex gap-0.5">
+      <button type="button" role="tab" data-editor-target="tab" data-action="editor#write" aria-selected="true"
+              class="flex h-7 items-center rounded-md px-2.5 text-control text-text-muted aria-selected:bg-surface aria-selected:font-medium aria-selected:text-text <%= ComponentsHelper::FOCUS_RING %>">Escribir</button>
+      <button type="button" role="tab" data-editor-target="tab" data-action="editor#preview markdown#render" aria-selected="false"
+              class="flex h-7 items-center rounded-md px-2.5 text-control text-text-muted aria-selected:bg-surface aria-selected:font-medium aria-selected:text-text <%= ComponentsHelper::FOCUS_RING %>">Vista previa</button>
+    </div>
+    <span class="font-mono text-xs text-text-subtle">markdown</span>
+  </div>
+  <%= form.text_area attribute, rows: 18, "aria-label": label, data: { markdown_target: "source", editor_target: "input" },
+        class: "min-h-96 w-full resize-y border-0 bg-transparent p-4 [field-sizing:content] font-mono text-control leading-[22px] text-text-soft focus:outline-none focus:ring-0" %>
+  <div class="<%= class_names("markdown hidden p-4", "markdown-doc": local_assigns[:doc]) %>" data-markdown-target="output" data-editor-target="preview"></div>
+</div>
