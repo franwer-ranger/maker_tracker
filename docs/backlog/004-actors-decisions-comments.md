@@ -2,8 +2,8 @@
 number: 4
 title: Modelo v2 · actores, decisiones y comentarios
 milestone: M1
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup:
 labels: [modelo]
 blocked_by: [3]
@@ -51,3 +51,17 @@ Como Fran, quiero que cada decisión, comentario y acción quede firmada por qui
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/v2-model`, commit «Añade actores, decisiones y comentarios».
+
+**Hecho**
+- Migración `CreateActorsDecisionsComments`: `actors`, `decisions` y `comments`, la clave ajena de `stories.claimed_by_id` a `actors` y el contador `projects.last_decision_number`.
+- `Actor`: `name` único, normalizado a minúsculas y validado (`[a-z0-9_-]`); `kind` como enum `human` / `agent`; `token_digest` sin usar hasta M2. `Actor.human` devuelve el primer humano o crea `fran`.
+- `Current.actor` (`app/models/current.rb`), que `ApplicationController` fija a `Actor.human` en cada petición.
+- `Decision`: número correlativo por proyecto (`D-14`), `supersedes` / `superseded_by`, y historia y decisión sustituida del mismo proyecto. `readonly?` una vez guardada: `update!` y `destroy!` lanzan `ActiveRecord::ReadOnlyRecord`.
+- `Comment`: ordenados por fecha en `Story#comments`, de solo lectura una vez guardados.
+- Comprobado en `bin/rails runner` (en una transacción que se deshace): `Actor.human`, normalización, `claimed_by`, numeración y sustitución de decisiones, que editar o borrar una decisión o un comentario falla, y las validaciones de proyecto.
+
+**Decisiones**
+- La numeración de historias y decisiones comparte el concern `NumberedInProject` y `Project#reserve_number!`, con un contador por tipo (`last_story_number`, `last_decision_number`).
+- Los comentarios también son de solo lectura en el modelo, no solo en la UI: la historia dice que no se editan ni se borran en M1.

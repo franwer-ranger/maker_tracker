@@ -13,6 +13,7 @@ class Project < ApplicationRecord
 
   has_many :milestones, -> { order(:position) }, inverse_of: :project
   has_many :stories, inverse_of: :project
+  has_many :decisions, -> { order(:number) }, inverse_of: :project
 
   normalizes :key, with: -> { it.strip.upcase }
 
@@ -39,11 +40,13 @@ class Project < ApplicationRecord
     nil
   end
 
-  # Reserva el siguiente número de historia (o respeta uno dado) sin reutilizar nunca uno anterior.
-  def reserve_story_number!(number = nil)
+  # Reserva el siguiente número de historia o decisión (o respeta uno dado)
+  # sin reutilizar nunca uno anterior. Ver NumberedInProject.
+  def reserve_number!(kind, number = nil)
+    column = "last_#{kind}_number"
     with_lock do
-      number ||= last_story_number + 1
-      update_columns(last_story_number: [ last_story_number, number ].max)
+      number ||= self[column] + 1
+      update_columns(column => [ self[column], number ].max)
       number
     end
   end

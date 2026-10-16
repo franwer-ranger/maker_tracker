@@ -26,6 +26,10 @@ class Story < ApplicationRecord
   belongs_to :project
   belongs_to :milestone, optional: true
   belongs_to :claimed_by, class_name: "Actor", optional: true
+  has_many :comments, -> { order(:created_at, :id) }, inverse_of: :story
+  has_many :decisions, inverse_of: :story
+
+  include NumberedInProject
 
   enum :state, STATE_NAMES.keys.index_by(&:itself), default: :idea, validate: true
   positioned on: %i[project milestone]
@@ -36,13 +40,10 @@ class Story < ApplicationRecord
   scope :ordered, -> { order(:position) }
 
   validates :title, presence: true
-  validates :number, uniqueness: { scope: :project_id }, allow_nil: true
   validate :milestone_in_same_project
   validate :mockup_is_http_url
   validate :labels_are_texts
   validate :blocked_by_are_stories_of_project
-
-  before_create :assign_number
 
   def self.human_state(state) = STATE_NAMES.fetch(state.to_s)
 
@@ -85,10 +86,6 @@ class Story < ApplicationRecord
   end
 
   private
-
-  def assign_number
-    self.number = project.reserve_story_number!(number)
-  end
 
   def milestone_in_same_project
     errors.add(:milestone, "es de otro proyecto") if milestone && milestone.project_id != project_id
