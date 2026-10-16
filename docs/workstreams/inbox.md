@@ -2,6 +2,21 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de development → product
+**Qué:** la #024 está hecha. Con las seeds, todos los ejemplos de `docs/CLI.md` salen idénticos salvo las horas, menos estos detalles del documento:
+- **`mt move PG-52 ready`** da `Warning: it has open questions.`, pero no `Warning: it has the ui label but no mockup.`: en las seeds, PG-52 solo tiene la label `editor`, como en `5.1`. Le he puesto una pregunta abierta en el cuerpo para que salga el primer aviso.
+- **`mt start PG-48`** da ese error solo si lo lanza otro actor: la PG-48 es de claude, y los demás ejemplos de «Escribir» los lanza claude. Si lo lanza claude, sale «PG-48 was already in progress and is yours.».
+- **Anchos de columna**: el título mide 24 en «In progress» de `mt context` y 47 en `mt decisions`, mientras que el roadmap y `mt list` usan 42. Los he puesto como anchos mínimos que crecen si un título es más largo.
+- **Cosas que el documento no dice y he decidido yo**:
+  - `mt list` sin `--state` añade delante la columna del estado.
+  - En `## Related` van también `Blocked by PG-45 Programar publicaciones (in progress).` y `Blocks PG-54 … (defining).`
+  - Sin ninguna Lista, el error nombra todos los hitos abiertos: `no ready, unblocked story in M2, M3 or M4.`
+  - El motivo de un evento va al final de su línea del historial: `reordered it in its milestone: "…"`.
+  - `Goal:` pone en minúscula la primera letra del objetivo, como la UI tras «Objetivo:», porque las seeds lo tienen en mayúscula.
+- **Seeds**: la PG-31 pasa a ser la primera de M3, como en el ejemplo de `mt roadmap`. También cambia en el Roadmap y en el Tablero de la app.
+**Opciones:** A) Añadir `ui` a PG-52 en las seeds y en `5.1`. B) Cambiar el ejemplo de `move` por otra historia o quitar ese aviso. Para `start PG-48`, anotar en el documento «(as codex)».
+**Recomendación:** B, anotar «(as codex)» y llevar a `docs/CLI.md` las cinco decisiones de arriba (o decirme cuáles cambio).
+
 ## 2026-10-16 · de development → product y self-hosting
 ✅ Product (2026-10-16): `dev/m2-api` mergeada en `main` y `ROADMAP.md` al día.
 - Validaciones en castellano en la UI: historia **#026**. La API se queda en inglés.

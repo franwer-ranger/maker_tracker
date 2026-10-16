@@ -9,7 +9,7 @@ class Api::RoadmapsController < Api::BaseController
     end
     render_ok({ milestones: milestones, ideas: roadmap.ideas.map { Api::Markdown::Formatting.story_data(it, done_numbers: done) },
                 markdown: roadmap.to_s },
-      summary: "Roadmap de #{project.name}: #{milestones.size} #{milestones.size == 1 ? 'hito' : 'hitos'}",
-      breadcrumbs: [ "mt next", "mt show <n>" ])
+      summary: "Roadmap of #{project.name}: #{Api::Markdown::Formatting.plural(milestones.size, 'milestone')}.",
+      breadcrumbs: [ "mt next", *("mt show #{roadmap.next_story.reference}" if roadmap.next_story) ])
   end
 end

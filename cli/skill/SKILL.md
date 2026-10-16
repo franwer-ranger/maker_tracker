@@ -1,55 +1,58 @@
 ---
 name: maker-tracker
-description: Cómo trabajar con Maker Tracker desde este repo con el CLI mt. Úsala cuando pregunten «¿qué es lo siguiente?», al coger, construir o cerrar una historia, al dejar una duda o una decisión, y al escribir o reordenar el backlog (historias, hitos, brief).
+description: How to work with Maker Tracker from this repo using the mt CLI. Use it when asked "what's next?", when picking up, building or closing a story, when leaving a question or a decision, and when writing or reordering the backlog (stories, milestones, brief).
 ---
 
-# Maker Tracker con `mt`
+# Maker Tracker with `mt`
 
-Maker Tracker guarda la definición del producto de este repo: brief, decisiones, roadmap (hitos en orden) e historias. El código vive aquí; el qué y el porqué, allí. `mt` habla con su API. El proyecto sale de `.mt` en la raíz del repo, y las historias se citan como `PG-49` o solo `49`.
+Maker Tracker holds the product definition of this repo: brief, decisions, roadmap (milestones in order) and stories. The code lives here; the what and the why, there. `mt` talks to its API. The project comes from `.mt` at the root of the repo, and stories are named `PG-49` or just `49`.
 
-Al empezar la sesión ya tienes el resultado de `mt context` (brief, últimas decisiones, hito actual y lo que está en curso). Si no está, ejecútalo antes de recomendar nada: las decisiones y los principios del brief mandan.
+When the session starts you already have the output of `mt context` (brief, decisions in force, current milestone and what is in progress). If it is missing, run it before recommending anything: the decisions and the principles in the brief come first.
 
-## Cómo leer las respuestas
+`mt` speaks English; the content (titles, story bodies, brief, decisions) comes in the language it was written in. Keep writing content in that language.
 
-- Cada comando imprime el resultado y, al final, **«Siguiente:»**: los comandos que tiene sentido ejecutar después. Úsalos en lugar de adivinar.
-- **«Avisos:»** no bloquean, pero hay que leerlos: una historia sin contexto, bloqueada, sin commits… Si un aviso cambia lo que vas a hacer, dilo.
-- Un error trae su código y cómo arreglarlo (la línea de debajo). Sigue esa pista antes de probar otra cosa.
-- `--json` da el sobre de la API tal cual, si necesitas los datos estructurados.
+## Reading the output
 
-## El ciclo de desarrollo
+- Every command ends with **`Next:`**: the commands that make sense to run afterwards. Use them instead of guessing.
+- **`Warning:`** lines don't block, but read them: a story without context, blocked, without criteria, without commits… If a warning changes what you are going to do, say so.
+- Errors go to stderr in two lines, `Error: …` and `Hint: …`. Follow the hint before trying something else. Exit code 1, or 2 if the command itself is wrong.
+- References are always complete (`PG-49`, `D-14`, `M2`) and dates absolute (`2026-10-15 22:40`, or just the time if it is today), so you can copy them into a commit and compare them with `git log`.
+- `--json` prints the API envelope as is, if you need structured data.
 
-1. **«¿Qué es lo siguiente?»** → `mt next`. Te da la primera historia Lista y no bloqueada del roadmap, entera y con el motivo. No elijas otra por tu cuenta salvo que te lo pidan.
-2. `mt start PG-49`: la reclama a tu nombre y la pasa a En curso. Si es de otro (`CLAIMED_BY_OTHER`), coge otra.
-3. Lee la historia entera (`mt show PG-49`): contexto, criterios de aceptación, fuera de alcance, notas y el mockup si lo tiene. Constrúyela en este repo cumpliendo cada criterio.
-4. `mt done PG-49 --commit <sha> [--commit <sha>…] [--pr <url>]`: la cierra enlazando el código. Sin commits ni PR nadie sabrá dónde está.
+## The development loop
 
-Una historia se hace entera o no se cierra. Si al terminar queda algo fuera, dilo en un comentario antes de `mt done`.
+1. **"What's next?"** → `mt next`. It gives you the first ready, unblocked story in the roadmap, whole, with why it is that one. Don't pick another one on your own unless asked.
+2. `mt start PG-49`: claims it in your name and moves it to in progress. If someone else has it (`CLAIMED_BY_OTHER`), take another one.
+3. Read the whole story (`mt show PG-49`): context, acceptance criteria, out of scope, notes and the mockup if it has one. Build it in this repo, meeting every criterion.
+4. `mt done PG-49 --commit <sha> [--commit <sha>…] [--pr <url>]`: closes it, linking the code. Without commits or PR nobody will know where it is.
 
-## Dudas y bloqueos
+A story is done whole or not closed. If something is left out when you finish, say it in a comment before `mt done`.
 
-- Pregunta en la historia: `mt comment PG-49 "…"` (markdown; `-` lee de stdin). Es donde la persona que define el producto lo ve, no en el chat.
-- Si la duda te bloquea, suéltala y sigue con otra: `mt release PG-49 --reason "Falta decidir …"` y `mt next`.
-- No inventes alcance para desbloquearte.
+## Questions and blockers
 
-## Decisiones
+- Ask in the story: `mt comment PG-49 "…"` (markdown; `-` reads from stdin). That's where whoever defines the product sees it, not in the chat.
+- If the question blocks you, let the story go and carry on with another one: `mt release PG-49 --reason "Still to decide …"` and `mt next`.
+- Don't invent scope to unblock yourself.
 
-Registra una decisión cuando elijas entre opciones que alguien querría conocer después (una librería, un formato, un límite, algo que queda fuera): `mt decide "Plantillas en JSON" --why "…" --story PG-49`. Si sustituye a otra, `--supersedes D-9`. Las decisiones no se editan: para cambiar una, escribe otra que la sustituya. Los detalles de implementación que no cambian el producto van en el comentario de cierre, no aquí.
+## Decisions
 
-## Escribir producto
+Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
 
-Los agentes también escriben el backlog, directamente y con registro (cada cambio queda a tu nombre):
+## Writing the product
 
-- **Crear**: `mt create "Título" [--milestone M2] [--state defining]`, o con un fichero: `mt create --file f.md`. Sin hito va a la bandeja de ideas; sin estado, nace como Idea.
-- **Editar**: `mt show PG-49 > f.md`, cambia el fichero y `mt edit PG-49 --file f.md`. Lo que va tras la marca de solo lectura (comentarios, historial) se ignora. El estado y el hito no se cambian editando.
-- **Plantilla** del cuerpo: `## Contexto` (por qué y qué existe ya) · `## Historia` (Como…, quiero…, para…) · `## Criterios de aceptación` (`- [ ] …`, comprobables) · `## Fuera de alcance` · `## Notas para quien lo construya` · `## Preguntas abiertas`.
-- **Estado**: `mt move PG-49 ready` solo si no tiene preguntas abiertas y, si es de UI (label `ui`), tiene mockup. Si `mt` avisa de que no cumple la regla, vuelve a Definiendo o arréglalo.
-- **Orden**: el orden es la prioridad. `mt reorder PG-49 --position 1 [--milestone M3] --reason "…"` y `mt milestone reorder M3 --position 2 --reason "…"`. **Siempre con motivo**: es lo que se lee después. Si el cambio es importante, regístralo además con `mt decide`.
-- **Hitos y brief**: `mt milestone create|edit|close|reopen`, `mt brief` para leerlo y `mt brief --file f.md` para sustituirlo.
+Agents also write the backlog, directly and on the record (every change is logged in your name):
 
-## Comandos
+- **Create**: `mt create "Title" [--milestone M2] [--state defining]`, or from a file: `mt create --file f.md`. Without a milestone it goes to the inbox; without a state, it is an idea.
+- **Edit**: `mt show PG-49 > f.md`, change the file and `mt edit PG-49 --file f.md`. Everything below the `<!-- mt: read-only … -->` mark (related, comments, history) is ignored. Editing doesn't change the state or the milestone.
+- **Body template** (in the project's language; in Spanish: `## Contexto` · `## Historia` · `## Criterios de aceptación` · `## Fuera de alcance` · `## Notas para quien lo construya` · `## Preguntas abiertas`): why and what exists already · As a…, I want…, so that… · checkable criteria as `- [ ] …` · out of scope · notes for whoever builds it · open questions.
+- **State**: `mt move PG-49 ready` only if it has no open questions and, if it is UI work (label `ui`), it has a mockup. If `mt` warns that it doesn't meet the rule, move it back to defining or fix it.
+- **Order**: order is priority. `mt reorder PG-49 --position 1 [--milestone M3] --reason "…"` and `mt milestone reorder M3 --position 2 --reason "…"`. **Always with a reason**: it's what gets read later. If the change matters, also record it with `mt decide`.
+- **Milestones and brief**: `mt milestone create|edit|close|reopen`, `mt brief` to read it and `mt brief --file f.md` to replace it.
 
-| Leer | Trabajar | Definir |
-|---|---|---|
-| `mt context` · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` | `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt decide --why` | `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …` |
+## Commands
 
-`mt help` y `mt <comando> --help` tienen el detalle y un ejemplo de cada uno.
+- Read: `mt context` · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions`
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt decide --why`
+- Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
+
+`mt help` and `mt <command> --help` have the details and an example of each.

@@ -1,31 +1,14 @@
-# Files in the config/locales directory are used for internationalization and
-# are automatically loaded by Rails. If you want to use locales other than
-# English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is initialsed to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# To learn more about the API, please read the Rails Internationalization guide
-# at https://guides.rubyonrails.org/i18n.html.
-#
-# Be aware that YAML interprets the following case-insensitive strings as
-# booleans: `true`, `false`, `on`, `off`, `yes`, `no`. Therefore, these strings
-# must be quoted to be interpreted as strings. For example:
-#
-#     en:
-#       "yes": yup
-#       enabled: "ON"
-
+# Mensajes en inglés: los de la API (docs/CLI.md → Idioma). Los de Rails ya
+# vienen en inglés; aquí van solo los propios de los modelos.
 en:
-  hello: 'Hello world'
+  errors:
+    messages:
+      other_project: "belongs to another project"
+      not_http_url: "must be an http(s) URL"
+      not_texts: "must be texts"
+      not_a_list: "must be a list of story numbers"
+      not_numbers: "only takes story numbers (%{values})"
+      itself: "can't include the story itself"
+      missing_stories: "includes stories that don't exist in the project (%{numbers})"
+      key_format: "must be 2 to 5 letters"
+      name_format: "only takes lowercase letters, numbers, - and _"

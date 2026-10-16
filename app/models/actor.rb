@@ -12,7 +12,7 @@ class Actor < ApplicationRecord
 
   normalizes :name, with: -> { it.strip.downcase }
 
-  validates :name, presence: true, uniqueness: true, format: { with: /\A[a-z0-9_-]+\z/, message: "solo admite minúsculas, números, - y _" }
+  validates :name, presence: true, uniqueness: true, format: { with: /\A[a-z0-9_-]+\z/, message: :name_format }
 
   # El actor humano al que se atribuye todo lo que pasa en la UI (M1 tiene uno solo).
   def self.human

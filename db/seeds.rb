@@ -48,7 +48,7 @@ end
 
 m1 = seed_milestone(postgram, "Cuentas y primer post", "Que un maker cree su cuenta, conecte una red y publique su primer post.", closed_at: 34.days.ago)
 m2 = seed_milestone(postgram, "Publicar sin fricción", "Un maker programa una semana de posts en menos de 10 minutos.")
-m3 = seed_milestone(postgram, "Analítica para makers", "Saber qué post funciona y por qué")
+m3 = seed_milestone(postgram, "Analítica para makers", "Saber qué post funciona y por qué.")
 m4 = seed_milestone(postgram, "Equipos", "Varias personas publicando en la misma cuenta.")
 
 # Historias -------------------------------------------------------------------
@@ -164,19 +164,25 @@ m2_stories = [
              body: story_body(historia: "Como maker, quiero saber qué posts generan conversación, para repetir lo que funciona.")),
   seed_story(postgram, 54, "Reprogramar arrastrando en el calendario", milestone: m2, state: :defining,
              labels: %w[calendario], blocked_by: [ 45 ]),
-  seed_story(postgram, 52, "Hilos de X en un solo post", milestone: m2, labels: %w[editor]),
+  # Con una pregunta abierta: es el ejemplo de `mt move PG-52 ready` en docs/CLI.md.
+  seed_story(postgram, 52, "Hilos de X en un solo post", milestone: m2, labels: %w[editor],
+             body: Story::BODY_TEMPLATE + "¿Se publica como hilo también en Bluesky y Mastodon?\n"),
   seed_story(postgram, 53, "Programar desde el móvil", milestone: m2, labels: %w[móvil])
 ] + m2_done
 # Fija el orden también en una base de datos sembrada antes.
 m2_stories.each.with_index(1) { |story, position| story.update!(position: position) }
 
-# M3 · 6 historias, 4 en Definiendo. Una está bloqueada por #51.
-seed_story(postgram, 27, "Panel de rendimiento por post", milestone: m3, state: :defining, labels: %w[analítica])
-seed_story(postgram, 28, "Comparar redes", milestone: m3, state: :defining, labels: %w[analítica], blocked_by: [ 51 ])
-seed_story(postgram, 29, "Resumen semanal por email", milestone: m3, state: :defining)
-seed_story(postgram, 30, "Mejores horas para publicar", milestone: m3, state: :defining, labels: %w[analítica])
-seed_story(postgram, 31, "Exportar métricas a CSV", milestone: m3, state: :ready, labels: %w[exportación])
-seed_story(postgram, 32, "Alertas cuando un post despega", milestone: m3)
+# M3 · 6 historias, 4 en Definiendo. Una está bloqueada por #51. La Lista va
+# primera, como en el ejemplo de `mt roadmap` (docs/CLI.md).
+m3_stories = [
+  seed_story(postgram, 31, "Exportar métricas a CSV", milestone: m3, state: :ready, labels: %w[exportación]),
+  seed_story(postgram, 27, "Panel de rendimiento por post", milestone: m3, state: :defining, labels: %w[analítica]),
+  seed_story(postgram, 28, "Comparar redes", milestone: m3, state: :defining, labels: %w[analítica], blocked_by: [ 51 ]),
+  seed_story(postgram, 29, "Resumen semanal por email", milestone: m3, state: :defining),
+  seed_story(postgram, 30, "Mejores horas para publicar", milestone: m3, state: :defining, labels: %w[analítica]),
+  seed_story(postgram, 32, "Alertas cuando un post despega", milestone: m3)
+]
+m3_stories.each.with_index(1) { |story, position| story.update!(position: position) }
 
 # Decisiones (5.5) ------------------------------------------------------------
 # El cuerpo es el porqué; se pinta tras «Por qué:», así que empieza en minúscula.
@@ -222,8 +228,8 @@ def seed_event(project, action, actor:, at:, story: nil, data: {})
 end
 
 # #49 (5.4 · Historial): creada como idea → pasa a Definiendo → claude la define → pasa a Lista.
-seed_event(postgram, "story.created", story: s49, actor: fran, at: 13.days.ago, data: { state: "idea", milestone_id: m2.id })
-seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 7.days.ago, data: { from: "idea", to: "defining" })
+seed_event(postgram, "story.created", story: s49, actor: fran, at: 13.days.ago.change(hour: 16, min: 20), data: { state: "idea", milestone_id: m2.id })
+seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 7.days.ago.change(hour: 10, min: 5), data: { from: "idea", to: "defining" })
 seed_event(postgram, "story.edited", story: s49, actor: claude, at: 1.day.ago.change(hour: 22, min: 31), data: { fields: %w[body mockup] })
 seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 1.day.ago.change(hour: 22, min: 40), data: { from: "defining", to: "ready" })
 

@@ -4,7 +4,7 @@ class Api::RootController < Api::BaseController
 
   def show
     render_ok({ api_version: Api::Operations::VERSION, operations: Api::Operations::ALL },
-      summary: "Maker Tracker API v#{Api::Operations::VERSION}: #{Api::Operations::ALL.size} operaciones",
+      summary: "Maker Tracker API v#{Api::Operations::VERSION}: #{Api::Operations::ALL.size} operations.",
       breadcrumbs: [ "mt projects", "mt context" ])
   end
 end

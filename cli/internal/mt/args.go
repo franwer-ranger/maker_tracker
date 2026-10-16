@@ -1,24 +1,28 @@
 package mt
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 )
 
 // UsageError es un error de uso: mt sale con código 2.
-type UsageError struct{ msg string }
+type UsageError struct{ msg, hint string }
 
 func (e *UsageError) Error() string { return e.msg }
 
 func usageErrorf(format string, args ...any) error {
-	return &UsageError{fmt.Sprintf(format, args...)}
+	return &UsageError{msg: fmt.Sprintf(format, args...)}
 }
 
-func isUsage(err error) bool {
-	var u *UsageError
-	return errors.As(err, &u)
+// usageHint: un error de uso con su Hint.
+func usageHint(hint, format string, args ...any) error {
+	return &UsageError{msg: fmt.Sprintf(format, args...), hint: hint}
 }
+
+// hintedError: un error que no es de uso (código 1) con su Hint.
+type hintedError struct{ msg, hint string }
+
+func (e *hintedError) Error() string { return e.msg }
 
 type flagKind int
 
@@ -70,18 +74,18 @@ func parseArgs(args []string, known map[string]flagKind) (parsed, error) {
 			kind, ok = globalFlags[name]
 		}
 		if !ok {
-			return p, usageErrorf("opción desconocida: --%s", name)
+			return p, usageHint("see the options with mt <command> --help.", "unknown option --%s.", name)
 		}
 		if kind == boolFlag {
 			if hasValue {
-				return p, usageErrorf("--%s no lleva valor", name)
+				return p, usageErrorf("--%s takes no value.", name)
 			}
 			p.flags[name] = append(p.flags[name], "true")
 			continue
 		}
 		if !hasValue {
 			if i+1 >= len(args) {
-				return p, usageErrorf("--%s necesita un valor", name)
+				return p, usageErrorf("--%s needs a value.", name)
 			}
 			i++
 			value = args[i]

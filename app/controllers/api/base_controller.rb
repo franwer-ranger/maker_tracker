@@ -15,29 +15,29 @@ class Api::BaseController < ActionController::API
   rescue_from StandardError, with: :render_internal_error
   rescue_from Api::Error, with: :render_error
   rescue_from ActiveRecord::RecordNotFound do |e|
-    render_error Api::Error.not_found(e.model ? "No existe ese #{e.model.underscore.humanize.downcase}" : e.message)
+    render_error Api::Error.not_found(e.model ? "#{e.model.underscore.humanize.downcase} not found." : "#{e.message}.")
   end
   rescue_from ActiveRecord::RecordInvalid do |e|
-    render_error Api::Error.validation(e.record.errors.full_messages.to_sentence, details: e.record.errors.to_hash(true))
+    render_error Api::Error.validation("#{e.record.errors.full_messages.to_sentence}.", details: e.record.errors.to_hash(true))
   end
   rescue_from ActionController::ParameterMissing do |e|
-    render_error Api::Error.validation("Falta el parámetro #{e.param}", hint: "Revisa los parámetros de la operación en GET /api")
+    render_error Api::Error.validation("missing parameter #{e.param}.", hint: "the parameters of each operation are in GET /api.")
   end
   rescue_from ActionDispatch::Http::Parameters::ParseError do
-    render_error Api::Error.validation("El cuerpo no es JSON válido", hint: "Manda Content-Type: application/json y un objeto JSON")
+    render_error Api::Error.validation("the body is not valid JSON.", hint: "send Content-Type: application/json and a JSON object.")
   end
+  # Las excepciones de dominio llevan su mensaje en castellano para la UI: la
+  # API escribe el suyo.
   rescue_from Story::ClaimedByOther do |e|
-    render_error Api::Error.new("CLAIMED_BY_OTHER", e.message, status: :conflict,
-      hint: "Elige otra con mt next o pide a Fran que la libere")
+    render_error claimed_by_other_error(e.story)
   end
-  rescue_from Eventable::ReasonRequired do |e|
-    render_error Api::Error.new("REASON_REQUIRED", e.message, status: :unprocessable_entity,
-      hint: "Repite la operación con --reason \"…\" explicando por qué")
+  rescue_from Eventable::ReasonRequired do
+    render_error reason_required_error
   end
 
   # /api/<lo que sea que no existe>
   def route_not_found
-    raise Api::Error.not_found("No existe #{request.method} #{request.path}", hint: "Las operaciones están en GET /api")
+    raise Api::Error.not_found("no such operation: #{request.method} #{request.path}.", hint: "the operations are in GET /api.")
   end
 
   private
@@ -46,9 +46,9 @@ class Api::BaseController < ActionController::API
     token = request.authorization.to_s[/\ABearer\s+(\S+)\z/, 1]
     actor = Actor.authenticate(token)
     unless actor
-      raise Api::Error.new("UNAUTHORIZED", token ? "El token no es válido" : "Falta el token",
+      raise Api::Error.new("UNAUTHORIZED", token ? "the token is not valid." : "missing token.",
         status: :unauthorized,
-        hint: "Manda Authorization: Bearer <token>. Pide uno en el servidor con bin/rails \"mt:token[tu-nombre]\" y configúralo con mt setup <url> <token>")
+        hint: "send Authorization: Bearer <token>. Create one on the server with bin/rails \"mt:token[your-name]\" and set it with mt setup <url> <token>.")
     end
 
     actor.token_used!
@@ -70,14 +70,14 @@ class Api::BaseController < ActionController::API
 
     Rails.error.report(exception, handled: true)
     Rails.logger.error([ "#{exception.class}: #{exception.message}", *exception.backtrace&.first(10) ].join("\n"))
-    render_error Api::Error.new("INTERNAL", "Error interno: #{exception.message}", status: :internal_server_error,
-      hint: "Es un fallo de Maker Tracker, no de la petición. Avisa a Fran con este mensaje", retryable: true)
+    render_error Api::Error.new("INTERNAL", "internal error: #{exception.message}", status: :internal_server_error,
+      hint: "it's a bug in Maker Tracker, not in your request. Tell #{Actor.human.name} with this message.", retryable: true)
   end
 
   # Proyecto por su clave (PG), no por el slug.
   def project
     @project ||= Project.find_by(key: params[:project_key].to_s.upcase) ||
-      raise(Api::Error.not_found("No existe el proyecto #{params[:project_key]}", hint: "Los proyectos están en mt projects"))
+      raise(Api::Error.not_found("no project #{params[:project_key].to_s.upcase}.", hint: "see them with mt projects."))
   end
 
   # Historia por su número: 49 o PG-49.
@@ -90,12 +90,27 @@ class Api::BaseController < ActionController::API
     value = value.to_s.strip
     milestone = project.milestones.find_by(position: value[/\AM(\d+)\z/i, 1]) if value.match?(/\AM\d+\z/i)
     milestone ||= project.milestones.find_by("LOWER(title) = ?", value.downcase)
-    milestone || raise(Api::Error.not_found("No existe el hito #{value} en #{project.key}", hint: "Los hitos están en mt roadmap --closed"))
+    milestone || raise(Api::Error.not_found("no milestone #{value} in #{project.key}.", hint: "see them with mt roadmap --closed."))
+  end
+
+  # "PG-48 is claimed by claude since 11:42."
+  def claimed_by_other_error(story)
+    since = " since #{Api::Markdown::Formatting.datetime(story.claimed_at)}" if story.claimed_at
+    Api::Error.new("CLAIMED_BY_OTHER", "#{story.reference} is claimed by #{story.claimed_by.name}#{since}.", status: :conflict,
+      hint: "pick another one with mt next, or ask #{Actor.human.name} to release it.")
+  end
+
+  # Cada controlador que pide motivo dice cómo repetir el comando con él.
+  def reason_required_error = reason_error("this", "repeat it with --reason \"why\".")
+
+  # "reordering needs a reason." + el comando completo como hint.
+  def reason_error(doing, command)
+    Api::Error.new("REASON_REQUIRED", "#{doing} needs a reason.", status: :unprocessable_entity, hint: command)
   end
 
   def find_story(reference)
     number = reference.to_s.sub(/\A#{Regexp.escape(project.key)}-/i, "")
     project.stories.find_by(number: Integer(number, exception: false)) ||
-      raise(Api::Error.not_found("No existe #{project.key}-#{number}", hint: "Busca la historia con mt list o mt roadmap"))
+      raise(Api::Error.not_found("#{project.key}-#{number} does not exist.", hint: "find it with mt list or mt roadmap."))
   end
 end

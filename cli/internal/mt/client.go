@@ -62,7 +62,7 @@ func newClient(cfg Config) *Client {
 // es un error de Go: viene en Envelope.Error.
 func (c *Client) Do(method, path string, query url.Values, body any) (*Envelope, error) {
 	if c.URL == "" {
-		return nil, usageErrorf("mt no sabe a qué instancia hablar. Configúralo con: mt setup <url> <token>")
+		return nil, usageHint("mt setup <url> <token>", "mt does not know which instance to talk to.")
 	}
 	target := c.URL + path
 	if len(query) > 0 {
@@ -92,12 +92,12 @@ func (c *Client) Do(method, path string, query url.Values, body any) (*Envelope,
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("no se puede conectar con %s: %v. ¿Está la instancia levantada y Tailscale encendido?", c.URL, err)
+		return nil, &hintedError{msg: fmt.Sprintf("can't connect to %s: %v.", c.URL, err), hint: "check that the instance is up and Tailscale is on."}
 	}
 	defer resp.Body.Close()
 
 	if v := resp.Header.Get("X-MT-API-Version"); v != "" && v != APIVersion {
-		c.VersionWarning = fmt.Sprintf("La instancia usa la API v%s y este mt conoce la v%s: actualiza mt (make -C cli install en el repo de Maker Tracker).", v, APIVersion)
+		c.VersionWarning = fmt.Sprintf("the instance speaks API v%s and this mt knows v%s: update mt (make -C cli install in the Maker Tracker repo).", v, APIVersion)
 	}
 
 	raw, err := io.ReadAll(resp.Body)
@@ -110,7 +110,7 @@ func (c *Client) Do(method, path string, query url.Values, body any) (*Envelope,
 		if len(snippet) > 200 {
 			snippet = snippet[:200] + "…"
 		}
-		return nil, fmt.Errorf("%s no ha respondido como Maker Tracker (HTTP %d): %s", c.URL, resp.StatusCode, snippet)
+		return nil, &hintedError{msg: fmt.Sprintf("%s did not answer like Maker Tracker (HTTP %d): %s", c.URL, resp.StatusCode, snippet), hint: "check the url with mt setup <url> <token>."}
 	}
 	return env, nil
 }

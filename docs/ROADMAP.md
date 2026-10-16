@@ -48,7 +48,7 @@ Historias, en orden:
 6. [#018 API · definir producto](backlog/018-api-define.md) · Hecha
 7. [#019 CLI mt](backlog/019-cli-mt.md) · Hecha
 8. [#020 Skill de Maker Tracker y hook SessionStart](backlog/020-skill-and-hook.md) · Hecha
-9. [#024 La salida de mt y de la API, como en docs/CLI.md](backlog/024-mt-output-english.md) · Lista
+9. [#024 La salida de mt y de la API, como en docs/CLI.md](backlog/024-mt-output-english.md) · Hecha
 10. [#025 Crear una historia con un número dado](backlog/025-import-number.md) · Lista
 11. [#026 Mensajes de validación en castellano en la UI](backlog/026-spanish-validations.md) · Lista
 12. [#027 Llevar un proyecto existente a Maker Tracker](backlog/027-onboard-existing-project.md) · Lista

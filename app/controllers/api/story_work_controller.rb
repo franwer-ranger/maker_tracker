@@ -2,18 +2,18 @@
 # historia. Son Story#move_to! con datos extra en el evento. Repetir una
 # operación que no cambia nada no es un error: ok y un summary que lo dice.
 class Api::StoryWorkController < Api::BaseController
-  # Reclama y pasa a En curso. Avisa si no estaba Lista o está bloqueada.
+  # Reclama y pasa a En curso. Avisa si no estaba Lista, está bloqueada o no
+  # tiene criterios.
   def start
-    warnings = []
-    warnings << "#{story.reference} está en #{story.human_state}: puede que le falte contexto" if story.idea? || story.defining?
-    warnings << "#{story.reference} ya estaba Hecha: vuelve a En curso" if story.done?
-    blockers = pending_blockers
-    warnings << "#{story.reference} está bloqueada por #{Api::Markdown::Formatting.sentence(blockers)}" if blockers.any?
-
+    warnings = start_warnings
     changed = story.in_progress? && story.claimed_by.nil? ? story.claim!(actor: Current.actor) : story.move_to!(:in_progress, actor: Current.actor)
-    summary = changed ? "#{story.reference} en curso, reclamada por #{Current.actor.name}" : "#{story.reference} ya estaba en curso y es tuya"
-    render_ok(story_data, summary: summary, warnings: warnings,
-      breadcrumbs: [ "mt show #{story.reference}", "mt done #{story.reference} --commit <sha>", "mt comment #{story.reference} \"…\"" ])
+    summary = changed ? "#{story.reference} is in progress, claimed by #{Current.actor.name}." : "#{story.reference} was already in progress and is yours."
+    breadcrumbs = if warnings.any?
+      [ "mt show #{story.reference}", "mt release #{story.reference} --reason \"…\"" ]
+    else
+      [ "mt show #{story.reference}", "mt comment #{story.reference} \"…\"", "mt done #{story.reference} --commit <sha>" ]
+    end
+    render_ok(story_data, summary: summary, warnings: warnings, breadcrumbs: breadcrumbs)
   end
 
   # Pasa a Hecha con sus commits y su PR en el evento.
@@ -22,21 +22,21 @@ class Api::StoryWorkController < Api::BaseController
     commits = Array(params[:commits]).map(&:to_s).compact_blank
     pr = params[:pr].presence
     warnings = []
-    warnings << "Sin commits ni PR: nadie sabrá dónde está el código. Usa --commit <sha> o --pr <url>" if commits.empty? && pr.nil?
+    warnings << "it has no commits or PR: nobody will know where the code is. Use --commit <sha> or --pr <url>." if commits.empty? && pr.nil?
 
     changed = story.move_to!(:done, actor: Current.actor, data: { commits: commits, pr: pr })
-    summary = changed ? "#{story.reference} hecha por #{Current.actor.name}#{" · #{commits.size} #{commits.size == 1 ? 'commit' : 'commits'}" if commits.any?}#{' · PR' if pr}" : "#{story.reference} ya estaba hecha"
-    render_ok(story_data, summary: summary, warnings: changed ? warnings : [], breadcrumbs: [ "mt next" ])
+    render_ok(story_data, summary: changed ? done_summary(commits, pr) : "#{story.reference} was already done.",
+      warnings: changed ? warnings : [], breadcrumbs: [ "mt next" ])
   end
 
   # La devuelve a Lista y la libera, con el motivo en el evento.
   def release
     ensure_not_claimed_by_other!
     reason = params[:reason].presence
-    raise Eventable::ReasonRequired, "Un agente tiene que dar un motivo para soltar una historia" if Current.actor.agent? && reason.nil?
+    raise Eventable::ReasonRequired if Current.actor.agent? && reason.nil?
 
     changed = story.in_progress? ? story.move_to!(:ready, actor: Current.actor, reason: reason) : story.release!(actor: Current.actor, reason: reason)
-    summary = changed ? "#{story.reference} liberada: vuelve a #{story.human_state}" : "#{story.reference} no la tenía nadie"
+    summary = changed ? "#{story.reference} released: it is #{state_words(story.state)} again." : "#{story.reference} was not claimed by anyone."
     render_ok(story_data, summary: summary, breadcrumbs: [ "mt next", "mt comment #{story.reference} \"…\"" ])
   end
 
@@ -44,10 +44,27 @@ class Api::StoryWorkController < Api::BaseController
 
   def story_data = { story: Api::Markdown::Formatting.story_data(story.reload) }
 
-  def pending_blockers
-    pending = story.pending_blockers
-    project.stories.where(number: pending).order(:number).map { "#{it.reference} (#{it.human_state.downcase})" }
+  def state_words(state) = Api::Markdown::Formatting.state_words(state)
+
+  # "PG-51 was still being defined; it may lack context." y después, con "it".
+  def start_warnings
+    warnings = []
+    warnings << "#{story.reference} was still an idea; it may lack context." if story.idea?
+    warnings << "#{story.reference} was still being defined; it may lack context." if story.defining?
+    warnings << "#{story.reference} was already done; it goes back to in progress." if story.done?
+    blockers = project.stories.where(number: story.pending_blockers).order(:number)
+    warnings << "it is blocked by #{Api::Markdown::Formatting.sentence(blockers.map { "#{it.reference} (#{state_words(it.state)})" })}." if blockers.any?
+    warnings << "it has no acceptance criteria." unless story.criteria? || story.done?
+    warnings
   end
+
+  # "PG-49 done by claude, with 1 commit and PR #63."
+  def done_summary(commits, pr)
+    work = [ (Api::Markdown::Formatting.plural(commits.size, "commit") if commits.any?), (Api::Markdown::Formatting.pr_label(pr) if pr) ].compact
+    "#{story.reference} done by #{Current.actor.name}#{", with #{work.join(' and ')}" if work.any?}."
+  end
+
+  def reason_required_error = reason_error("releasing", "mt release #{story.reference} --reason \"why you release it\"")
 
   # Terminar o soltar la de otro solo lo puede hacer Fran.
   def ensure_not_claimed_by_other!

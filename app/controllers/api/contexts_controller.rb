@@ -8,7 +8,7 @@ class Api::ContextsController < Api::BaseController
                 decisions: context.decisions.map(&:reference),
                 in_progress: context.in_progress.map { { reference: it.reference, title: it.title, claimed_by: it.claimed_by&.name } },
                 markdown: context.to_s },
-      summary: "Contexto de #{project.name}",
+      summary: "Context of #{project.name}.",
       breadcrumbs: [ "mt next", "mt roadmap" ])
   end
 end

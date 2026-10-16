@@ -19,7 +19,7 @@ class Decision < ApplicationRecord
   private
 
   def story_and_supersedes_in_same_project
-    errors.add(:story, "es de otro proyecto") if story && story.project_id != project_id
-    errors.add(:supersedes, "es de otro proyecto") if supersedes && supersedes.project_id != project_id
+    errors.add(:story, :other_project) if story && story.project_id != project_id
+    errors.add(:supersedes, :other_project) if supersedes && supersedes.project_id != project_id
   end
 end

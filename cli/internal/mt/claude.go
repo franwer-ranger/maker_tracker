@@ -14,7 +14,7 @@ import (
 
 // HookCommand es el hook SessionStart: inyecta mt context al empezar la
 // sesión. Con --hook, mt no falla nunca; si mt no está instalado, lo dice.
-const HookCommand = `command -v mt >/dev/null 2>&1 && mt context --hook || echo "Maker Tracker: sin contexto (mt no está instalado o no está en el PATH)"`
+const HookCommand = `command -v mt >/dev/null 2>&1 && mt context --hook || echo "Maker Tracker: no project context (mt is not installed or not in the PATH)"`
 
 // installClaude deja la skill en .claude/skills/maker-tracker/ y el hook en
 // .claude/settings.json del repo. Repetirlo no duplica nada.
@@ -26,12 +26,12 @@ func installClaude(e *env, dir string) error {
 	current, _ := os.ReadFile(skillPath)
 	switch {
 	case bytes.Equal(current, skill.Markdown):
-		fmt.Fprintf(e.stdout, "%s: ya estaba al día\n", skillPath)
+		fmt.Fprintf(e.stdout, "%s: already up to date\n", skillPath)
 	default:
 		if err := os.WriteFile(skillPath, skill.Markdown, 0o644); err != nil {
 			return err
 		}
-		fmt.Fprintf(e.stdout, "%s: skill maker-tracker\n", skillPath)
+		fmt.Fprintf(e.stdout, "%s: maker-tracker skill\n", skillPath)
 	}
 
 	settingsPath := filepath.Join(dir, ".claude", "settings.json")
@@ -40,9 +40,9 @@ func installClaude(e *env, dir string) error {
 		return err
 	}
 	if added {
-		fmt.Fprintf(e.stdout, "%s: hook SessionStart con mt context\n", settingsPath)
+		fmt.Fprintf(e.stdout, "%s: SessionStart hook with mt context\n", settingsPath)
 	} else {
-		fmt.Fprintf(e.stdout, "%s: el hook ya estaba\n", settingsPath)
+		fmt.Fprintf(e.stdout, "%s: the hook was already there\n", settingsPath)
 	}
 	return nil
 }
@@ -57,7 +57,7 @@ func addSessionStartHook(path string) (bool, error) {
 	}
 	if len(bytes.TrimSpace(data)) > 0 {
 		if err := json.Unmarshal(data, &settings); err != nil {
-			return false, fmt.Errorf("%s no es JSON válido: %v", path, err)
+			return false, fmt.Errorf("%s is not valid JSON: %v", path, err)
 		}
 	}
 

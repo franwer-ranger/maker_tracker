@@ -10,7 +10,12 @@ module Story::Operations
 
   # Otro actor ya tiene la historia.
   class ClaimedByOther < StandardError
-    def initialize(story) = super("#{story.reference} la tiene #{story.claimed_by.name}")
+    attr_reader :story
+
+    def initialize(story)
+      @story = story
+      super("#{story.reference} la tiene #{story.claimed_by.name}")
+    end
   end
 
   included do

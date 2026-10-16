@@ -22,7 +22,7 @@ class Project < ApplicationRecord
 
   validates :name, presence: true
   validates :slug, presence: true, uniqueness: true
-  validates :key, presence: true, uniqueness: true, format: { with: /\A[A-Z]{2,5}\z/, message: "debe tener de 2 a 5 letras" }
+  validates :key, presence: true, uniqueness: true, format: { with: /\A[A-Z]{2,5}\z/, message: :key_format }
 
   attribute :brief, default: BRIEF_TEMPLATE
   before_validation :generate_slug, on: :create

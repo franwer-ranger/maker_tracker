@@ -5,6 +5,7 @@ package mt
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -40,8 +41,7 @@ func Main(argv []string, stdin io.Reader, stdout, stderr io.Writer) int {
 				printCommandHelp(stdout, cmd)
 				return 0
 			}
-			fmt.Fprintf(stderr, "No existe el comando %q. Mira mt help\n", strings.Join(argv[1:], " "))
-			return 2
+			return fail(stderr, unknownCommand(strings.Join(argv[1:], " ")))
 		}
 		printHelp(stdout)
 		return 0
@@ -53,12 +53,10 @@ func Main(argv []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	cmd := findCommand(argv)
 	if cmd == nil && argv[0] == "milestone" {
-		fmt.Fprintln(stderr, "Uso: mt milestone create | edit | reorder | close | reopen …. Mira mt help")
-		return 2
+		return fail(stderr, &UsageError{msg: "mt milestone needs a subcommand.", hint: "mt milestone create | edit | reorder | close | reopen. See mt help."})
 	}
 	if cmd == nil {
-		fmt.Fprintf(stderr, "No existe el comando %q. Mira mt help\n", argv[0])
-		return 2
+		return fail(stderr, unknownCommand(argv[0]))
 	}
 	opts, err := parseArgs(argv[len(strings.Fields(cmd.name)):], cmd.flags)
 	if err == nil && opts.has("help") {
@@ -66,7 +64,7 @@ func Main(argv []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 0
 	}
 	if err == nil && (len(opts.args) < cmd.minArgs || (cmd.maxArgs >= 0 && len(opts.args) > cmd.maxArgs)) {
-		err = usageErrorf("uso: %s", cmd.usage)
+		err = &UsageError{msg: "wrong number of arguments.", hint: "usage: " + cmd.usage}
 	}
 	if err != nil {
 		return fail(stderr, err)
@@ -82,7 +80,7 @@ func Main(argv []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		code = fail(stderr, err)
 	}
 	if e.client.VersionWarning != "" {
-		fmt.Fprintln(stderr, "Aviso: "+e.client.VersionWarning)
+		fmt.Fprintln(stderr, "Warning: "+e.client.VersionWarning)
 	}
 	return code
 }
@@ -107,22 +105,33 @@ func moveLeadingGlobals(argv []string) []string {
 	return append(argv, globals...)
 }
 
+func unknownCommand(name string) error {
+	return &UsageError{msg: fmt.Sprintf("unknown command %q.", name), hint: "see the commands with mt help."}
+}
+
+// fail imprime el error en dos líneas por stderr (Error: … / Hint: …) y
+// devuelve el código de salida: 2 si el comando está mal escrito, 1 si no.
 func fail(stderr io.Writer, err error) int {
 	if _, ok := err.(silentError); ok {
 		return 1
 	}
-	if apiErr, ok := err.(*APIError); ok {
-		fmt.Fprintf(stderr, "Error (%s): %s\n", apiErr.Code, apiErr.Message)
-		if apiErr.Hint != "" {
-			fmt.Fprintf(stderr, "%s\n", apiErr.Hint)
+	message, hint, code := err.Error(), "", 1
+	var usage *UsageError
+	switch e := err.(type) {
+	case *APIError:
+		hint = e.Hint
+	case *hintedError:
+		hint = e.hint
+	default:
+		if errors.As(err, &usage) {
+			hint, code = usage.hint, 2
 		}
-		return 1
 	}
-	fmt.Fprintf(stderr, "Error: %s\n", err)
-	if isUsage(err) {
-		return 2
+	fmt.Fprintf(stderr, "Error: %s\n", message)
+	if hint != "" {
+		fmt.Fprintf(stderr, "Hint: %s\n", hint)
 	}
-	return 1
+	return code
 }
 
 // call hace la llamada y pinta la respuesta.
@@ -141,7 +150,8 @@ func (e *env) call(method, path string, query map[string]string, body any) error
 }
 
 // render: con --json, el sobre tal cual. Si no, el markdown (o el summary),
-// los avisos y "Siguiente:" con los breadcrumbs. Igual con o sin TTY.
+// los avisos (Warning: …) y "Next:" con los breadcrumbs (docs/CLI.md). Igual
+// con o sin TTY.
 func (e *env) render(envl *Envelope) error {
 	if e.opts.has("json") {
 		var pretty bytes.Buffer
@@ -164,19 +174,21 @@ func (e *env) render(envl *Envelope) error {
 		text = envl.Summary
 	}
 	fmt.Fprintln(e.stdout, strings.TrimRight(text, "\n"))
-	if len(envl.Warnings) > 0 {
-		fmt.Fprintln(e.stdout, "\nAvisos:")
-		for _, w := range envl.Warnings {
-			fmt.Fprintf(e.stdout, "- %s\n", w)
-		}
-	}
-	if len(envl.Breadcrumbs) > 0 {
-		fmt.Fprintln(e.stdout, "\nSiguiente:")
-		for _, b := range envl.Breadcrumbs {
-			fmt.Fprintf(e.stdout, "  %s\n", b)
-		}
-	}
+	printFooter(e.stdout, envl.Warnings, envl.Breadcrumbs)
 	return nil
+}
+
+// printFooter: los avisos, uno por línea, y después Next: con los comandos.
+func printFooter(w io.Writer, warnings, next []string) {
+	for _, warning := range warnings {
+		fmt.Fprintf(w, "Warning: %s\n", warning)
+	}
+	if len(next) > 0 {
+		fmt.Fprintln(w, "\nNext:")
+		for _, b := range next {
+			fmt.Fprintf(w, "  %s\n", b)
+		}
+	}
 }
 
 // silentError: el error ya se ha impreso (en --json), solo cambia el código de salida.
@@ -185,7 +197,7 @@ type silentError struct{}
 func (silentError) Error() string { return "" }
 
 func printHelp(w io.Writer) {
-	fmt.Fprintf(w, "mt %s · Maker Tracker desde la terminal\n\nUso: mt <comando> [argumentos] [--json] [--project PG]\n\n", Version)
+	fmt.Fprintf(w, "mt %s · Maker Tracker from the terminal\n\nUsage: mt <command> [arguments] [--json] [--project PG]\n\n", Version)
 	groups := map[string][]*command{}
 	var order []string
 	for _, cmd := range commands {
@@ -206,14 +218,14 @@ func printHelp(w io.Writer) {
 		}
 		fmt.Fprintln(w)
 	}
-	fmt.Fprint(w, `Historias: PG-49 o solo 49 (con el proyecto de .mt o --project).
---file - lee de la entrada estándar. --json imprime el sobre de la API tal cual.
-Más detalle: mt <comando> --help
+	fmt.Fprint(w, `Stories: PG-49, or just 49 (with the project from .mt or --project).
+--file - reads from standard input. --json prints the API envelope as is.
+More: mt <command> --help
 `)
 }
 
 func printCommandHelp(w io.Writer, cmd *command) {
-	fmt.Fprintf(w, "Uso: %s\n\n%s\n", cmd.usage, cmd.summary)
+	fmt.Fprintf(w, "Usage: %s\n\n%s\n", cmd.usage, cmd.summary)
 	if cmd.description != "" {
 		fmt.Fprintf(w, "\n%s\n", cmd.description)
 	}
@@ -223,12 +235,12 @@ func printCommandHelp(w io.Writer, cmd *command) {
 			names = append(names, name)
 		}
 		sort.Strings(names)
-		fmt.Fprintln(w, "\nOpciones:")
+		fmt.Fprintln(w, "\nOptions:")
 		for _, name := range names {
 			fmt.Fprintf(w, "  --%s %s\n", name, cmd.flagHelp[name])
 		}
 	}
-	fmt.Fprintf(w, "\nEjemplo:\n  %s\n", cmd.example)
+	fmt.Fprintf(w, "\nExample:\n  %s\n", cmd.example)
 }
 
 func readFileArg(e *env, path string) (string, error) {
@@ -238,7 +250,7 @@ func readFileArg(e *env, path string) (string, error) {
 	}
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return "", usageErrorf("no se puede leer %s: %v", path, err)
+		return "", usageErrorf("can't read %s: %v.", path, err)
 	}
 	return string(data), nil
 }

@@ -9,7 +9,7 @@ class Api::Error < StandardError
     @code, @status, @hint, @retryable, @details = code, status, hint, retryable, details
   end
 
-  def self.not_found(message, hint: "Lista lo que hay con mt list o mt projects")
+  def self.not_found(message, hint: "see what there is with mt list or mt projects.")
     new("NOT_FOUND", message, status: :not_found, hint: hint)
   end
 

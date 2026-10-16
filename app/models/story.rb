@@ -85,19 +85,28 @@ class Story < ApplicationRecord
     blocked_by - done_numbers
   end
 
-  # En Definiendo y sin ningún criterio (`- [ ]` / `- [x]`) en el cuerpo.
-  def missing_criteria?
-    defining? && !body.match?(/^\s*[-*] \[[ xX]\]/)
-  end
+  # Algún criterio (`- [ ]` / `- [x]`) en el cuerpo.
+  def criteria? = body.to_s.match?(/^\s*[-*] \[[ xX]\]/)
+
+  # En Definiendo y sin ningún criterio.
+  def missing_criteria? = defining? && !criteria?
 
   # Lo que incumple la regla para pasar a Lista (`PRODUCT.md`). Es un aviso,
-  # no una validación: la UI lo enseña y la API lo devuelve como warning.
-  def readiness_issues
-    issues = []
-    issues << "Tiene preguntas abiertas sin responder." if open_questions?
-    issues << "Tiene la label «ui» y no tiene mockup." if labels.include?("ui") && mockup.blank?
-    issues
+  # no una validación: la UI lo enseña (readiness_issues) y la API lo devuelve
+  # como warning, en inglés.
+  def readiness_problems
+    problems = []
+    problems << :open_questions if open_questions?
+    problems << :ui_without_mockup if labels.include?("ui") && mockup.blank?
+    problems
   end
+
+  READINESS_ISSUES = {
+    open_questions: "Tiene preguntas abiertas sin responder.",
+    ui_without_mockup: "Tiene la label «ui» y no tiene mockup."
+  }.freeze
+
+  def readiness_issues = readiness_problems.map { READINESS_ISSUES.fetch(it) }
 
   def open_questions?
     body.to_s[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip.present?
@@ -113,30 +122,30 @@ class Story < ApplicationRecord
   private
 
   def milestone_in_same_project
-    errors.add(:milestone, "es de otro proyecto") if milestone && milestone.project_id != project_id
+    errors.add(:milestone, :other_project) if milestone && milestone.project_id != project_id
   end
 
   def mockup_is_http_url
     return if mockup.blank?
 
     uri = URI.parse(mockup)
-    errors.add(:mockup, "debe ser una URL http(s)") unless uri.is_a?(URI::HTTP) && uri.host.present?
+    errors.add(:mockup, :not_http_url) unless uri.is_a?(URI::HTTP) && uri.host.present?
   rescue URI::InvalidURIError
-    errors.add(:mockup, "debe ser una URL http(s)")
+    errors.add(:mockup, :not_http_url)
   end
 
   def labels_are_texts
-    errors.add(:labels, "deben ser textos") unless labels.is_a?(Array) && labels.all?(String)
+    errors.add(:labels, :not_texts) unless labels.is_a?(Array) && labels.all?(String)
   end
 
   def blocked_by_are_stories_of_project
-    return errors.add(:blocked_by, "debe ser una lista de números de historia") unless blocked_by.is_a?(Array)
+    return errors.add(:blocked_by, :not_a_list) unless blocked_by.is_a?(Array)
 
     invalid = blocked_by.reject { it.is_a?(Integer) }
-    return errors.add(:blocked_by, "solo admite números de historia (#{invalid.join(', ')})") if invalid.any?
+    return errors.add(:blocked_by, :not_numbers, values: invalid.join(", ")) if invalid.any?
 
-    errors.add(:blocked_by, "no puede incluir la propia historia") if number && blocked_by.include?(number)
+    errors.add(:blocked_by, :itself) if number && blocked_by.include?(number)
     missing = blocked_by - project.stories.where(number: blocked_by).pluck(:number) if project
-    errors.add(:blocked_by, "incluye historias que no existen en el proyecto (#{missing.join(', ')})") if missing.present?
+    errors.add(:blocked_by, :missing_stories, numbers: missing.join(", ")) if missing.present?
   end
 end

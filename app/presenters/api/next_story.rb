@@ -1,5 +1,5 @@
-# `mt next`: la historia de Project#next_story y el porqué en una frase.
-#   "Primera Lista no bloqueada de M2. Antes en el orden: PG-48 y PG-45 (en curso)."
+# `mt next` (docs/CLI.md): la historia de Project#next_story y por qué es esa.
+#   "first ready, unblocked story in M2. PG-48 and PG-45 come before it and are in progress."
 class Api::NextStory
   include Api::Markdown::Formatting
 
@@ -10,52 +10,75 @@ class Api::NextStory
     @story = project.next_story
   end
 
+  def markdown
+    "Next up: #{story.reference} · #{story.title}\nWhy this one: #{reason}\n\n#{Api::Markdown::Story.new(story)}"
+  end
+
   def reason
     return unless story
 
-    parts = [ "Primera Lista no bloqueada de #{story.milestone.code}." ]
-    skipped = []
-    @project.milestones.open.each do |milestone|
-      before = milestone.stories.includes(:claimed_by).to_a
+    empty, skipped = [], []
+    @project.milestones.open.includes(stories: %i[claimed_by project]).each do |milestone|
+      before = milestone.stories.to_a
       before = before.take_while { it != story } if milestone == story.milestone
-      skipped.concat(before.select { it.ready? && it.blocked?(done_numbers: done_numbers) })
+      blocked = before.select { it.ready? && it.blocked?(done_numbers: done_numbers) }
+      skipped.concat(blocked)
       if milestone == story.milestone
-        pending = before.reject { it.done? || it.ready? }
-        parts << "Antes en el orden: #{grouped(pending)}." if pending.any?
-        break
+        return [ "first ready, unblocked story in #{milestone.code}.",
+                 (none_in(empty) if empty.any?),
+                 (pending_sentence(before.reject { it.done? || it.ready? }) if before.any? { !it.done? && !it.ready? }),
+                 *skipped.map { blocked_sentence(it) } ].compact.join(" ")
       end
-      parts.unshift("#{milestone.code} no tiene ninguna Lista libre.") unless skipped.any? { it.milestone == milestone }
+      empty << milestone if blocked.empty?
     end
-    parts << "Se salta #{sentence(skipped.map { "#{it.reference} (bloqueada por #{sentence(blockers(it))})" })}." if skipped.any?
-    parts.join(" ")
   end
 
   # Historias que hay que mirar antes de empezar: las que la bloqueaban.
   def related = story.blocked_by.map { "#{@project.key}-#{it}" }
 
-  # Por qué no hay ninguna: qué hay en Definiendo en el hito actual.
-  def nothing_ready_hint
-    milestone = @project.current_milestone
-    return "No hay hitos abiertos. Mira el roadmap con mt roadmap --closed" unless milestone
-
-    defining = milestone.stories.defining.count
-    if defining.positive?
-      "Hay #{defining} #{defining == 1 ? 'historia' : 'historias'} en Definiendo en #{milestone.code}: mt list --state defining --milestone #{milestone.code}"
-    else
-      "No hay historias Listas ni en Definiendo en #{milestone.code}. Mira el roadmap con mt roadmap"
+  # Sin ninguna: el error de `mt next`, con lo que se está definiendo.
+  def nothing_ready_error
+    open = @project.milestones.open.to_a
+    human = Actor.human.name
+    if open.empty?
+      return Api::Error.new("NOTHING_READY", "no open milestone.", status: :not_found,
+        hint: "see the closed ones with mt roadmap --closed, or ask #{human}.")
     end
+
+    defining = @project.stories.defining.where(milestone: open).sort_by { [ it.milestone.position, it.position ] }
+    hint = if defining.any?
+      "#{plural(defining.size, 'story', 'stories')} #{defining.one? ? 'is' : 'are'} being defined (#{defining.map(&:reference).join(', ')}). " \
+        "See #{defining.one? ? 'it' : 'them'} with mt list --state defining, or ask #{human}."
+    else
+      "nothing is being defined either. See the roadmap with mt roadmap, or ask #{human}."
+    end
+    Api::Error.new("NOTHING_READY", "no ready, unblocked story in #{or_sentence(open.map(&:code))}.", status: :not_found, hint: hint)
   end
 
   private
 
   def done_numbers = @done_numbers ||= @project.stories.done.pluck(:number)
 
-  def blockers(story) = story.pending_blockers(done_numbers: done_numbers).map { "#{@project.key}-#{it}" }
+  def or_sentence(items) = items.to_sentence(words_connector: ", ", two_words_connector: " or ", last_word_connector: " or ")
 
-  # "PG-48 y PG-45 (en curso), PG-51 (definiendo)"
-  def grouped(stories)
-    stories.chunk_while { |a, b| a.state == b.state }.map do |group|
-      "#{sentence(group.map(&:reference))} (#{group.first.human_state.downcase})"
-    end.join(", ")
+  # "M2 has none." / "M2 and M3 have none."
+  def none_in(milestones) = "#{sentence(milestones.map(&:code))} #{milestones.one? ? 'has' : 'have'} none."
+
+  # "PG-48 and PG-45 come before it and are in progress."
+  # "PG-48 (in progress) and PG-51 (defining) come before it."
+  def pending_sentence(stories)
+    groups = stories.chunk_while { |a, b| a.state == b.state }.to_a
+    verb = stories.one? ? "comes" : "come"
+    if groups.one?
+      "#{sentence(stories.map(&:reference))} #{verb} before it and #{stories.one? ? 'is' : 'are'} #{state_words(stories.first.state)}."
+    else
+      "#{sentence(groups.map { "#{sentence(it.map(&:reference))} (#{state_words(it.first.state)})" })} #{verb} before it."
+    end
+  end
+
+  # "PG-50 comes first but is blocked by PG-46 (in progress)."
+  def blocked_sentence(blocked)
+    blockers = @project.stories.where(number: blocked.pending_blockers(done_numbers: done_numbers)).order(:number)
+    "#{blocked.reference} comes first but is blocked by #{sentence(blockers.map { "#{it.reference} (#{state_words(it.state)})" })}."
   end
 end

@@ -58,7 +58,7 @@ func saveConfig(cfg Config) (string, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return "", err
 	}
-	body := fmt.Sprintf("# mt: instancia de Maker Tracker y token del actor. No lo compartas.\nurl: %s\ntoken: %s\n", cfg.URL, cfg.Token)
+	body := fmt.Sprintf("# mt: Maker Tracker instance and actor token. Don't share it.\nurl: %s\ntoken: %s\n", cfg.URL, cfg.Token)
 	if err := os.WriteFile(path, []byte(body), 0o600); err != nil {
 		return "", err
 	}
@@ -99,7 +99,7 @@ func findProject(dir string) (string, string, error) {
 			if key := strings.ToUpper(values["project"]); key != "" {
 				return key, path, nil
 			}
-			return "", path, fmt.Errorf("%s no tiene «project: CLAVE»", path)
+			return "", path, &hintedError{msg: fmt.Sprintf("%s has no \"project: KEY\" line.", path), hint: "run mt init PG at the root of the repo."}
 		} else if !errors.Is(err, os.ErrNotExist) {
 			return "", path, err
 		}

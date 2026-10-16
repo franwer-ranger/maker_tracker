@@ -1,30 +1,32 @@
 # Una historia en el formato de docs/backlog/: frontmatter con sus propiedades
-# y el cuerpo debajo. Es el mismo formato que acepta la escritura (#018,
-# Api::StoryDocument): lo que se lee se puede editar y devolver.
+# y el cuerpo debajo (docs/CLI.md → mt show). Es el mismo formato que acepta la
+# escritura (#018, Api::StoryDocument): lo que se lee se puede editar y devolver.
 #
-# Tras READ_ONLY_MARK añade lo que no se edita: bloqueos, comentarios e
+# Tras READ_ONLY_MARK añade lo que no se edita: relacionadas, comentarios e
 # historial. La escritura ignora todo lo que va después de la marca.
 class Api::Markdown::Story
   include Api::Markdown::Formatting
 
-  READ_ONLY_MARK = "<!-- mt: lo que sigue es solo lectura; mt edit lo ignora -->".freeze
+  READ_ONLY_MARK = "<!-- mt: read-only below this line; mt edit ignores it -->".freeze
+  HISTORY = 10
 
   def initialize(story)
     @story = story
   end
 
   def to_s
-    [ frontmatter, @story.body.to_s.strip, read_only ].compact.join("\n\n") + "\n"
+    [ frontmatter, @story.body.to_s.strip.presence, read_only ].compact.join("\n\n") + "\n"
   end
 
   private
 
+  # `milestone` es el título del hito: el código (M2) cambia al reordenar.
   def frontmatter
     <<~YAML.strip
       ---
       number: #{@story.number}
       title: #{scalar(@story.title)}
-      milestone: #{@story.milestone&.code}
+      milestone: #{scalar(@story.milestone&.title)}
       state: #{@story.state}
       claimed_by: #{@story.claimed_by&.name}
       mockup: #{scalar(@story.mockup)}
@@ -36,46 +38,37 @@ class Api::Markdown::Story
   end
 
   def read_only
-    sections = [ READ_ONLY_MARK ]
-    sections << "**Bloqueada por** #{sentence(blockers)}" if blockers.any?
-    sections << "**Ya no la bloquean** (hechas): #{sentence(resolved_blockers)}" if resolved_blockers.any?
-    sections << "**Bloquea a** #{sentence(blocking)}" if blocking.any?
-    sections << comments if @story.comments.any?
-    sections << history
-    sections.join("\n\n")
+    [ READ_ONLY_MARK, related, comments, history ].compact.join("\n\n")
   end
 
-  # "PG-47 (ready)"
-  def blockers
-    @blockers ||= begin
-      pending = @story.pending_blockers
-      @story.project.stories.where(number: pending).order(:number).map { "#{it.reference} (#{it.state})" }
+  # "Blocked by PG-47 Borradores automáticos (done): no longer blocking."
+  def related
+    lines = blocked_by.map do |story|
+      "Blocked by #{story_label(story)}#{': no longer blocking' if story.done?}."
     end
+    lines += @story.blocking.order(:number).map { "Blocks #{story_label(it)}." }
+    "## Related\n\n#{lines.join("\n")}" if lines.any?
   end
 
-  def resolved_blockers
-    @resolved_blockers ||= (@story.blocked_by - @story.pending_blockers).sort.map { "#{@story.project.key}-#{it}" }
-  end
+  def blocked_by = @story.project.stories.where(number: @story.blocked_by).order(:number)
 
-  def blocking
-    @blocking ||= @story.blocking.order(:number).map { "#{it.reference} (#{it.state})" }
-  end
+  def story_label(story) = "#{story.reference} #{story.title} (#{state_words(story.state)})"
 
   def comments
+    return if @story.comments.empty?
+
     items = @story.comments.includes(:actor).map do |comment|
-      "**#{comment.actor.name}** · #{datetime(comment.created_at)}\n\n#{comment.body.strip}"
+      "#{comment.actor.name} · #{datetime(comment.created_at)}\n#{comment.body.strip}"
     end
-    "## Comentarios\n\n#{items.join("\n\n---\n\n")}"
+    "## Comments · #{items.size}\n\n#{items.join("\n\n")}"
   end
 
   def history
-    helpers = ApplicationController.helpers
-    events = @story.history.includes(:actor).limit(10).map do |event|
-      sentence = helpers.event_sentence(event)
-      sentence = "#{event.actor.name} · #{sentence}" unless sentence.start_with?("#{event.actor.name} ")
-      reason = event.reason ? " · motivo: #{event.reason}" : ""
-      "- #{datetime(event.occurred_at)} · #{sentence}#{reason}"
-    end
-    "## Historial\n\n#{events.presence&.join("\n") || 'Sin eventos.'}"
+    events = @story.history.includes(:actor).limit(HISTORY).to_a
+    return "## History\n\nNo events yet." if events.empty?
+
+    names = Api::Markdown::EventSentence.milestone_codes(@story.project)
+    rows = events.map { [ datetime(it.occurred_at), it.actor.name, Api::Markdown::EventSentence.new(it, names).to_s ] }
+    "## History\n\n#{table(rows).join("\n")}"
   end
 end

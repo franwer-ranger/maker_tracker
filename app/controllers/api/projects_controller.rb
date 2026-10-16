@@ -8,13 +8,16 @@ class Api::ProjectsController < Api::BaseController
         current_milestone: milestone && { code: milestone.code, title: milestone.title },
         in_progress: in_progress.fetch(project.id, 0) }
     end
-    markdown = data.map do |p|
-      milestone = p[:current_milestone] ? "#{p[:current_milestone][:code]} #{p[:current_milestone][:title]}" : "sin hitos abiertos"
-      "- **#{p[:key]}** #{p[:name]} · #{milestone} · #{p[:in_progress]} en curso"
-    end.join("\n")
+    rows = data.map do |p|
+      milestone = p[:current_milestone] ? "#{p[:current_milestone][:code]} · #{p[:current_milestone][:title]}" : "no open milestone"
+      [ p[:key], p[:name], milestone, "#{p[:in_progress]} in progress" ]
+    end
+    summary = "#{Api::Markdown::Formatting.plural(data.size, 'project')}."
+
+    markdown = [ summary, Api::Markdown::Formatting.table(rows).join("\n").presence ].compact.join("\n\n")
 
     render_ok({ actor: Current.actor.name, projects: data, markdown: markdown },
-      summary: "#{data.size} #{data.size == 1 ? 'proyecto' : 'proyectos'}",
+      summary: summary,
       breadcrumbs: data.first(3).map { "mt init #{it[:key]}" })
   end
 end
