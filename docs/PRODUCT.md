@@ -66,6 +66,7 @@ La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de pri
 - **Proyectos por su clave** en la API y en `mt` (`PG`, `PG-49`), no por el slug.
 - **Lo que habla con máquinas va en inglés**: salida de `mt`, mensajes de la API, claves, comandos y la skill, como los nombres de tablas o el código. El contenido (títulos, historias, brief, decisiones) va en el idioma en que se escribe, y la app sigue en español. Formato de la salida en [`CLI.md`](CLI.md).
 - **Frontmatter YAML + cuerpo markdown** para leer y escribir una historia; JSON solo en la API y con `--json`.
+- **Al migrar a la app (#022), las historias conservan su número** (`MT-14` es la #014), para que valgan las referencias de commits y documentos, y **las decisiones de este documento se mueven a la app** (`D-n`): una sola fuente, que leen `mt context` y `mt decisions`.
 - **Skill y hook por repo**: `mt init PG --claude` deja `.mt`, la skill y el hook `SessionStart` en el repo del proyecto, no en la configuración global.
 
 ### 2026-10-16 · Arranque de M1
