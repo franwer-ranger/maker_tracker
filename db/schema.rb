@@ -10,5 +10,54 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_093939) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_094144) do
+  create_table "milestones", force: :cascade do |t|
+    t.integer "project_id", null: false
+    t.string "title", null: false
+    t.text "goal", default: "", null: false
+    t.integer "position", null: false
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "position"], name: "index_milestones_on_project_id_and_position", unique: true
+    t.index ["project_id"], name: "index_milestones_on_project_id"
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.string "key", null: false
+    t.text "brief", default: "", null: false
+    t.json "settings", default: {}, null: false
+    t.integer "last_story_number", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["key"], name: "index_projects_on_key", unique: true
+    t.index ["slug"], name: "index_projects_on_slug", unique: true
+  end
+
+  create_table "stories", force: :cascade do |t|
+    t.integer "project_id", null: false
+    t.integer "milestone_id"
+    t.integer "number", null: false
+    t.string "title", null: false
+    t.text "body", default: "", null: false
+    t.json "properties", default: {}, null: false
+    t.string "state", default: "idea", null: false
+    t.integer "position", null: false
+    t.integer "claimed_by_id"
+    t.datetime "claimed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["claimed_by_id"], name: "index_stories_on_claimed_by_id"
+    t.index ["milestone_id"], name: "index_stories_on_milestone_id"
+    t.index ["project_id", "milestone_id", "position"], name: "index_stories_on_project_id_and_milestone_id_and_position", unique: true
+    t.index ["project_id", "number"], name: "index_stories_on_project_id_and_number", unique: true
+    t.index ["project_id", "state"], name: "index_stories_on_project_id_and_state"
+    t.index ["project_id"], name: "index_stories_on_project_id"
+  end
+
+  add_foreign_key "milestones", "projects"
+  add_foreign_key "stories", "milestones"
+  add_foreign_key "stories", "projects"
 end

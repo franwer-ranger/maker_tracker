@@ -2,13 +2,7 @@
 # Código propio al estilo de shadcn: helpers y partials pequeños que usan los
 # tokens de config/tailwind.config.js. Se ven todos juntos en /design (development).
 module ComponentsHelper
-  STATES = {
-    idea: "Idea",
-    defining: "Definiendo",
-    ready: "Lista",
-    in_progress: "En curso",
-    done: "Hecha"
-  }.freeze
+  STATES = Story::STATE_NAMES
 
   # Foco: anillo de 2px del color del control, separado 2px del fondo.
   FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]".freeze

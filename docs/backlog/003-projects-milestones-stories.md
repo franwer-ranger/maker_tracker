@@ -2,8 +2,8 @@
 number: 3
 title: Modelo v2 · proyectos, hitos e historias
 milestone: M1
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup:
 labels: [modelo]
 blocked_by: [2]
@@ -61,3 +61,18 @@ Como Fran y como agente, quiero proyectos con hitos e historias ordenados, para 
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/v2-model` (sale de `dev/remove-login`), commit «Añade el modelo v2: proyectos, hitos e historias».
+
+**Hecho**
+- Migración `CreateV2Core` con `projects`, `milestones` y `stories`. Índices únicos `[project_id, number]`, `[project_id, position]` en hitos y `[project_id, milestone_id, position]` en historias.
+- `Project`: `slug` generado desde el nombre al crear (`prueba-uno`, `prueba-uno-2`…) y usado en `to_param`. `key` en mayúsculas y validada (2–5 letras). `brief` con la plantilla. `ideas` y `next_story`.
+- `Milestone`: `positioned on: :project`, scopes `open` / `closed`, `close!` / `reopen!`.
+- `Story`: enum de texto con `Story.human_state` / `#human_state` (Idea…Hecha; `ComponentsHelper::STATES` usa ya `Story::STATE_NAMES`). `positioned on: [project, milestone]` (la bandeja tiene su propio orden). `body` con la plantilla. `reference` (`PG-48`). `mockup`, `labels` y `blocked_by` con `store_accessor`: aceptan lista o texto separado por comas, se normalizan y se validan con mensajes legibles. `blocked?` y `blocking`.
+- Comprobado con un script en `bin/rails runner` (en una transacción que se deshace): orden y reordenación, paso a otro hito, numeración por proyecto, número fijado (#48 → la siguiente es #49), `blocked?`, `blocking`, `next_story` saltando historias bloqueadas e hitos sin Listas, y cada validación.
+
+**Decisiones**
+- Los números no se reutilizan gracias a un contador en el proyecto (`last_story_number`), no a `maximum + 1`. Se reserva dentro de `with_lock`, así que dos creaciones a la vez no chocan y no hace falta reintentar. Se puede fijar un número (las seeds lo necesitan), y el contador salta a él.
+- `next_story` recorre los hitos abiertos en orden: si el primero no tiene ninguna Lista desbloqueada, pasa al siguiente.
+- `claimed_by_id` existe sin clave ajena; la #004 la añade al crear `actors`.
+- `blocking` usa `json_each` de SQLite para no cargar todas las historias.
