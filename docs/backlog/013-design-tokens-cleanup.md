@@ -2,8 +2,8 @@
 number: 13
 title: Token text-control y estados en /design
 milestone: M1
-state: ready
-claimed_by:
+state: done
+claimed_by: development
 mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-A-0
 labels: [ui, sistema]
 blocked_by: [1]
@@ -42,3 +42,14 @@ Como agente que construye la UI, quiero que el 13px sea un token como los demás
 ## Preguntas abiertas
 
 ## Cierre
+
+Rama `dev/m1-screens`, commit «Añade el token text-control y los estados a /design».
+
+**Hecho**
+- `--text-control: 13px` está en `application.tailwind.css`, y Tailwind lo expone como `text-control` con interlineado de 16px.
+- No queda ningún `text-[13px]` en `app/`. Los seis usos (botón pequeño, selector de estado, actor, ayuda de `_field`, `_terminal` y `/design`) pasan a `text-control` y conservan su `leading-*` cuando era distinto de 16 (terminal 22px, `/design` 20px).
+- `/design` enseña el 13 en la escala de interfaz y los estados de `03 · Componentes` (hover y foco del primario, secundario y fantasma, y hover del nav item), comparados con `get_jsx` del artboard. El nav de ejemplo usa Tablero · Roadmap · Brief, como Paper.
+- En el foco del fantasma el texto pasa a blanco (`focus-visible:text-text`), como en Paper. Antes se quedaba en `text-muted`.
+
+**Decisiones**
+- Para pintar los estados fijos en `/design` uso clases forzadas (`!text-text`, `!bg-surface` y la sombra del foco) solo en esa página. Los componentes no tienen un parámetro de "estado de muestra".

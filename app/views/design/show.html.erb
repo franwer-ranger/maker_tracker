@@ -34,7 +34,8 @@
            ["text-2xl font-medium tracking-[-0.01em]", "Plantillas de post", "2xl · 500"],
            ["text-lg font-medium", "Exportar post a PDF", "lg · 500"],
            ["text-base text-text-soft", "Como maker quiero guardar un post como plantilla.", "base · 400"],
-           ["text-sm text-text-muted", "3 findings aplicados, 1 descartado", "sm · 400"]
+           ["text-sm text-text-muted", "3 findings aplicados, 1 descartado", "sm · 400"],
+           ["text-control text-text-muted", "Qué, no cómo. El cómo lo decide quien lo construye.", "control · 13 · 400"]
          ].each do |classes, sample, spec| %>
         <div class="flex items-baseline justify-between gap-4">
           <div class="<%= classes %>"><%= sample %></div>
@@ -45,7 +46,7 @@
     <div class="flex flex-[0.8] flex-col gap-5">
       <%= section_label "Máquina · Geist Mono" %>
       <div class="font-mono text-sm">$ mt next</div>
-      <div class="font-mono text-[13px] leading-5 text-text-muted">claude · #48 · hace 18 min</div>
+      <div class="font-mono text-control leading-5 text-text-muted">claude · #48 · hace 18 min</div>
       <%= section_label "Necesita tu atención" %>
     </div>
   </section>
@@ -93,12 +94,20 @@
   <section class="flex flex-col gap-5">
     <%= section_label "Botón · primario, secundario, fantasma" %>
     <div class="flex flex-wrap items-center gap-12">
-      <%= ui_button "Decidir" %>
+      <div class="flex items-center gap-3">
+        <%= ui_button "Decidir" %>
+        <%= ui_button "Hover", class: "!bg-accent-hover" %>
+        <%= ui_button "Focus", class: "shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-accent)]" %>
+      </div>
       <div class="flex items-center gap-3">
         <%= ui_button "Ver PR", variant: :secondary, icon: "arrow-top-right-on-square" %>
+        <%= ui_button "Hover", variant: :secondary, class: "!bg-surface" %>
+        <%= ui_button "Focus", variant: :secondary, class: "shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]" %>
       </div>
       <div class="flex items-center gap-3">
         <%= ui_button "Abrir sesión", variant: :ghost, icon_trailing: "arrow-right" %>
+        <%= ui_button "Hover", variant: :ghost, icon_trailing: "arrow-right", class: "!text-text" %>
+        <%= ui_button "Focus", variant: :ghost, class: "!text-text shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]" %>
         <%= ui_button "Desactivado", disabled: true %>
       </div>
       <%= ui_button "Pequeño · 32", variant: :secondary, size: :sm %>
@@ -110,9 +119,10 @@
     <nav class="flex w-60 shrink-0 flex-col gap-0.5">
       <%= section_label "Nav item", class: "pb-[18px]" %>
       <%= nav_item "Actividad", design_path, count: 3 %>
+      <%= nav_item "Tablero", "#tablero", active: false %>
       <%= nav_item "Roadmap", "#roadmap", active: false %>
-      <%= nav_item "Historias", "#historias", active: false %>
       <%= nav_item "Brief", "#brief", active: false %>
+      <div class="[&>a]:!text-text"><%= nav_item "Hover", "#hover", active: false %></div>
     </nav>
 
     <div class="flex flex-1 flex-col gap-10">

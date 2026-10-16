@@ -13,12 +13,12 @@ module ComponentsHelper
                 "transition-colors duration-150 ease-brand".freeze
   BUTTON_SIZES = {
     md: "h-control gap-2 text-sm leading-[18px]",
-    sm: "h-control-sm gap-1.5 px-3 text-[13px] leading-4"
+    sm: "h-control-sm gap-1.5 px-3 text-control leading-4"
   }.freeze
   BUTTON_VARIANTS = {
     primary: "bg-accent text-bg hover:bg-accent-hover #{ACCENT_FOCUS_RING}",
     secondary: "border border-strong bg-bg text-text hover:bg-surface #{FOCUS_RING}",
-    ghost: "text-text-muted hover:text-text #{FOCUS_RING}"
+    ghost: "text-text-muted hover:text-text focus-visible:text-text #{FOCUS_RING}"
   }.freeze
   BUTTON_DISABLED = "cursor-not-allowed bg-surface text-text-subtle".freeze
 
@@ -82,7 +82,7 @@ module ComponentsHelper
   def state_selector(name, selected: nil)
     tag.div role: "radiogroup", class: "inline-flex gap-0.5 rounded-[9px] border border-border bg-surface-sunken p-[3px]" do
       safe_join(STATES.map do |value, label|
-        tag.label class: "relative flex h-[30px] cursor-pointer items-center gap-2 rounded-md px-3 text-[13px] leading-4 text-text-muted " \
+        tag.label class: "relative flex h-[30px] cursor-pointer items-center gap-2 rounded-md px-3 text-control leading-4 text-text-muted " \
                          "transition-colors duration-150 ease-brand hover:text-text " \
                          "has-[:checked]:bg-surface has-[:checked]:font-medium has-[:checked]:text-text " \
                          "has-[:checked]:shadow-[inset_0_0_0_1px_var(--color-border-strong)] " \
@@ -113,7 +113,7 @@ module ComponentsHelper
       "bg-accent #{HALO}": kind != :human && active,
       "bg-text-subtle": kind != :human && !active
     )
-    tag.span class: "inline-flex items-center gap-2 text-[13px] leading-4" do
+    tag.span class: "inline-flex items-center gap-2 text-control leading-4" do
       safe_join([
         tag.span(class: dot, aria: { hidden: true }),
         tag.span(name, class: "font-mono text-text"),

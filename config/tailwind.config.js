@@ -52,6 +52,8 @@ module.exports = {
       // Tamaño / interlineado de 01 · Tipografía.
       fontSize: {
         xs: ['var(--text-xs)', '16px'],
+        // Controles pequeños, selector de estado, actor, metadatos y ayudas de campo.
+        control: ['var(--text-control)', '16px'],
         sm: ['var(--text-sm)', '20px'],
         base: ['var(--text-base)', '24px'],
         lg: ['var(--text-lg)', '28px'],
