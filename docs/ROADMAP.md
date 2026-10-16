@@ -19,19 +19,20 @@ En paralelo a los hitos, la vertiente de self-host despliega en la torre lo que 
 Objetivo: el modelo nuevo funcionando, con la UI mínima para definir producto.
 
 Historias, en orden:
-1. [#001 Sistema de diseño v3 en código](backlog/001-design-system-tokens.md) · Hecha
+1. [#001 Sistema de diseño en código](backlog/001-design-system-tokens.md) · Hecha
 2. [#002 Quitar el login y la v1](backlog/002-remove-login-and-v1.md) · Lista
 3. [#003 Modelo v2 · proyectos, hitos e historias](backlog/003-projects-milestones-stories.md) · Lista
 4. [#004 Modelo v2 · actores, decisiones y comentarios](backlog/004-actors-decisions-comments.md) · Lista
 5. [#005 Eventos · el registro de los hechos](backlog/005-events.md) · Lista
 6. [#006 Seeds · Postgram como en los mockups](backlog/006-seeds-postgram.md) · Lista
-7. [#007 Proyectos y estructura de la app](backlog/007-projects-and-shell.md) · Definiendo (falta mockup v3)
-8. [#008 Tablero por estados](backlog/008-board.md) · Definiendo (falta mockup v3)
-9. [#009 Roadmap · hitos e historias en orden](backlog/009-roadmap.md) · Definiendo (falta mockup v3)
-10. [#010 Historia · ver y definir una historia](backlog/010-story-page.md) · Definiendo (falta mockup v3)
-11. [#011 Brief · visión y decisiones del proyecto](backlog/011-brief.md) · Definiendo (falta mockup v3)
+7. [#012 Seeds · alinear con las pantallas de App](backlog/012-seeds-match-app-screens.md) · Lista
+8. [#007 Proyectos y estructura de la app](backlog/007-projects-and-shell.md) · Lista
+9. [#008 Tablero por estados](backlog/008-board.md) · Lista
+10. [#009 Roadmap · hitos e historias en orden](backlog/009-roadmap.md) · Lista
+11. [#010 Historia · ver y definir una historia](backlog/010-story-page.md) · Lista
+12. [#011 Brief · visión y decisiones del proyecto](backlog/011-brief.md) · Lista
 
-Las de UI pasan a Lista cuando sus pantallas estén en Paper (`v3 · App`). Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.md#2026-10-16--arranque-de-m1).
+Pantallas en Paper → `App`. Decisiones de esta fase en [`PRODUCT.md`](PRODUCT.md#2026-10-16--arranque-de-m1).
 
 ## M2 · Interfaz para agentes
 

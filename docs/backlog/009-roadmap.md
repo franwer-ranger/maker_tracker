@@ -2,16 +2,16 @@
 number: 9
 title: Roadmap · hitos e historias en orden
 milestone: M1
-state: defining
+state: ready
 claimed_by:
-mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-8-0
+mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-C-0
 labels: [ui]
 blocked_by: [7]
 ---
 
 ## Contexto
 
-El roadmap es la estructura: hitos ordenados y, dentro de cada uno, historias ordenadas. El orden es la prioridad, y es lo que un agente usa para decidir qué es lo siguiente. Aquí se decide el orden entre hitos, cosa que el Tablero no enseña. Artboard v2: `4.2 Roadmap`.
+El roadmap es la estructura: hitos ordenados y, dentro de cada uno, historias ordenadas. El orden es la prioridad, y es lo que un agente usa para decidir qué es lo siguiente. Aquí se decide el orden entre hitos, cosa que el Tablero no enseña.
 
 ## Historia
 
@@ -24,6 +24,7 @@ Como Fran, quiero ver y ordenar los hitos y sus historias en una sola lista, par
 - [ ] Cualquier hito se puede desplegar o plegar.
 - [ ] Arrastrar hitos los reordena (`Milestone#reorder!`). Arrastrar una historia la reordena dentro de su hito o la lleva a otro hito o a la bandeja (`Story#reorder!`). El motivo es opcional: tras soltar aparece un campo para escribirlo, que se puede ignorar.
 - [ ] "Nuevo hito" (título y objetivo) y cerrar o reabrir un hito.
+- [ ] Coincide con `5.3`. El hito abierto va sobre `surface-sunken` con borde `border-strong`; los plegados, solo con borde; la bandeja, con borde discontinuo.
 - [ ] La bandeja de ideas aparece al final, con su contador y "+ Nueva idea".
 - [ ] `bin/ci` en verde.
 
@@ -35,8 +36,11 @@ Como Fran, quiero ver y ordenar los hitos y sus historias en una sola lista, par
 
 - La misma operación de dominio que el Tablero: no dupliques lógica de orden.
 
+## Mockups
+
+Paper → `App` → `5.3 Roadmap`.
+
 ## Preguntas abiertas
 
-- Mockup v3 pendiente (Producto, tarea 3): `4.2 Roadmap` pasado a v3.
 
 ## Cierre

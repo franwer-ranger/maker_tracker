@@ -2,16 +2,16 @@
 number: 10
 title: Historia · ver y definir una historia
 milestone: M1
-state: defining
+state: ready
 claimed_by:
-mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-8-0
+mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-C-0
 labels: [ui]
 blocked_by: [7]
 ---
 
 ## Contexto
 
-Aquí es donde Fran define: escribe el markdown con la IA, enlaza el mockup, marca dependencias y la pasa a Lista. La historia también cuenta lo que ha pasado: historial y comentarios de los agentes. Artboard v2: `4.4 Historia · Lista (#49)`. La plantilla y las propiedades están en `docs/PRODUCT.md` → 2026-10-16.
+Aquí es donde Fran define: escribe el markdown con la IA, enlaza el mockup, marca dependencias y la pasa a Lista. La historia también cuenta lo que ha pasado: historial y comentarios de los agentes. La plantilla y las propiedades están en `docs/PRODUCT.md` → 2026-10-16.
 
 ## Historia
 
@@ -27,6 +27,7 @@ Como Fran, quiero leer y editar una historia (cuerpo, propiedades y estado) y ve
   - **Historial**: eventos de `Story#history` en lenguaje natural ("Pasa a Lista", "claude edita el cuerpo"), con actor y fecha relativa en mono.
 - [ ] Si se pasa a Lista con preguntas abiertas en el cuerpo, o con `labels` que incluyen `ui` y sin mockup, se muestra un aviso. El aviso no bloquea.
 - [ ] Comentarios debajo del cuerpo: lista con actor y fecha, y un campo para añadir uno como Fran.
+- [ ] Coincide con `5.4` y `5.6`. La miga de pan termina en la referencia `PG-49`. Al editar, el título pasa a input, el cuerpo tiene pestañas Escribir / Vista previa, y abajo aparecen "Se guarda como fran · queda en el historial", Cancelar y Guardar (primario).
 - [ ] `/p/:slug/stories/:number` funciona con el número de la historia.
 - [ ] `bin/ci` en verde.
 
@@ -40,8 +41,11 @@ Como Fran, quiero leer y editar una historia (cuerpo, propiedades y estado) y ve
 
 - El texto de cada evento sale de su `action` y su `data`. Un helper con un `case` basta.
 
+## Mockups
+
+Paper → `App` → `5.4 Historia · Lista (#49)` (lectura) y `5.6 Historia · Editando (#49)` (edición).
+
 ## Preguntas abiertas
 
-- Mockup v3 pendiente (Producto, tarea 3): `4.4` pasado a v3, con el bloque de propiedades, que en v2 no existe.
 
 ## Cierre

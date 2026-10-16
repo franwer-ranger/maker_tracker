@@ -2,9 +2,9 @@
 number: 7
 title: Proyectos y estructura de la app
 milestone: M1
-state: defining
+state: ready
 claimed_by:
-mockup:
+mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-C-0
 labels: [ui]
 blocked_by: [6]
 ---
@@ -27,6 +27,7 @@ Como Fran, quiero ver mis proyectos, crear uno nuevo y moverme entre sus seccion
   - abajo, la sección **Agentes**: cada actor `agent` con su estado. En curso: `claude en #48`, en naranja con halo. Si no, inactivo, con el tiempo desde su último evento.
 - [ ] Rutas por slug: `/p/postgram`, `/p/postgram/roadmap`, `/p/postgram/brief`, `/p/postgram/stories/49`. La raíz de un proyecto es el Tablero.
 - [ ] Usa los componentes de la #001 (`nav_item`, `actor`…) y los iconos Heroicons.
+- [ ] Coincide con `5.0 Proyectos` y la barra lateral de `5.1`: cada proyecto muestra su clave, su hito actual y cuántas historias tiene en curso (o el tiempo sin actividad). El botón del alta dice "Crear y escribir el brief".
 - [ ] `bin/ci` en verde.
 
 ## Fuera de alcance
@@ -36,10 +37,13 @@ Como Fran, quiero ver mis proyectos, crear uno nuevo y moverme entre sus seccion
 
 ## Notas para quien lo construya
 
-- La barra lateral es la de los artboards v2. Ver el mockup v3 cuando exista.
+- La barra lateral es igual en todas las pantallas de proyecto: hazla un partial del layout.
+
+## Mockups
+
+Paper → `App` → `5.0 Proyectos` (lista y alta) y la barra lateral de cualquier pantalla de proyecto (p. ej. `5.1 Tablero · M2`).
 
 ## Preguntas abiertas
 
-- Mockup v3 pendiente (Producto, tarea 3): página `v3 · App`.
 
 ## Cierre

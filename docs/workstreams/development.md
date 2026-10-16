@@ -32,7 +32,7 @@ Para elegir cruzas tres fuentes: el orden de `docs/ROADMAP.md`, las historias de
 - **Diseño desde Paper con valores exactos**: usa `get_jsx` y `get_computed_styles` del MCP de Paper, nunca medidas a ojo de una captura.
 - **Quién escribe qué** (`ARCHITECTURE.md`): los eventos solo se añaden y no hay forma de editarlos. Cada transición o reordenación genera su `Event`.
 - **Markdown** como formato de todo el texto largo (brief, historias, decisiones).
-- **No mergees la eliminación de Devise / login** hasta que Self-host confirme que la instancia de la torre solo es accesible por red local o Tailscale (dependencia 1 del README).
+- El login se quita ya (#002, decisión del 2026-10-16). La condición de no exponer nada fuera de la red local o Tailscale es de Self-host.
 - Antes de commitear: `bin/ci` en verde y confirmación de Fran.
 
 ## Al cerrar una historia

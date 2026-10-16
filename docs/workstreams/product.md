@@ -21,15 +21,15 @@ Cómo trabaja Fran:
 ## Estado de partida
 
 - `PRODUCT.md`, `ROADMAP.md` y `ARCHITECTURE.md` están escritos y aceptados. La v2 está diseñada; el código sigue siendo la v1.
-- El sistema de diseño v3 está en Paper y en `DESIGN.md`. La landing elegida es la A ("Ship happens"); la B está aparcada.
+- El sistema de diseño está en Paper y en `DESIGN.md`. La landing elegida es la A ("Ship happens"); la B está aparcada.
 - La historia `001` (tokens del sistema de diseño en código) ya está **Lista** para que Desarrollo arranque. El resto del backlog está por escribir.
-- Los mockups de app (`v2 · Agent-first`) son anteriores al sistema v3: usan SF Pro y texto blanco sobre naranja.
+- Las pantallas de M1 están en Paper → `App`. Actividad, Stats y ejecución siguen con diseños antiguos (`Pendiente · …`) hasta su hito.
 
 ## Primeras tareas, en orden
 
 1. **Escribir M1 como historias en `docs/backlog/`.** Parte de la sección M1 de `ROADMAP.md` y del modelo de `ARCHITECTURE.md`. Cada historia, ejecutable sin preguntar: qué, por qué, criterios comprobables, notas para quien construya y mockup de Paper si tiene UI. Historias pequeñas (de una sesión de agente). Orden sugerido: quitar Devise/sprints/items → modelo nuevo y eventos → seeds → Roadmap → Historia → Brief. Enlázalas en orden desde `ROADMAP.md`.
 2. **Desbloquear las preguntas abiertas que afectan a M1.** Sobre todo la forma del "contexto de proyecto" (un `brief` o varios documentos), porque cambia el modelo. Plantéaselas a Fran con opciones y una recomendación, y registra la decisión en `PRODUCT.md`.
-3. **Pasar al sistema v3 las pantallas de M1** en Paper (Roadmap, Historia, Brief): fuentes Geist e Instrument Serif, tokens, texto negro sobre naranja e iconos Heroicons. Duplica los artboards de v2 en una página `v3 · App`; no edites los de v2.
+3. ~~Pasar al sistema las pantallas de M1 en Paper~~ ✅ 2026-10-16: página `App`. Queda llevar sus piezas nuevas a `03 · Componentes`.
 4. **Validar la landing** con Fran antes de que Self-host la construya: textos definitivos, URL real del repo y qué enlaces llevan a dónde.
 5. *(Cuando haya hueco)* convertir `DESIGN.md` en una skill de diseño del proyecto (`.claude/skills/maker-tracker-design/`) para que cualquier agente la cargue al tocar UI. Como inspiración para la parte de estructura y copy de la landing sirve la skill `landing-page-design` de github.com/elayadesign/ai-design-skills (solo su Parte A; su sistema visual choca con el nuestro).
 

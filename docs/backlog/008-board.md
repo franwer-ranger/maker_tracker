@@ -2,9 +2,9 @@
 number: 8
 title: Tablero por estados
 milestone: M1
-state: defining
+state: ready
 claimed_by:
-mockup:
+mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-C-0
 labels: [ui]
 blocked_by: [7]
 ---
@@ -28,6 +28,7 @@ Como Fran, quiero ver las historias de un hito en columnas por estado y moverlas
 - [ ] Con "Todos", Hecha muestra las 10 más recientes y un enlace "ver todas".
 - [ ] "+ Nueva idea" en la columna Idea crea una historia con solo el título, en el hito filtrado (o en la bandeja), y genera `story.created`.
 - [ ] Al pulsar una tarjeta se abre la Historia (#010).
+- [ ] Coincide con `5.1` y `5.2`. El selector muestra los hitos abiertos con su progreso (`4/12`), los cerrados atenuados con "cerrado", y después la Bandeja de ideas y "Todos los hitos · sin reordenar". La cabecera muestra el hito filtrado en Instrument Serif, con su objetivo y su progreso.
 - [ ] Los cambios se ven sin recargar (Turbo). Si un agente cambia algo, aparece al refrescar; en tiempo real no hace falta en M1.
 - [ ] `bin/ci` en verde.
 
@@ -41,8 +42,11 @@ Como Fran, quiero ver las historias de un hito en columnas por estado y moverlas
 - `sortablejs` ya está en el importmap.
 - Revisa los datos contra las seeds (#006): con M2 filtrado, #49 es Siguiente; #48 y #45 están En curso con `claude` y `codex`.
 
+## Mockups
+
+Paper → `App` → `5.1 Tablero · M2` y `5.2 Tablero · Selector de hito`.
+
 ## Preguntas abiertas
 
-- Mockup v3 pendiente (Producto, tarea 3). No hay artboard v2 del tablero: se diseña nuevo en `v3 · App`.
 
 ## Cierre

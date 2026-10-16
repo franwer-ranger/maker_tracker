@@ -27,7 +27,7 @@ La regla que las une: **montas la torre siguiendo solo la guía que escribes.** 
 - Producción usa SQLite (`storage/*.sqlite3`) y `solid_cable` (`storage/production_cable.sqlite3`): todo el estado vive en `storage/`, que debe ser un volumen persistente.
 - El repo es **privado** (`github.com/franwer-ranger/maker_tracker`). No hay `LICENSE` ni `README.md`. El historial está limpio de `master.key` y `.env` (revisado el 2026-10-16).
 - El código es la v1, todavía con Devise. Se despliega igual: el objetivo ahora es tener el camino montado, no esperar a la v2.
-- La landing A está diseñada en Paper (`v3 · Landing`, artboard `[Elegida] Landing · A · Ship happens`) y descrita en `DESIGN.md`.
+- La landing A está diseñada en Paper (página `Landing`, artboard `[Elegida] Landing · A · Ship happens`) y descrita en `DESIGN.md`.
 
 ## Primeras tareas, en orden
 

@@ -78,7 +78,8 @@ La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de pri
 - **Bandeja de ideas**: las historias sin hito se ven al final del Roadmap.
 - **Eventos en M1**: se generan todos; la Historia muestra su historial. La pantalla Actividad llega en M3.
 - **Edición de markdown**: textarea con vista previa.
-- **Las historias de UI de M1 esperan a sus mockups v3** en Paper; las de modelo, eventos y seeds salen Listas antes.
+- **Las historias de UI de M1 esperan a sus mockups** en Paper; las de modelo, eventos y seeds salen Listas antes. (Hechos y aprobados el mismo día: página `App`.)
+- **Una sola versión en Paper.** Lo que construimos ahora es la v2 del producto; el sistema de diseño no lleva número. Los diseños antiguos se borran en cuanto tienen sustituto.
 - **Iconos: Heroicons** en lugar de Lucide.
 
 ### Anteriores
@@ -89,7 +90,7 @@ La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de pri
 - **Maker Tracker y wflow, desacoplados por contrato.** Leer historias y recibir eventos genéricos; nada de base de datos compartida, ni leer los `state.md` de wflow, ni conceptos de wflow (review-tech, apply…) en el modelo del núcleo: las fases son texto libre que trae el evento.
 - **La UI de wflow es un módulo aislado con interruptor, no un sistema de plugins.** Dependencia en un solo sentido: el núcleo nunca usa nada de `Wflow::`. Si sobra, se borra la carpeta. Un Rails engine o un sistema de plugins genérico solo si aparece una segunda integración y se repite el patrón.
 - **Open source, con landing pública.** El repo será abierto (MIT) con instrucciones para autoalojarlo. La landing es pública e importante: es lo que enseñamos a Romer y Christian (cofundadores) y la puerta al repo. Su única acción es "autoalójalo".
-- **Sistema de diseño v3** (Paper, páginas "v3 · Sistema" y "v3 · Landing"): solo modo oscuro por ahora. Dos voces: Instrument Serif para titulares grandes (sustituye a Apple Garamond, que no tiene licencia web) y Geist / Geist Mono para todo lo demás. El naranja `#FF3F01` se reserva para acción y atención. Iconos Heroicons (outline, trazo 1.5; sustituye a Lucide el 2026-10-16); fuera Font Awesome.
+- **Sistema de diseño** (Paper, páginas "Sistema" y "Landing"): solo modo oscuro por ahora. Dos voces: Instrument Serif para titulares grandes (sustituye a Apple Garamond, que no tiene licencia web) y Geist / Geist Mono para todo lo demás. El naranja `#FF3F01` se reserva para acción y atención. Iconos Heroicons (outline, trazo 1.5; sustituye a Lucide el 2026-10-16); fuera Font Awesome.
 - **Las paradas de wflow, primero como comandos.** Cada opción de una parada muestra su comando (`wflow decide 48 …`) y lo ejecuto yo en la terminal. Si se queda corto, el siguiente paso es que Maker Tracker guarde la decisión y wflow la recoja al reanudar. Maker Tracker nunca ejecuta wflow.
 
 ## Más documentación

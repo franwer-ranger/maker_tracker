@@ -8,10 +8,12 @@ Archivo de Paper **Maker Tracker** (`01M50CA4S5CN4Z8ERVW36XWDHF`, https://app.pa
 
 | Página | Qué hay |
 |---|---|
-| **v3 · Landing** | `[Elegida] Landing · A · Ship happens` es la landing que construimos. `[Aparcada] Landing · B · What's next` no se usa por ahora; no se borra |
-| **v3 · Sistema** | `01 · Tipografía`, `02 · Color y forma`, `03 · Componentes` |
-| **v2 · Agent-first** | Pantallas de la app (Actividad, Roadmap, Historia, Brief, Stats). Son anteriores al sistema v3: misma estructura, pero hay que pasarlas a sus fuentes y tokens |
+| **Landing** | `[Elegida] Landing · A · Ship happens` es la landing que construimos. `[Aparcada] Landing · B · What's next` no se usa por ahora; no se borra |
+| **Sistema** | `01 · Tipografía`, `02 · Color y forma`, `03 · Componentes` |
+| **App** | Pantallas de la app: `5.0 Proyectos`, `5.1 Tablero · M2`, `5.2 Tablero · Selector de hito`, `5.3 Roadmap`, `5.4 Historia · Lista (#49)`, `5.6 Historia · Editando (#49)` y `5.5 Brief`, con los datos de las seeds (Postgram). Debajo, los artboards `Pendiente · …` (Actividad, Stats, vista del agente, ejecución): son diseños antiguos que solo sirven de referencia hasta rehacerlos con el sistema |
 | v1 · … | Histórico. No se usa |
+
+**Una sola versión**: en Paper solo vive el diseño vigente. Lo que se rehace se sustituye y lo antiguo se borra, sin páginas por versión.
 
 Para llevar un diseño a código, leer los valores exactos con el MCP de Paper (`get_jsx`, `get_computed_styles`), nunca a ojo desde una captura. Los tokens del archivo coinciden con los de abajo.
 
@@ -73,7 +75,7 @@ Escala: 12 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz) y 48 · 72 · 112 (dis
 
 ## Componentes
 
-En `v3 · Sistema → 03 · Componentes`:
+En `Sistema → 03 · Componentes`:
 
 - **Botón**: primario (naranja, texto negro), secundario (borde `border-strong`), fantasma, desactivado y pequeño. Con estados hover y focus.
 - **Nav item**: activo sobre `surface`, con contador naranja.
@@ -83,6 +85,17 @@ En `v3 · Sistema → 03 · Componentes`:
 - **Fila de atención**: id en mono, origen en mono naranja, título, contexto y sus opciones (botones). Marca lateral con `box-shadow: inset 2px 0 0 accent` (no `border-left`, que desalinea).
 - **Terminal**: ventana `surface-sunken` con barra de título y contenido en mono.
 - **Línea de metadatos**: mono 12px, separada por ` · `.
+
+Piezas de las pantallas de M1 (en `App`; pendientes de llevar también a `03 · Componentes`):
+
+- **Barra lateral**: proyecto (clave en mono sobre `surface`), navegación Tablero · Roadmap · Brief y sección Agentes abajo.
+- **Tarjeta de historia** (Tablero): `#n` en mono, título, labels y metadato arriba a la derecha (actor, "Siguiente", bloqueo, "faltan criterios", mockup). Las Hechas, sin fondo y con el título atenuado.
+- **Fila de historia** (Roadmap): estado (104px) · `#n` (40px) · título · metadato, con columnas de ancho fijo.
+- **Badge "Siguiente"**: píldora `state-ready` con texto negro. Solo una por proyecto.
+- **Label**: mono 11px sobre `surface`, radio 4.
+- **Propiedad**: etiqueta de 112px y valor.
+- **Menú**: `surface` con borde `border-strong` y la única sombra funcional del sistema (`0 12px 32px rgba(0,0,0,.6)`).
+- **Evento del historial**: marca lateral de 2px (`inset`) con el color del estado al que pasa, o `border-strong` si no es un cambio de estado.
 
 Regla: si una pantalla necesita una pieza nueva, primero se añade al sistema en Paper y aquí.
 
