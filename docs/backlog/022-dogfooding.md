@@ -36,6 +36,7 @@ Como Fran, quiero el roadmap y el backlog de Maker Tracker dentro de mi Maker Tr
 ## Notas para quien lo construya
 
 - Lo hace la vertiente de Producto con `mt`, con el OK de Fran.
+- **Kit preparado y probado** en `docs/migration/`: `brief.md`, `decisions.sh` (35 decisiones, de la más antigua a la más reciente; D-34 sustituye a D-33) e `import.sh`, que crea brief, hitos, historias en el orden del roadmap con su número, cierra M1 y registra las decisiones. Probado el 2026-10-16 contra una instancia local con un proyecto vacío: termina con `mt context` y `mt roadmap` correctos. Uso: `P=MT bash docs/migration/import.sh`. La carpeta se borra al terminar la #022.
 - Las decisiones migradas llevan fecha de hoy (la API no acepta fechas pasadas). Si la viñeta tenía fecha, se pone al final del porqué: "(decidida el 2026-10-16)".
 - Las referencias antiguas (#014, "ver PRODUCT.md → Decisiones") en commits y Cierres no se reescriben: los números se conservan y `PRODUCT.md` enlaza a la app.
 
