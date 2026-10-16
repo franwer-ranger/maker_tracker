@@ -14,6 +14,9 @@ class Milestone < ApplicationRecord
 
   def closed? = closed_at.present?
 
+  # "M2": su número es su posición en el roadmap.
+  def code = "M#{position}"
+
   # Operaciones de dominio: cada una hace su cambio y registra su evento.
   # Si no cambia nada, no hay evento y devuelven false.
 

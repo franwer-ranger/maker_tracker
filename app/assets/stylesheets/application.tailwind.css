@@ -54,8 +54,6 @@
   --radius-xl: 12px;
   --radius-full: 9999px;
 
-  --header-height: 70px;
-
   color-scheme: dark;
 }
 
@@ -64,17 +62,4 @@
     @apply bg-bg font-sans text-text antialiased;
     font-synthesis: none;
   }
-}
-
-html, body {
-	@apply h-full;
-}
-
-.app-header {
-  height: var(--header-height);
-}
-
-.app-container {
-  @apply overflow-y-auto;
-  height: calc(100svh - var(--header-height));
 }

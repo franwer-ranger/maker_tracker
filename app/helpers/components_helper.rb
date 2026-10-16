@@ -97,10 +97,11 @@ module ComponentsHelper
     end
   end
 
-  # Input con label y ayuda. Con form builder: ui_field f, :title, label: "Título", hint: "…"
+  # Input con label y ayuda (y el primer error de validación del atributo). Con form builder: ui_field f, :title, label: "Título", hint: "…"
   # Sin él: ui_field nil, :q, label: "Buscar", value: params[:q]
-  def ui_field(form, attribute, label:, hint: nil, **input_attrs)
-    render "components/field", form: form, attribute: attribute, label: label, hint: hint, input_attrs: input_attrs
+  # Sobre una superficie hundida (p. ej. el alta de proyecto), el input va sobre `bg`: surface: :bg.
+  def ui_field(form, attribute, label:, hint: nil, surface: :sunken, **input_attrs)
+    render "components/field", form: form, attribute: attribute, label: label, hint: hint, surface: surface, input_attrs: input_attrs
   end
 
   # actor "claude", detail: "en #48", active: true
@@ -130,6 +131,38 @@ module ComponentsHelper
   # Etiqueta de sección: mono, mayúsculas, 12px, tracking 0.08em.
   def section_label(text, **attrs)
     tag.div text, class: class_names("font-mono text-xs uppercase tracking-label text-text-muted", attrs.delete(:class)), **attrs
+  end
+
+  # Menú desplegable (5.2 · Selector de hito): un <details> que se cierra al
+  # pulsar fuera o con Escape. El bloque `summary` es el disparador.
+  #   ui_menu(summary: ..., align: :left) { menu_item(...) }
+  def ui_menu(summary:, align: :left, width: "w-80", **attrs, &block)
+    tag.details class: class_names("relative", attrs.delete(:class)), data: { controller: "menu", action: "toggle->menu#toggle" }, **attrs do
+      safe_join([
+        tag.summary(summary, class: "list-none [&::-webkit-details-marker]:hidden cursor-pointer rounded-md #{FOCUS_RING}"),
+        tag.div(capture(&block), class: class_names(
+          "absolute top-full z-20 mt-1 flex flex-col rounded-lg border border-strong bg-surface p-1 shadow-[0_12px_32px_rgba(0,0,0,0.6)]",
+          width, align == :right ? "right-0" : "left-0"
+        ))
+      ])
+    end
+  end
+
+  # Opción de un menú: código en mono (w-6), texto y metadato a la derecha.
+  def menu_item(label, href, code: nil, meta: nil, active: false, muted: false)
+    link_to href, class: class_names(
+      "flex h-nav shrink-0 items-center gap-2.5 rounded-md px-2.5 text-control",
+      "hover:bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] #{FOCUS_RING}",
+      "bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] font-medium text-text": active,
+      "text-text-subtle": muted && !active,
+      "text-text-soft": !muted && !active
+    ), aria: { current: ("page" if active) } do
+      safe_join([
+        (tag.span(code, class: class_names("w-6 shrink-0 font-mono text-xs", muted ? "text-text-subtle" : "text-text-muted")) if code),
+        tag.span(label, class: "grow truncate"),
+        (tag.span(meta, class: "font-mono text-xs text-text-muted") if meta)
+      ].compact)
+    end
   end
 
   # terminal "~/postgram" do "$ mt next\n#49 …" end

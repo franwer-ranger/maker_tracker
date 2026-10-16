@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%= render "layouts/head" %>
+  </head>
+
+  <body class="bg-bg font-sans text-text">
+    <div class="flex h-svh">
+      <%= render "layouts/sidebar", project: @project %>
+      <main class="min-w-0 flex-1 overflow-y-auto">
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

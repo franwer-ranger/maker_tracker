@@ -70,6 +70,11 @@ class Project < ApplicationRecord
     end
   end
 
+  # El hito en el que se trabaja: el primero abierto.
+  def current_milestone = milestones.open.first
+
+  def last_activity_at = events.maximum(:occurred_at)
+
   # Historias sin hito.
   def ideas = stories.where(milestone: nil).ordered
 

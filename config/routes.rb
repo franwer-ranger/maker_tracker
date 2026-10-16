@@ -9,5 +9,15 @@ Rails.application.routes.draw do
 
   get "design" => "design#show" if Rails.env.development?
 
-  root "home#show"
+  # "/" redirige al proyecto si solo hay uno; "/p" lista siempre los proyectos.
+  root "projects#index"
+  resources :projects, path: "p", only: %i[index create]
+
+  # Todo lo de un proyecto cuelga de su slug: /p/postgram, /p/postgram/roadmap…
+  scope "p/:project_slug", as: :project do
+    get "/", to: "boards#show", as: ""
+    resource :roadmap, only: :show
+    resource :brief, only: :show
+    resources :stories, param: :number, only: :show
+  end
 end

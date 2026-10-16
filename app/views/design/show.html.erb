@@ -149,6 +149,15 @@
   </section>
 
   <section class="flex flex-col gap-[18px]">
+    <%= section_label "Menú · selector de hito" %>
+    <%= ui_menu summary: tag.span("M2 · Publicar sin fricción", class: "inline-flex h-control items-center gap-2 rounded-md border border-strong px-3 text-sm"), class: "self-start" do %>
+      <%= menu_item "Publicar sin fricción", "#m2", code: "M2", meta: "4/12", active: true %>
+      <%= menu_item "Analítica para makers", "#m3", code: "M3", meta: "0/6" %>
+      <%= menu_item "Cuentas y primer post", "#m1", code: "M1", meta: "cerrado", muted: true %>
+    <% end %>
+  </section>
+
+  <section class="flex flex-col gap-[18px]">
     <%= section_label "Terminal · lo que lee el agente" %>
     <div class="max-w-[540px]">
       <%= terminal "~/postgram" do %>$ mt next

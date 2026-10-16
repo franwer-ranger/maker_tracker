@@ -1,0 +1,6 @@
+<% content_for :title, "#{@story.reference} · #{@story.title}" %>
+<div class="flex flex-col gap-2 px-16 py-12">
+  <div class="font-mono text-control text-text-muted"><%= @story.reference %></div>
+  <h1 class="text-3xl font-semibold tracking-[-0.02em]"><%= @story.title %></h1>
+  <p class="text-sm text-text-muted">La página de la historia llega con la #010.</p>
+</div>
