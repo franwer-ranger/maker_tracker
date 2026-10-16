@@ -45,21 +45,28 @@ title: Tokens del sistema de diseño en Tailwind
 milestone: M1
 state: ready            # idea | defining | ready | in_progress | done
 claimed_by:             # development | self-hosting (al empezar)
+mockup:                 # url de Paper; obligatoria para ready si tiene UI
+labels: []              # lista libre: ui, modelo, agentes…
+blocked_by: []          # números de historia que tienen que estar done antes
 ---
 
-## Qué
-## Por qué
+## Contexto
+<!-- por qué, y qué existe ya -->
+## Historia
+Como …, quiero …, para …
 ## Criterios de aceptación
 - [ ] …
+## Fuera de alcance
 ## Notas para quien lo construya
-## Mockups
-Paper: <página y artboard>
+## Preguntas abiertas
+<!-- si hay alguna, la historia no puede estar ready -->
 ## Cierre
 <!-- lo rellena quien la construye: commits, decisiones tomadas, lo que quedó fuera -->
 ```
 
 - Nombre del fichero: `NNN-slug.md` (`007-design-tokens.md`). Numeración global y correlativa.
 - El orden dentro de un hito lo da `docs/ROADMAP.md`, que enlaza las historias.
+- Una historia con `blocked_by` no se empieza hasta que esas historias estén `done`.
 - Solo Producto crea historias y las pasa a `ready`. Desarrollo y Self-host pueden crear historias en `idea` para proponer algo.
 - Quien construye pasa a `in_progress` al empezar y a `done` al terminar, y rellena **Cierre**.
 - Las decisiones van a `docs/PRODUCT.md` (sección Decisiones) si son de producto, o al **Cierre** de la historia si son de implementación.
@@ -82,7 +89,7 @@ Cuando una vertiente necesita algo de otra, o una decisión de Fran:
 
 ## Dependencias conocidas entre vertientes
 
-1. **Login y red.** La v2 quita Devise y el login humano porque la app solo será accesible por red local o Tailscale. Desarrollo **no mergea la eliminación del login** hasta que Self-host confirme que el despliegue de la torre no es accesible desde fuera.
-2. **Fuentes e iconos.** Desarrollo integra Geist, Instrument Serif y Lucide. Self-host usa los mismos valores en la landing estática: se comparten los tokens de `docs/DESIGN.md`.
+1. **Login y red.** La v2 quita Devise y el login humano, y es de las primeras historias de M1 (decisión de Fran del 2026-10-16: así los agentes prueban su trabajo sin autenticarse). Por eso Self-host **no despliega nada accesible desde fuera** de la red local o Tailscale.
+2. **Fuentes e iconos.** Desarrollo integra Geist, Instrument Serif y Heroicons. Self-host usa los mismos valores en la landing estática: se comparten los tokens de `docs/DESIGN.md`.
 3. **Repo público.** El repo es **privado** hoy. Hacerlo público lo decide Fran; Self-host lo prepara (licencia, README, revisión de secretos) y pregunta.
 4. **Seeds y datos.** El despliegue de la torre necesita saber si hay datos reales que conservar. Hoy no: solo seeds.

@@ -21,7 +21,7 @@ Para elegir cruzas tres fuentes: el orden de `docs/ROADMAP.md`, las historias de
 
 ## Primeras tareas, en orden
 
-1. **Historia `001`: sistema de diseño en código.** Ya está Lista y no depende de nada: tokens de `DESIGN.md` como variables CSS y en el tema de Tailwind, fuentes Geist, Geist Mono e Instrument Serif, Lucide en lugar de Font Awesome, y la base de componentes. Desbloquea todo lo visual que viene después.
+1. **Historia `001`: sistema de diseño en código.** Ya está Lista y no depende de nada: tokens de `DESIGN.md` como variables CSS y en el tema de Tailwind, fuentes Geist, Geist Mono e Instrument Serif, Heroicons en lugar de Font Awesome, y la base de componentes. Desbloquea todo lo visual que viene después.
 2. **Las historias de M1** según las vaya dejando Listas Producto, en el orden de `ROADMAP.md`.
 3. Mientras no haya historias Listas: avisa en el inbox, y **no inventes alcance**.
 

@@ -26,9 +26,9 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 
 | Entidad | Para qué | Campos principales |
 |---|---|---|
-| **Project** | Un producto | `name`, `slug`, `brief` (md: visión, principios, fuera de alcance), `settings` (json: integraciones activas, p. ej. `wflow: true`) |
+| **Project** | Un producto | `name`, `slug`, `key` (clave corta en mayúsculas para citar historias: `MT`), `brief` (md: visión, principios, fuera de alcance, glosario), `settings` (json: integraciones activas, p. ej. `wflow: true`) |
 | **Milestone** (hito) | Un paso del roadmap | `project`, `title`, `goal` (md: objetivo y por qué), `position`, `closed_at` |
-| **Story** (historia) | Algo a construir | `project`, `milestone` (nulo = bandeja de ideas), `number` (por proyecto: #45), `title`, `body` (md: qué, por qué, criterios, notas para quien construye, enlaces a Paper), `state`, `position` (dentro del hito), `claimed_by` (actor), `claimed_at` |
+| **Story** (historia) | Algo a construir | `project`, `milestone` (nulo = bandeja de ideas), `number` (por proyecto; se cita `MT-45`), `title`, `body` (md con la plantilla de `PRODUCT.md`), `properties` (json: `mockup`, `labels`, `blocked_by`), `state`, `position` (dentro del hito), `claimed_by` (actor), `claimed_at` |
 | **Decision** | Qué decidimos y por qué. Solo se añade | `project`, `story` (opcional), `number` (D-13), `title`, `body` (md: por qué), `actor` |
 | **Comment** | Conversación en una historia | `story`, `actor`, `body` (md) |
 | **Actor** | Quién hace algo: yo o un agente | `name`, `kind` (`human` / `agent`), `token_digest` (solo agentes) |
@@ -54,7 +54,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 
 - El roadmap es la estructura: hitos ordenados y, dentro de cada uno, historias ordenadas. El orden es la prioridad.
 - El documento markdown del roadmap (lo que devuelve `mt roadmap`) se **genera en vivo** desde esa estructura. No hay un documento aparte que sincronizar.
-- Reordenar es la misma operación desde la UI (arrastrar) que desde un agente, y pide un **motivo**, que queda en el evento (`milestone.reordered`, `reason`). Si el cambio es importante, se registra además como decisión.
+- Reordenar es la misma operación desde la UI (arrastrar, en el Roadmap o dentro de una columna del Tablero) que desde un agente. A los agentes les pide un **motivo** (en la UI es opcional), que queda en el evento (`milestone.reordered`, `reason`). Si el cambio es importante, se registra además como decisión.
 
 ### "Necesita tu atención"
 
@@ -88,7 +88,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 | Comando | Qué hace |
 |---|---|
 | `mt context` | Brief, últimas decisiones, hito actual y lo que está en curso, en markdown compacto. Es el onboarding del agente |
-| `mt next` | Primera historia **Lista** del primer hito abierto, con su motivo, contexto y commits relacionados para contrastar con el repo |
+| `mt next` | Primera historia **Lista** y no bloqueada (`blocked_by` sin terminar) del primer hito abierto, con su motivo, contexto y commits relacionados para contrastar con el repo |
 | `mt roadmap` | El roadmap en markdown, generado en vivo |
 | `mt show <n>` | Una historia completa en markdown |
 | `mt start <n>` | Reclama la historia y la pasa a En curso |

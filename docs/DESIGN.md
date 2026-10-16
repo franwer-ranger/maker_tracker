@@ -69,7 +69,7 @@ Escala: 12 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz) y 48 · 72 · 112 (dis
 
 ## Iconos
 
-**Lucide** (ISC), trazo 1.5, 20px en interfaz y 16px dentro de botones, color heredado del texto. **Font Awesome se elimina.**
+**Heroicons** (MIT), versión outline de 24, trazo 1.5, a 20px en interfaz y 16px dentro de botones, color heredado del texto, en SVG en línea. **Font Awesome se elimina.** En código: helper `icon "arrow-right", size: 16` y solo los SVG que se usan, en `app/assets/icons/`. Heroicons no tiene icono de PR: "Ver PR" usa `arrow-top-right-on-square`.
 
 ## Componentes
 

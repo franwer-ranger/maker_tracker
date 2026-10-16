@@ -29,7 +29,7 @@ Cómo trabaja Fran:
 
 1. **Escribir M1 como historias en `docs/backlog/`.** Parte de la sección M1 de `ROADMAP.md` y del modelo de `ARCHITECTURE.md`. Cada historia, ejecutable sin preguntar: qué, por qué, criterios comprobables, notas para quien construya y mockup de Paper si tiene UI. Historias pequeñas (de una sesión de agente). Orden sugerido: quitar Devise/sprints/items → modelo nuevo y eventos → seeds → Roadmap → Historia → Brief. Enlázalas en orden desde `ROADMAP.md`.
 2. **Desbloquear las preguntas abiertas que afectan a M1.** Sobre todo la forma del "contexto de proyecto" (un `brief` o varios documentos), porque cambia el modelo. Plantéaselas a Fran con opciones y una recomendación, y registra la decisión en `PRODUCT.md`.
-3. **Pasar al sistema v3 las pantallas de M1** en Paper (Roadmap, Historia, Brief): fuentes Geist e Instrument Serif, tokens, texto negro sobre naranja e iconos Lucide. Duplica los artboards de v2 en una página `v3 · App`; no edites los de v2.
+3. **Pasar al sistema v3 las pantallas de M1** en Paper (Roadmap, Historia, Brief): fuentes Geist e Instrument Serif, tokens, texto negro sobre naranja e iconos Heroicons. Duplica los artboards de v2 en una página `v3 · App`; no edites los de v2.
 4. **Validar la landing** con Fran antes de que Self-host la construya: textos definitivos, URL real del repo y qué enlaces llevan a dónde.
 5. *(Cuando haya hueco)* convertir `DESIGN.md` en una skill de diseño del proyecto (`.claude/skills/maker-tracker-design/`) para que cualquier agente la cargue al tocar UI. Como inspiración para la parte de estructura y copy de la landing sirve la skill `landing-page-design` de github.com/elayadesign/ai-design-skills (solo su Parte A; su sistema visual choca con el nuestro).
 

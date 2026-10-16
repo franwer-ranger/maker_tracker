@@ -37,7 +37,7 @@ La regla que las une: **montas la torre siguiendo solo la guía que escribes.** 
 4. **Copias de seguridad de SQLite desde el primer día** (Litestream o un volcado periódico con `sqlite3 .backup`), probando que se restauran.
 5. **Escribir `docs/SELF_HOSTING.md`** mientras haces 2–4: requisitos, instalación, actualización, copias de seguridad, restauración y tokens de agentes (cuando existan).
 6. **Preparar el repo para abrirse**: `LICENSE` (MIT), `README.md` en inglés (qué es, captura, instalación en pocas líneas, enlace a la guía) y una última revisión de secretos. Luego pregunta a Fran si se hace público y con qué nombre.
-7. **Construir la landing** en `site/` cuando Producto la valide: HTML y CSS estáticos, sin framework, con los tokens y fuentes de `DESIGN.md` (fuentes alojadas en el propio sitio, iconos Lucide en SVG en línea). Alojamiento recomendado: GitHub Pages desde el propio repo (requiere repo público). Dominio: lo decide Fran.
+7. **Construir la landing** en `site/` cuando Producto la valide: HTML y CSS estáticos, sin framework, con los tokens y fuentes de `DESIGN.md` (fuentes alojadas en el propio sitio, iconos Heroicons en SVG en línea). Alojamiento recomendado: GitHub Pages desde el propio repo (requiere repo público). Dominio: lo decide Fran.
 
 ## Cómo sabes que vas bien
 
