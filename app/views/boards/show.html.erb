@@ -44,7 +44,7 @@
         <% end %>
 
         <% if state == "idea" && @filter != :all %>
-          <%= render "boards/new_idea" %>
+          <%= render "stories/new_idea", milestone: (@milestone if @filter == :milestone) %>
         <% end %>
       </section>
     <% end %>

@@ -1,0 +1,16 @@
+<details class="group rounded-lg border border-dashed border-strong pl-4 pr-5 open:pb-2">
+  <summary class="flex h-[50px] cursor-pointer list-none items-center gap-3 rounded-md <%= ComponentsHelper::FOCUS_RING %> [&::-webkit-details-marker]:hidden">
+    <span class="w-4 shrink-0"></span>
+    <span class="w-8 shrink-0"></span>
+    <span class="grow text-base leading-5 text-text-muted">Bandeja de ideas · <%= @ideas.size %></span>
+    <span class="font-mono text-xs text-text-muted group-open:hidden">+ Nueva idea</span>
+  </summary>
+  <div class="flex flex-col pl-[60px]">
+    <ol class="flex min-h-2 flex-col" data-roadmap-target="stories" data-milestone="ideas">
+      <% @ideas.each do |story| %>
+        <%= render "roadmaps/story", story: story %>
+      <% end %>
+    </ol>
+    <div class="border-t border-border pt-2"><%= render "stories/new_idea", milestone: nil %></div>
+  </div>
+</details>

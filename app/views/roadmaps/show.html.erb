@@ -1,5 +1,28 @@
 <% content_for :title, "Roadmap · #{@project.name}" %>
-<div class="flex flex-col gap-2 px-16 py-12">
-  <h1 class="text-3xl font-semibold tracking-[-0.02em]">Roadmap</h1>
-  <p class="text-sm text-text-muted">Llega con la historia #009.</p>
+<div class="flex flex-col gap-8 px-12 py-10"
+     data-controller="roadmap"
+     data-roadmap-milestone-url-value="<%= project_milestone_position_path(@project, "__id__") %>"
+     data-roadmap-story-url-value="<%= project_story_position_path(@project, "__id__") %>">
+  <header class="flex w-[920px] max-w-full items-end justify-between gap-8">
+    <div class="flex flex-col gap-2.5">
+      <h1 class="font-display text-display-sm tracking-[-0.01em]">Roadmap</h1>
+      <p class="text-sm text-text-muted">Qué construimos y en qué orden. El orden es la prioridad: arrastra para cambiarlo.</p>
+    </div>
+    <%= render "roadmaps/new_milestone" %>
+  </header>
+
+  <%= render "roadmaps/pending" %>
+  <% if flash[:alert] %>
+    <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
+  <% end %>
+
+  <div class="flex w-[920px] max-w-full flex-col gap-2">
+    <ol class="flex flex-col gap-2" data-roadmap-target="milestones">
+      <% @milestones.each do |milestone| %>
+        <%= render "roadmaps/milestone", milestone: milestone %>
+      <% end %>
+    </ol>
+
+    <%= render "roadmaps/ideas" %>
+  </div>
 </div>

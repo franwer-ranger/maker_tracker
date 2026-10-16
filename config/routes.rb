@@ -17,6 +17,12 @@ Rails.application.routes.draw do
   scope "p/:project_slug", as: :project do
     get "/", to: "boards#show", as: ""
     resource :roadmap, only: :show
+    resources :milestones, only: :create do
+      scope module: :milestones do
+        resource :position, only: :update
+        resource :closure, only: %i[create destroy]
+      end
+    end
     resource :brief, only: :show
     resources :stories, param: :number, only: %i[show create] do
       scope module: :stories do

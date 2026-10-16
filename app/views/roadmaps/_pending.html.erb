@@ -1,0 +1,11 @@
+<%# Tras soltar un hito o una historia: motivo opcional y guardar (los eventos no se editan después). %>
+<div data-roadmap-target="pending"
+     class="hidden w-[920px] max-w-full items-center gap-3 rounded-lg border border-strong bg-surface-sunken px-4 py-3">
+  <span class="shrink-0 text-control text-text-muted" data-roadmap-target="pendingLabel">Nuevo orden sin guardar</span>
+  <input type="text" data-roadmap-target="reason" placeholder="Motivo (opcional): queda en el historial"
+         data-action="keydown.enter->roadmap#save keydown.esc->roadmap#discard" aria-label="Motivo del cambio de orden"
+         class="h-control-sm grow rounded-md border border-strong bg-bg px-3 text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]">
+  <%= ui_button "Deshacer", variant: :ghost, size: :sm, data: { action: "roadmap#discard" } %>
+  <%= ui_button "Guardar orden", size: :sm, data: { action: "roadmap#save" } %>
+  <span class="text-control text-accent empty:hidden" data-roadmap-target="error" role="alert"></span>
+</div>

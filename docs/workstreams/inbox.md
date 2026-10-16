@@ -22,7 +22,8 @@
 **Qué:** dos detalles de Paper que he encontrado al construir el Tablero (#008):
 - La label de una historia es mono **11px** (`DESIGN.md` → Label), pero 11 no es un token. En código va como `text-[11px]` solo dentro de `ui_label`. ¿Lo pasamos a token (`--text-label`) o se queda así?
 - #49 tiene las labels `editor, ui` en `5.4`, pero en `5.1` solo `editor`. Las seeds siguen la #012 (`editor, ui`), así que en el Tablero sale también `ui`.
-**Recomendación:** token `--text-label: 11px` y corregir `5.1`.
+- Roadmap (#009): `5.3` no dibuja dónde se cierra o reabre un hito, ni el panel de «Nuevo hito» ni la barra de «motivo opcional» tras soltar. Los he construido con piezas del sistema: botón fantasma pequeño al pie del hito desplegado, panel con el estilo del menú y una barra `surface-sunken`. Conviene llevarlos a Paper.
+**Recomendación:** token `--text-label: 11px`, corregir `5.1` y dibujar en `5.3` el cierre del hito, el alta y la barra del motivo.
 
 ## 2026-10-16 · de development → product
 ✅ Quitada esa regla de `development.md` (en `main`).
