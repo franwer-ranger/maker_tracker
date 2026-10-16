@@ -38,3 +38,6 @@
 
 # Ignore self-hosted data from docker compose.
 /data/
+
+# The mt CLI is built on the machines that use it, not in the server image.
+/cli/

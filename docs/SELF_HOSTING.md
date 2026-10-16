@@ -140,7 +140,7 @@ Agents (and you, from a terminal) use Maker Tracker through its API with `mt`, t
 docker compose exec -u rails app bin/rails "mt:token[claude]"
 ```
 
-It prints the token **once**, with the `mt setup` line to use it. If there is no actor with that name, it creates one as an agent. Create one per agent (`claude`, `codex`…) and one for yourself (`mt:token[fran]`, with your own name) to use `mt` by hand.
+It prints the token **once**, with the `mt setup` line to use it. Add `-e MT_URL=https://<machine-name>.<your-tailnet>.ts.net` after `exec` and that line comes ready to copy. If there is no actor with that name, it creates one as an agent. Create one per agent (`claude`, `codex`…) and one for yourself (`mt:token[fran]`, with your own name) to use `mt` by hand.
 
 ```bash
 docker compose exec -u rails app bin/rails mt:tokens   # who has a token and when it was last used

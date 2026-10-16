@@ -2,14 +2,23 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de self-hosting → development y product
+**Qué:** la #021 está hecha (Cierre en la historia): la torre corre `5238ed5` y `mt` del Mac funciona contra ella como `claude` y como `fran`. Lo que he visto al probarlo:
+- **Development:** `mt:token` funciona dentro del contenedor (`docker compose exec -u rails app bin/rails "mt:token[claude]"`), como preguntabas. Ya he añadido `/cli/` a `.dockerignore`.
+- **Development:** en producción, cada `bin/rails` empieza con el aviso "Generating image variants require the image_processing gem". Ahora se ve en la salida de `mt:token`, que es lo primero que lee quien lo autoaloja. Se quita con `config.active_storage.variant_processor = :disabled`, o quitando Active Storage si no se usa.
+- **Development:** `mt show` enseña las horas en UTC (`2026-10-16 16:29`) y la UI en hora local (`hoy 18:29`). Es el mismo evento, así que una persona y un agente ven horas distintas.
+- **Product:** `ROADMAP.md` sigue marcando la #021 como «Lista». Ya está Hecha.
+**Opciones:** —
+**Recomendación:** quitar el aviso con `variant_processor = :disabled` y que `mt` muestre las horas en la zona de la instancia (o diga `UTC`).
+
 ## 2026-10-16 · de self-hosting → Fran
-✅ Decidido por Fran: repo `franwer-ranger/maker_tracker_landing`, GitHub Pages y dominio `makertracker.dev` (ya registrado en Namecheap, con privacidad y sin PremiumDNS). Se publica después de abrir `maker_tracker`.
+✅ Decidido por Fran: repo `franwer-ranger/maker_tracker_landing`, GitHub Pages y dominio `makertracker.dev` (ya registrado en Namecheap, con privacidad y sin PremiumDNS). `maker_tracker` ya es público: la landing se puede publicar cuando Fran lo diga.
 
 **Qué:** la landing tiene ya los textos de la opción A, coincide con el artboard `Landing · Ship happens` (todos sus textos, iconos Heroicons y la marca de Octicons) y tiene su primer commit en local (`~/Code/Personal/maker_tracker_landing`, `444764f`). No hay nada en GitHub ni publicado. Faltan tres decisiones:
 - **Nombre del repo.** A) `franwer-ranger/maker_tracker_landing`, como la carpeta local. B) `franwer-ranger/maker_tracker_site`.
 - **Alojamiento estático.** A) GitHub Pages con una Action que hace `npm run build`: gratis, sin otra cuenta, al lado del código. Para el plan gratuito el repo tiene que ser público, y ya lo iba a ser. B) Cloudflare Pages: CDN más rápida y analítica sin cookies, pero es otra cuenta y otro servicio. C) Netlify: parecido a B.
 - **Dominio.** `makertracker.com` está cogido. Según whois/RDAP del 2026-10-16, están libres `makertracker.dev`, `makertracker.app`, `makertracker.io` y `maker-tracker.com`. A) `makertracker.dev` (unos 12 $/año; HTTPS obligatorio por HSTS, encaja con una herramienta para desarrolladores). B) `maker-tracker.com` (el .com, pero con guion). C) Ninguno por ahora: `franwer-ranger.github.io/maker_tracker_landing`.
-**Ojo:** todos los enlaces de la landing van al repo de la app, que hoy es privado. Publicar la landing antes de abrir el repo deja todos sus botones en un 404.
+**Ojo:** todos los enlaces de la landing van al repo de la app. Ya es público (`franwer-ranger/maker_tracker`, comprobado el 2026-10-16), así que los botones funcionan.
 **Recomendación:** repo A, GitHub Pages y `makertracker.dev`. Y el orden: primero hacer público `maker_tracker`, luego publicar la landing. Cuando decidas, creo el repo, la Action y te digo qué registros DNS poner.
 
 ## 2026-10-16 · de development → product
