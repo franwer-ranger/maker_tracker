@@ -18,15 +18,25 @@ Rails.application.routes.draw do
       get "context", to: "contexts#show"
       get "next", to: "next_stories#show"
       get "roadmap", to: "roadmaps#show"
-      resources :stories, param: :number, only: %i[index show] do
+      resources :stories, param: :number, only: %i[index show create update] do
         member do
           post :start, to: "story_work#start"
           post :done, to: "story_work#done"
           post :release, to: "story_work#release"
+          post :move
+          post :reorder
         end
         resources :comments, only: :create
       end
       resources :decisions, only: %i[index create]
+      resources :milestones, param: :code, only: %i[create update] do
+        member do
+          post :reorder
+          post :close
+          post :reopen
+        end
+      end
+      resource :brief, only: %i[show update]
     end
     match "*path", to: "base#route_not_found", via: :all
   end

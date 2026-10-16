@@ -30,6 +30,20 @@ class Milestone < ApplicationRecord
   # Operaciones de dominio: cada una hace su cambio y registra su evento.
   # Si no cambia nada, no hay evento y devuelven false.
 
+  # Título y objetivo. El evento guarda qué campos cambiaron, como story.edited.
+  def edit!(attributes, actor:)
+    attributes = attributes.to_h.stringify_keys.slice("title", "goal")
+
+    transaction do
+      assign_attributes(attributes)
+      fields = changed & %w[title goal]
+      next false if fields.empty?
+
+      save!
+      record_event!("milestone.edited", actor: actor, data: { milestone_id: id, fields: fields })
+    end
+  end
+
   def close!(actor:)
     return false if closed?
 
