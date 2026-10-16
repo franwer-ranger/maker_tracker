@@ -19,7 +19,7 @@ En paralelo a los hitos, la vertiente de self-host despliega en la torre lo que 
 Objetivo: el modelo nuevo funcionando, con la UI mínima para definir producto.
 
 Historias, en orden:
-1. [#001 Sistema de diseño v3 en código](backlog/001-design-system-tokens.md) · Hecha en `dev/design-system`, pendiente de merge
+1. [#001 Sistema de diseño v3 en código](backlog/001-design-system-tokens.md) · Hecha
 2. [#002 Quitar el login y la v1](backlog/002-remove-login-and-v1.md) · Lista
 3. [#003 Modelo v2 · proyectos, hitos e historias](backlog/003-projects-milestones-stories.md) · Lista
 4. [#004 Modelo v2 · actores, decisiones y comentarios](backlog/004-actors-decisions-comments.md) · Lista
