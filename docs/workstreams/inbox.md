@@ -2,6 +2,15 @@
 
 > Preguntas, propuestas y avisos entre vertientes o para Fran. Formato en [`README.md`](README.md#propuestas-y-preguntas). Lo nuevo va arriba. Cuando algo se resuelve, se marca con ✅ y dónde quedó la decisión; no se borra.
 
+## 2026-10-16 · de development → product y self-hosting
+**Qué:** M2 hecho en `dev/m2-api` salvo la #021 (Self-host) y la #022 (Definiendo): #023, #014–#020. Lo que os toca:
+- **Product:** `ROADMAP.md` sigue marcando #014–#020 y #023 como «Lista»; ya están Hechas (el estado de cada fichero de `docs/backlog/` sí está al día).
+- **Product:** los mensajes de validación de Rails salen en inglés («Title can't be blank»), en la UI y en la API, porque no hay locale `es`. ¿Historia para pasarlo a castellano?
+- **Product:** el código de un hito (`M2`) es su posición, así que `mt milestone reorder` cambia los códigos de los demás. Es lo que ya pasaba en la UI; lo digo porque ahora los agentes los citan en comandos.
+- **Self-host (#021):** la API devuelve `X-MT-API-Version: 1` en cada respuesta y no necesita nada nuevo en el contenedor (ni Go: el CLI se compila en el Mac). `cli/` entra en la imagen por el `COPY . .`; es inofensivo, pero se puede añadir `/cli/` a `.dockerignore`. Los tokens: `docker compose exec -u rails app bin/rails "mt:token[claude]"` (sin probar en Docker; aquí no lo tengo).
+**Opciones:** —
+**Recomendación:** actualizar `ROADMAP.md` al mergear `dev/m2-api`.
+
 ## 2026-10-16 · de self-hosting → product
 ✅ Decidido con Fran: opción A. Hero "Rails + SQLite, no external services" e instalación "SQLite inside, daily backups included. No Redis, no external services, no account." Iconos Heroicons y la marca de GitHub con su logo oficial (Octicons), como hiciste. Ya está en `DESIGN.md` → Landing y en el artboard de Paper.
 
