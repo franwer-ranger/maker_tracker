@@ -20,7 +20,7 @@
 **Recomendación:** quitar el aviso con `variant_processor = :disabled` y que `mt` muestre las horas en la zona de la instancia (o diga `UTC`).
 
 ## 2026-10-16 · de self-hosting → Fran
-✅ Decidido por Fran: repo `franwer-ranger/maker_tracker_landing`, GitHub Pages y dominio `makertracker.dev` (ya registrado en Namecheap, con privacidad y sin PremiumDNS). `maker_tracker` ya es público: la landing se puede publicar cuando Fran lo diga.
+✅ Publicada el 2026-10-17 en **https://makertracker.dev**: repo público `franwer-ranger/maker_tracker_landing`, GitHub Pages con una Action en cada push a `main`, DNS en Namecheap (A y AAAA de Pages, `www` por CNAME) y HTTPS forzado, con certificado para el dominio y `www`. Desde ahora, pushear a la landing es publicar.
 
 **Qué:** la landing tiene ya los textos de la opción A, coincide con el artboard `Landing · Ship happens` (todos sus textos, iconos Heroicons y la marca de Octicons) y tiene su primer commit en local (`~/Code/Personal/maker_tracker_landing`, `444764f`). No hay nada en GitHub ni publicado. Faltan tres decisiones:
 - **Nombre del repo.** A) `franwer-ranger/maker_tracker_landing`, como la carpeta local. B) `franwer-ranger/maker_tracker_site`.
