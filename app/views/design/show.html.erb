@@ -58,10 +58,10 @@
   <%# 02 · Color y forma %>
   <section class="flex flex-col gap-6">
     <%= section_label "Color" %>
-    <div class="grid grid-cols-8 overflow-clip rounded-xl border border-border">
-      <% %w[bg surface-sunken surface border border-strong text-subtle text-muted text].each_with_index do |token, i| %>
+    <div class="grid grid-cols-9 overflow-clip rounded-xl border border-border">
+      <% %w[bg surface-sunken surface-raised surface border border-strong text-subtle text-muted text].each_with_index do |token, i| %>
         <div class="flex h-40 flex-col justify-end gap-1 p-4" style="background: var(--color-<%= token %>)">
-          <span class="text-sm font-medium <%= i < 5 ? "text-text" : "text-bg" %>"><%= token %></span>
+          <span class="text-sm font-medium <%= i < 6 ? "text-text" : "text-bg" %>"><%= token %></span>
         </div>
       <% end %>
     </div>

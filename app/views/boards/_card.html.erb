@@ -3,7 +3,7 @@
         class: class_names(
           "flex flex-col gap-2.5 rounded-lg border border-border p-3 transition-colors duration-150 ease-brand hover:border-strong",
           ComponentsHelper::FOCUS_RING,
-          "bg-bg": !story.done?
+          "bg-surface-raised": !story.done?
         ) do %>
     <span class="flex items-center justify-between gap-2">
       <span class="font-mono text-xs text-text-muted">#<%= story.number %></span>

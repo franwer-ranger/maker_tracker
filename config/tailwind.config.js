@@ -14,6 +14,7 @@ module.exports = {
         bg: 'var(--color-bg)',
         surface: 'var(--color-surface)',
         'surface-sunken': 'var(--color-surface-sunken)',
+        'surface-raised': 'var(--color-surface-raised)',
         border: 'var(--color-border)',
         'border-strong': 'var(--color-border-strong)',
         text: 'var(--color-text)',

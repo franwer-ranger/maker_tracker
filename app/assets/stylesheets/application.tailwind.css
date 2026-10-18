@@ -4,11 +4,12 @@
 
 /* Tokens del sistema de diseño v3: mismos nombres y valores que en Paper (docs/DESIGN.md). */
 :root {
-  --color-bg: #000000;
-  --color-surface-sunken: #0A0A0A;
-  --color-surface: #1D1D1D;
-  --color-border: #2A2A2A;
-  --color-border-strong: #3A3A3A;
+  --color-bg: #111113;
+  --color-surface-sunken: #0B0B0C;
+  --color-surface-raised: #18181B;
+  --color-surface: #26262A;
+  --color-border: #2A2A2E;
+  --color-border-strong: #3A3A3F;
   --color-text: #FFFFFF;
   --color-text-soft: #EDEDED;
   --color-text-muted: #9E9C9C;

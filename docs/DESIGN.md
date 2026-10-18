@@ -11,6 +11,7 @@ Archivo de Paper **Maker Tracker** (`01M50CA4S5CN4Z8ERVW36XWDHF`, https://app.pa
 | **Landing** | `Landing · Ship happens`, la landing que construimos (repo aparte) |
 | **Sistema** | `01 · Tipografía`, `02 · Color y forma`, `03 · Componentes` |
 | **App** | Pantallas de la app: `5.0 Proyectos`, `5.1 Tablero · M2`, `5.2 Tablero · Selector de hito`, `5.3 Roadmap`, `5.4 Historia · Lista (#49)`, `5.6 Historia · Editando (#49)` y `5.5 Brief`, con los datos de las seeds (Postgram). Debajo, los artboards `Pendiente · …` (Actividad, Stats, vista del agente, ejecución): son diseños antiguos que solo sirven de referencia hasta rehacerlos con el sistema |
+| **Propuesta · Móvil** | `Móvil · Tablero` y `Móvil · Historia` (390px): propuesta de responsive, aún sin decidir ni construir. Barra superior en vez de lateral, pestañas de estado deslizables y navegación abajo |
 | v1 · … | Histórico. No se usa |
 
 **Una sola versión**: en Paper solo vive el diseño vigente. Lo que se rehace se sustituye y lo antiguo se borra, sin páginas por versión.
@@ -19,7 +20,7 @@ Para llevar un diseño a código, leer los valores exactos con el MCP de Paper (
 
 ## Principios
 
-- **Taller de noche.** Negro, preciso y tranquilo, al estilo de Geist (Vercel). La marca solo levanta la voz con un titular serif y con el naranja.
+- **Taller de noche.** Grafito casi negro, preciso y tranquilo, al estilo de Geist (Vercel). La marca solo levanta la voz con un titular serif y con el naranja.
 - **Solo modo oscuro** por ahora.
 - **El naranja es un piloto**: se enciende solo cuando algo pide acción o atención (botón principal, "Necesita tu atención", agente trabajando). Si todo es naranja, nada lo es.
 - **Información sobre superficies**, no todo metido en tarjetas. Bordes finos y poco relleno de color.
@@ -40,11 +41,12 @@ Escala: 11 · 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 11 es `
 ## Color
 
 ```css
---color-bg: #000000;              /* fondo */
---color-surface-sunken: #0A0A0A;  /* terminal, bloques de código, ventanas */
---color-surface: #1D1D1D;         /* nav activo, hover, botón desactivado */
---color-border: #2A2A2A;
---color-border-strong: #3A3A3A;   /* botones secundarios, inputs */
+--color-bg: #111113;              /* fondo: grafito, no negro puro */
+--color-surface-sunken: #0B0B0C;  /* columnas del tablero, terminal, bloques de código, ventanas */
+--color-surface-raised: #18181B;  /* tarjetas que se levantan sobre una columna (historia del Tablero) */
+--color-surface: #26262A;         /* nav activo, hover, botón desactivado, labels */
+--color-border: #2A2A2E;
+--color-border-strong: #3A3A3F;   /* botones secundarios, inputs */
 --color-text: #FFFFFF;
 --color-text-soft: #EDEDED;       /* lectura larga */
 --color-text-muted: #9E9C9C;      /* secundario */
@@ -59,8 +61,8 @@ Escala: 11 · 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 11 es `
 /* En curso = --color-accent con halo */
 ```
 
-- **Texto sobre naranja: negro (`#000`), no blanco.** El blanco sobre `#FF3F01` no llega al contraste AA en tamaños pequeños. Los mockups v2 usan blanco y hay que corregirlos.
-- Tintes de atención (fondo de una fila que pide atención): naranja al 5–6 % sobre negro (`#120501`), borde `#6B2410`.
+- **Texto sobre naranja: oscuro (`text-bg`), no blanco.** El blanco sobre `#FF3F01` no llega al contraste AA en tamaños pequeños. Los mockups v2 usan blanco y hay que corregirlos.
+- Tintes de atención (fondo de una fila que pide atención): naranja al 5–6 % sobre el fondo, borde `#6B2410`.
 - Los colores de estado se usan como puntos (6–10px) y barras, nunca como fondos grandes.
 
 ## Forma
@@ -91,7 +93,7 @@ En `Sistema → 03 · Componentes`:
 Piezas de las pantallas de la app (en `App` y, como referencia, en `03 · Componentes` → "Fila · Historias"):
 
 - **Barra lateral**: proyecto (clave en mono sobre `surface`), navegación Tablero · Roadmap · Brief y sección Agentes abajo.
-- **Tarjeta de historia** (Tablero): `#n` en mono, título, labels y metadato arriba a la derecha (actor, "Siguiente", bloqueo, "faltan criterios", mockup). Las Hechas, sin fondo y con el título atenuado.
+- **Tarjeta de historia** (Tablero): fondo `surface-raised` sobre la columna `surface-sunken`; `#n` en mono, título, labels y metadato arriba a la derecha (actor, "Siguiente", bloqueo, "faltan criterios", mockup). Las Hechas, sin fondo y con el título atenuado.
 - **Fila de historia** (Roadmap): estado (104px) · `#n` (40px) · título · metadato, con columnas de ancho fijo.
 - **Badge "Siguiente"**: píldora `state-ready` con texto negro. Solo una por proyecto.
 - **Label**: mono `text-label` (11px, interlineado 14) sobre `surface`, radio 4.
