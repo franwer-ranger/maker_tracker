@@ -9,15 +9,15 @@
 class Activity
   # Una historia en Definiendo está parada tras tanto tiempo sin cambios: el mismo umbral que el daily.
   STALLED_AFTER = Daily::STALE_DEFINING
-  # Cuántas historias en Definiendo se ofrecen en la tarjeta de un proyecto sin trabajo.
+  # Cuántas historias en Definiendo se ofrecen en la tarjeta de un proyecto con poco trabajo.
   SUGGESTIONS = 2
   RECENT = 5
 
-  # kind: :question | :definition | :no_work. `since`: desde cuándo espera.
+  # kind: :question | :definition | :low_work. `since`: desde cuándo espera.
   # `story` y `question` según el tipo; `reason` de :definition (:questions o
-  # :stalled); `options` de :no_work: sus historias en Definiendo y cuántas hay.
-  Card = Data.define(:kind, :project, :story, :question, :reason, :since, :options, :defining_count) do
-    def initialize(kind:, project:, since:, story: nil, question: nil, reason: nil, options: [], defining_count: 0) = super
+  # :stalled); `options` de :low_work: sus historias en Definiendo, cuántas hay y cuántas Listas quedan.
+  Card = Data.define(:kind, :project, :story, :question, :reason, :since, :options, :defining_count, :ready_count) do
+    def initialize(kind:, project:, since:, story: nil, question: nil, reason: nil, options: [], defining_count: 0, ready_count: 0) = super
     def partial = "activity/#{kind}"
     def question? = kind == :question
   end
@@ -34,7 +34,7 @@ class Activity
   end
 
   def for_you
-    cards = question_cards + definition_cards + no_work_cards
+    cards = question_cards + definition_cards + low_work_cards
     cards.each_with_index.sort_by { |card, index| [ card.since, index ] }.map(&:first)
   end
 
@@ -87,30 +87,19 @@ class Activity
     end
   end
 
-  # Proyectos con trabajo pendiente en algún hito abierto pero sin ninguna
-  # historia Lista que un agente pueda coger: se han quedado sin trabajo. Espera
-  # desde su último evento. Un proyecto terminado (todo Hecho o con los hitos
-  # cerrados) no cuenta, ni el que tiene Listas paradas solo por preguntas que
-  # ya salen en «Te toca». Todo en un puñado de consultas para todos los proyectos.
-  def no_work_cards
-    projects = Project.order(:created_at).to_a
-    stories = Story.where(project_id: projects.map(&:id), milestone_id: Milestone.open.select(:id)).where.not(state: :done)
-      .includes(:milestone, :questions).order(:position).to_a
-    done = Story.done.pluck(:project_id, :number).group_by(&:first).transform_values { |rows| rows.map(&:last) }
+  # Proyectos a los que les queda poco trabajo (MT-33): dos Listas y desbloqueadas
+  # o menos en los hitos abiertos, con 0 como caso extremo (MT-30: se han quedado
+  # sin trabajo). Sale de `ReadyWork`, la misma cuenta que enseñan el bloque de
+  # Actividad y las cabeceras. Espera desde su último evento.
+  def low_work_cards
+    summaries = ReadyWork.all.values.select(&:low?)
+    return [] if summaries.empty?
+
     last_events = Event.group(:project_id).maximum(:occurred_at)
-    by_project = stories.group_by(&:project_id)
-
-    projects.filter_map do |project|
-      pending = by_project[project.id].to_a
-      next if pending.empty?
-
-      ready = pending.select(&:ready?)
-      # Libre, o parada solo por una pregunta que ya espera a Fran.
-      next if ready.any? { it.pending_blockers(done_numbers: done[project.id].to_a).empty? }
-
-      defining = pending.select(&:defining?).sort_by { [ it.milestone.position, it.position ] }
-      Card.new(kind: :no_work, project: project, since: last_events[project.id] || project.created_at,
-        options: defining.first(SUGGESTIONS), defining_count: defining.size)
+    summaries.map do |summary|
+      project = summary.project
+      Card.new(kind: :low_work, project: project, since: last_events[project.id] || project.created_at,
+        options: summary.defining.first(SUGGESTIONS), defining_count: summary.defining_count, ready_count: summary.ready)
     end
   end
 end

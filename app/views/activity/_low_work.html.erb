@@ -1,15 +1,16 @@
-<%# Un proyecto sin trabajo para los agentes: ninguna historia Lista y desbloqueada en sus hitos abiertos. Local: card. %>
+<%# Un proyecto al que le queda poco trabajo (MT-33): dos historias Listas y desbloqueadas o menos en sus hitos abiertos; con 0 se ha quedado sin trabajo. Local: card. %>
 <% project = card.project %>
+<% ready = card.ready_count %>
 <article id="te-toca-proyecto-<%= project.id %>" class="flex gap-4 py-5 pl-4 pr-4 shadow-[inset_2px_0_0_var(--color-accent)] md:pl-5 md:pr-6 md:pb-6">
   <span class="hidden w-14 shrink-0 font-mono text-control leading-5 text-text-muted md:block"><%= project.key %></span>
   <div class="flex min-w-0 grow basis-0 flex-col gap-2 md:gap-1.5">
     <div class="flex items-center gap-2 font-mono text-xs">
       <span class="shrink-0 text-control text-text md:hidden"><%= project.key %></span>
-      <span class="text-accent">0 Listas · <%= card.defining_count %> en Definiendo · espera <%= short_time_ago(card.since) %></span>
+      <span class="text-accent">poco trabajo listo · <%= ready_work_counts(ready, card.defining_count) %> · espera <%= short_time_ago(card.since) %></span>
     </div>
-    <h2 class="text-[17px] font-medium leading-6 md:text-base">A <%= project.key %> no le quedan historias Listas</h2>
+    <h2 class="text-[17px] font-medium leading-6 md:text-base"><%= low_work_title(project, ready) %></h2>
     <p class="text-sm text-text-muted">
-      Los agentes no tienen qué coger en los hitos abiertos de <%= project.name %>.
+      <%= ready.zero? ? "Los agentes no tienen qué coger en los hitos abiertos de #{project.name}." : "A los agentes casi no les queda qué coger en los hitos abiertos de #{project.name}." %>
       <%= card.defining_count.positive? ? "Hay #{card.defining_count} en Definiendo: define una y siguen." : "Tampoco hay ninguna en Definiendo: escribe o define una en el Roadmap." %>
     </p>
     <div class="flex flex-col gap-2.5 pt-2 md:gap-2 md:pt-3">

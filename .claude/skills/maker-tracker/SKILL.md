@@ -7,7 +7,7 @@ description: How to work with Maker Tracker using the mt CLI. Use it when asked 
 
 Maker Tracker holds the product definition of this repo: brief, decisions, roadmap (milestones in order) and stories. The code lives here; the what and the why, there. `mt` talks to its API. The project comes from `.mt` at the root of the repo, and stories are named `PG-49` or just `49`.
 
-In a repo that is already in Maker Tracker (it has `.mt`), the session starts with the output of `mt context` (brief, decisions in force, current milestone and what is in progress). If it is missing, run it before recommending anything: the decisions and the principles in the brief come first. If the repo has no `.mt` and you are asked to bring it in, follow "Onboard an existing project".
+In a repo that is already in Maker Tracker (it has `.mt`), the session starts with the output of `mt context` (brief, decisions in force, current milestone, ready work and what is in progress). If it is missing, run it before recommending anything: the decisions and the principles in the brief come first. If the repo has no `.mt` and you are asked to bring it in, follow "Onboard an existing project".
 
 `mt` speaks English; the content (titles, story bodies, brief, decisions) comes in the language it was written in. Keep writing content in that language.
 

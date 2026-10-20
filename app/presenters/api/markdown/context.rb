@@ -1,5 +1,5 @@
 # El onboarding de un agente (`mt context`, docs/CLI.md): brief entero, las
-# decisiones vigentes más recientes, hito actual y lo que está en curso.
+# decisiones vigentes más recientes, hito actual, trabajo listo y lo que está en curso.
 class Api::Markdown::Context
   include Api::Markdown::Formatting
 
@@ -18,9 +18,11 @@ class Api::Markdown::Context
       .sort_by { [ it.milestone ? 0 : 1, it.milestone&.position.to_i, it.position ] }
   end
 
+  def ready_work = @ready_work ||= ReadyWork.for(@project)
+
   def to_s
     [ "# #{@project.name} · #{@project.key}", edited_line, brief, decisions_section,
-      milestone_section, in_progress_section, questions_section ].compact.join("\n\n") + "\n"
+      milestone_section, ready_work_section, in_progress_section, questions_section ].compact.join("\n\n") + "\n"
   end
 
   private
@@ -74,6 +76,9 @@ class Api::Markdown::Context
     parts << plural(by_state["idea"], "idea") if by_state["idea"]
     parts.join(" · ")
   end
+
+  # Cuánto les queda a los agentes, de todo el proyecto y no solo del hito actual.
+  def ready_work_section = "## Ready work\n\n#{ready_work_line(ready_work)}"
 
   def in_progress_section
     return "## In progress\n\nNothing in progress." if in_progress.empty?
