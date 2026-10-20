@@ -1,0 +1,22 @@
+<%# Una pregunta abierta de un agente (mt ask), con sus opciones como botones. Local: card. %>
+<% question = card.question %>
+<% story = card.story %>
+<% accent = question.blocking? %>
+<article id="te-toca-pregunta-<%= question.id %>" class="flex gap-4 py-5 pl-4 pr-4 md:pl-5 md:pr-6 md:pb-6 <%= accent ? "shadow-[inset_2px_0_0_var(--color-accent)]" : "shadow-[inset_2px_0_0_var(--color-border-strong)]" %>">
+  <%= link_to story.reference, project_story_path(card.project, story), class: "hidden w-14 shrink-0 font-mono text-control leading-5 text-text-muted hover:text-text md:block #{ComponentsHelper::FOCUS_RING}" %>
+  <div class="flex min-w-0 grow basis-0 flex-col gap-2 md:gap-1.5">
+    <div class="flex items-center justify-between gap-3">
+      <span class="flex min-w-0 items-center gap-2 font-mono text-xs">
+        <%= link_to story.reference, project_story_path(card.project, story), class: "shrink-0 whitespace-nowrap text-control text-text md:hidden #{ComponentsHelper::FOCUS_RING}" %>
+        <%= actor_dot question.actor %>
+        <span class="truncate <%= accent ? "text-accent" : "text-text-muted" %>"><%= question.actor.name %><span class="hidden md:inline"> pregunta</span> · <%= accent ? "espera" : "hace" %> <%= short_time_ago(question.created_at) %><%= " · no bloquea" unless accent %></span>
+      </span>
+      <%= question_reversibility question %>
+    </div>
+    <h2 class="text-[17px] font-medium leading-6 md:text-base"><%= link_to question.title, project_story_path(card.project, story, anchor: "pregunta-#{question.id}"), class: "hover:underline #{ComponentsHelper::FOCUS_RING}" %></h2>
+    <% if question.context.present? %>
+      <p class="text-sm text-text-muted"><%= question.context %></p>
+    <% end %>
+    <%= render "questions/answer", question: question, story: story, decide: false, other_label: "Otra respuesta…" %>
+  </div>
+</article>

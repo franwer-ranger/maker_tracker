@@ -71,3 +71,4 @@ es:
         options: "Las opciones"
         recommended: "La recomendada"
         answer: "La respuesta"
+        answer_note: "El texto de la respuesta"

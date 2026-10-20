@@ -144,12 +144,13 @@ module Story::Operations
     end
   end
 
-  # Responde con el número de una opción. Con `decide`, queda además como
-  # decisión de la historia (D-n). Devuelve la pregunta.
-  def answer_question!(question, option:, note: nil, actor:, decide: false)
+  # Responde con el número de una opción o, sin ella, con un texto libre en
+  # `note` (MT-30). Con `decide`, queda además como decisión
+  # de la historia (D-n). Devuelve la pregunta.
+  def answer_question!(question, option: nil, note: nil, actor:, decide: false)
     question.with_lock do
       question.answer!(option: option, note: note, actor: actor)
-      decision = project.record_decision!({ title: "#{question.title} → #{question.answer_text}", body: question.answer_note.to_s, story: self }, actor: actor) if decide
+      decision = project.record_decision!({ title: "#{question.title} → #{question.answer_text.truncate(80)}", body: question.answer_note.to_s, story: self }, actor: actor) if decide
       record_event!("question.answered", actor: actor, story: self,
         data: { question_id: question.id, option: question.answer, answer: question.answer_text, asked_by: question.actor.name, decision: decision&.number }.compact)
       question

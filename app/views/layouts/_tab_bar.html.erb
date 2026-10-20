@@ -1,0 +1,6 @@
+<nav class="flex shrink-0 justify-around border-t border-border bg-bg px-3 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 md:hidden" aria-label="Secciones">
+  <%= tab_item "Actividad", root_path, icon: "inbox", active: current_page?(root_path), count: activity_count %>
+  <%= tab_item "Tablero", project_path(project), icon: "view-columns", active: current_page?(project_path(project)) %>
+  <%= tab_item "Roadmap", project_roadmap_path(project), icon: "list-bullet", active: current_page?(project_roadmap_path(project)) || controller_name == "stories" %>
+  <%= tab_item "Brief", project_brief_path(project), icon: "document-text", active: current_page?(project_brief_path(project)) %>
+</nav>

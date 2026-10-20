@@ -277,21 +277,26 @@ func init() {
 			return e.storyCall("POST", e.arg(0), "/questions", optional(body, e, "context"))
 		}}, "option* an option (repeat it, at least 2)", "recommend the number of the recommended option (from 1)", "context why you ask (markdown)",
 		"reversible! the decision can be undone", "no-bloqueante! it does not block: you carry on with the recommended option")
-	def(&command{name: "answer", group: workGroup, usage: "mt answer <story> <option> [--note \"…\"] [--question id] [--decide]", minArgs: 2, maxArgs: 2,
-		summary:     "Answers an open question with the number of an option",
-		description: "If the story has several open questions, choose one with --question (the id from mt show, Q12 or 12). With --decide it is also recorded as a decision (D-n).",
+	def(&command{name: "answer", group: workGroup, usage: "mt answer <story> <option> [--note \"…\"] [--question id] [--decide]", minArgs: 1, maxArgs: 2,
+		summary:     "Answers an open question with the number of an option (or with free text)",
+		description: "If the story has several open questions, choose one with --question (the id from mt show, Q12 or 12). With --text \"…\" and no option you answer with your own words. With --decide it is also recorded as a decision (D-n).",
 		example:     "mt answer PG-49 2 --note \"The warning names the variable\" --decide",
 		run: func(e *env) error {
-			n, err := strconv.Atoi(e.arg(1))
-			if err != nil {
-				return usageHint("mt answer PG-49 2 (the number of the option, from 1).", "the option must be a number.")
+			body := optional(map[string]any{}, e, "note", "question", "text")
+			if e.opts.has("text") && e.arg(1) == "" {
+				delete(body, "note")
+			} else {
+				n, err := strconv.Atoi(e.arg(1))
+				if err != nil {
+					return usageHint("mt answer PG-49 2 (the number of the option, from 1) or mt answer PG-49 --text \"…\".", "the option must be a number.")
+				}
+				body["option"] = n
 			}
-			body := optional(map[string]any{"option": n}, e, "note", "question")
 			if e.opts.has("decide") {
 				body["decide"] = true
 			}
 			return e.storyCall("POST", e.arg(0), "/answer", body)
-		}}, "note why (markdown)", "question the question's id, if there are several open (Q12 or 12)", "decide! also record it as a decision")
+		}}, "note why (markdown)", "text your own answer, if none of the options fits", "question the question's id, if there are several open (Q12 or 12)", "decide! also record it as a decision")
 	def(&command{name: "decide", group: workGroup, usage: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", minArgs: 1, maxArgs: 1,
 		summary: "Records a decision and its why", example: "mt decide \"Templates as JSON\" --why \"No need for another table\" --story PG-49",
 		run: func(e *env) error {

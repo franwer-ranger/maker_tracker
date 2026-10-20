@@ -1,0 +1,21 @@
+<%# «En marcha» (5.9): las historias En curso de todos los proyectos, con quién las tiene y desde cuándo. Local: stories. %>
+<% if stories.any? %>
+  <aside id="en-marcha" class="flex flex-col gap-1 lg:w-[340px] lg:shrink-0" aria-label="En marcha">
+    <div class="pb-3 font-mono text-xs uppercase tracking-label text-text-muted">En marcha · <%= stories.size %></div>
+    <ul class="-mx-4 flex flex-col border-t border-border md:mx-0">
+      <% stories.each do |story| %>
+        <li class="border-b border-border lg:border-b-0 lg:border-t lg:first:border-t-0">
+          <%= link_to project_story_path(story.project, story), class: "flex min-h-12 flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-3 hover:bg-surface-sunken md:px-0 lg:py-3.5 #{ComponentsHelper::FOCUS_RING}" do %>
+            <%= state_dot :in_progress %>
+            <span class="font-mono text-control text-text"><%= story.claimed_by&.name || "alguien" %></span>
+            <span class="grow font-mono text-control text-text-muted"><%= story.reference %></span>
+            <% if story.claimed_at %>
+              <span class="font-mono text-xs text-text-muted"><%= since_label(story.claimed_at) %></span>
+            <% end %>
+            <span class="hidden basis-full pl-3.5 text-sm text-text lg:block"><%= story.title %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </aside>
+<% end %>

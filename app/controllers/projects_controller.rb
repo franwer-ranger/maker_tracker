@@ -1,7 +1,6 @@
 class ProjectsController < ApplicationController
   def index
     @projects = Project.order(:created_at)
-    redirect_to project_path(@projects.first) if request.path == root_path && @projects.one?
     @project = Project.new
   end
 

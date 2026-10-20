@@ -52,14 +52,19 @@ class Question < ApplicationRecord
 
   def recommended_text = option_text(recommended)
 
-  def answer_text = option_text(answer)
+  # Lo que se contestó: el texto de la opción o, en una respuesta libre, el texto escrito.
+  def answer_text = option_text(answer) || (answer_note if free_answer?)
 
-  # Contesta con una opción (su número) y una nota opcional.
-  def answer!(option:, note: nil, actor:)
+  # Contesta con una opción (su número) y una nota opcional. Sin opción es una
+  # respuesta libre (MT-30): el texto va en `note`, que entonces es obligatoria.
+  def answer!(option: nil, note: nil, actor:)
     raise AlreadyAnswered, self if answered?
 
     update!(answer: option, answer_note: note.to_s.strip.presence, answered_by: actor, answered_at: Time.current)
   end
+
+  # Respondida con texto libre, sin elegir ninguna opción.
+  def free_answer? = answered? && answer.nil?
 
   def answered? = !open?
 
@@ -87,6 +92,9 @@ class Question < ApplicationRecord
   end
 
   def answer_is_an_option
-    errors.add(:answer, :not_an_option, count: options.size) if answered_at && !(1..options.size).cover?(answer)
+    return unless answered_at
+    return errors.add(:answer_note, :blank) if answer.nil? && answer_note.blank?
+
+    errors.add(:answer, :not_an_option, count: options.size) if answer && !(1..options.size).cover?(answer)
   end
 end

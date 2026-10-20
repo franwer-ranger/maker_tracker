@@ -82,7 +82,7 @@ class Api::Markdown::Story
       marks = [ ("recommended" if number == question.recommended), ("chosen" if number == question.answer) ].compact
       lines << "  #{number} #{text}#{" (#{marks.join(', ')})" if marks.any?}"
     end
-    lines << "  Note: #{question.answer_note}" if question.answer_note.present?
+    lines << "  #{question.free_answer? ? 'Free answer' : 'Note'}: #{question.answer_note}" if question.answer_note.present?
     lines << "  #{answer_command(question, question.recommended || '<option>')}" if question.open?
     lines.join("\n")
   end

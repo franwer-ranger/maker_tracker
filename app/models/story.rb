@@ -120,7 +120,12 @@ class Story < ApplicationRecord
   def readiness_issues = readiness_problems.map { READINESS_ISSUES.fetch(it) }
 
   def open_questions?
-    body.to_s[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip.present?
+    open_questions_text.present?
+  end
+
+  # El texto bajo «## Preguntas abiertas» del cuerpo, o nil si está vacío.
+  def open_questions_text
+    body.to_s[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip.presence
   end
 
   # Las historias que tienen a esta en su `blocked_by`.

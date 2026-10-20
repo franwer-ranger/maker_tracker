@@ -1,0 +1,24 @@
+<%# Vacío (5.9b): nada espera a Fran; lo último que ha pasado. Local: recent (eventos). %>
+<section class="flex flex-col gap-10 md:gap-12" aria-label="Nada te espera">
+  <header class="flex flex-col gap-2.5">
+    <div class="font-mono text-xs uppercase tracking-label text-text-muted">Te toca · 0</div>
+    <h1 class="font-display text-display-sm tracking-[-0.02em] md:text-display">Nada te espera.</h1>
+    <p class="max-w-[480px] text-[15px] leading-[22px] text-text-muted md:leading-6">No hay preguntas abiertas ni historias que esperen por ti. Vuelve cuando quieras.</p>
+  </header>
+
+  <% if recent.any? %>
+    <div class="-mx-4 flex flex-col md:mx-0">
+      <div class="px-4 pb-3 font-mono text-xs uppercase tracking-label text-text-muted md:px-0">Lo último que ha pasado</div>
+      <ul class="flex flex-col border-t border-border">
+        <% recent.each do |event| %>
+          <li class="flex flex-col gap-0.5 border-b border-border px-4 py-3 md:h-[52px] md:flex-row md:items-center md:gap-4 md:px-0 md:py-0">
+            <span class="hidden w-10 shrink-0 font-mono text-xs text-text-muted md:block"><%= event.occurred_at.strftime("%H:%M") %></span>
+            <span class="hidden w-9 shrink-0 items-center justify-center md:flex"><%= project_key_badge event.project, size: 32 %></span>
+            <span class="min-w-0 grow text-[15px] md:truncate leading-5 md:text-sm"><%= recent_event_text(event) %></span>
+            <span class="font-mono text-xs text-text-muted md:shrink-0"><span class="md:hidden"><%= event.project.key %> · </span><%= event.actor.name %><span class="md:hidden"> · <%= event.occurred_at.strftime("%H:%M") %></span></span>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</section>
