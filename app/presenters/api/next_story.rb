@@ -18,7 +18,7 @@ class Api::NextStory
     return unless story
 
     empty, skipped = [], []
-    @project.milestones.open.includes(stories: %i[claimed_by project]).each do |milestone|
+    @project.milestones.open.includes(stories: %i[claimed_by project questions]).each do |milestone|
       before = milestone.stories.to_a
       before = before.take_while { it != story } if milestone == story.milestone
       blocked = before.select { it.ready? && it.blocked?(done_numbers: done_numbers) }
@@ -77,8 +77,13 @@ class Api::NextStory
   end
 
   # "PG-50 comes first but is blocked by PG-46 (in progress)."
+  # "PG-49 comes first but is waiting for fran (open question from codex)."
   def blocked_sentence(blocked)
     blockers = @project.stories.where(number: blocked.pending_blockers(done_numbers: done_numbers)).order(:number)
-    "#{blocked.reference} comes first but is blocked by #{sentence(blockers.map { "#{it.reference} (#{state_words(it.state)})" })}."
+    reasons = []
+    reasons << "blocked by #{sentence(blockers.map { "#{it.reference} (#{state_words(it.state)})" })}" if blockers.any?
+    questions = blocked.blocking_questions
+    reasons << "waiting for #{Actor.human.name} (open #{questions.one? ? 'question' : 'questions'} from #{sentence(questions.map { it.actor.name }.uniq)})" if questions.any?
+    "#{blocked.reference} comes first but is #{reasons.join(' and ')}."
   end
 end

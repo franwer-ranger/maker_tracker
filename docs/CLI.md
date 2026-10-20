@@ -69,12 +69,18 @@ Goal: Un maker programa una semana de posts en menos de 10 minutos.
 PG-48  Exportar post a PDF       claude  since 11:42
 PG-45  Programar publicaciones   codex   since 2026-10-15 18:00
 
+## Open questions
+
+PG-50  Q12  codex  40 min  blocking
+       ¿Qué redes enseñamos en la vista previa?
+
 Next:
   mt next
   mt roadmap
 ```
 
 - Las decisiones sustituidas no salen. Los objetivos de hito y los porqués son contenido: salen tal cual, sin cambiar mayúsculas. Si hay más de 5 vigentes, se añade `… and 8 more: mt decisions`.
+- `## Open questions` (MT-29) solo sale si el proyecto tiene preguntas abiertas: historia, id de la pregunta, quién la hizo, cuánto lleva esperando y si bloquea. Las opciones están en `mt show`.
 - Sin hito abierto, `## Current milestone` dice `No open milestone.` y sugiere `mt roadmap`.
 
 ## `mt next`
@@ -118,6 +124,16 @@ Compartir plantillas entre cuentas (M4).
 
 Blocked by PG-47 Borradores automáticos (done): no longer blocking.
 
+## Questions · 1 answered
+
+Q11 · answered by fran 2026-10-15 10:40 · asked by codex 2026-10-15 10:12 · blocking, reversible
+¿Qué hacemos si una variable de la plantilla no tiene valor al publicar?
+Pasa con {enlace} en los posts sin enlace.
+  1 Quitarla y publicar
+  2 Avisar antes de publicar (recommended, chosen)
+  3 Publicar el texto tal cual
+  Note: Que el aviso diga qué variable falta y deje publicar igualmente.
+
 ## Comments · 1
 
 claude · 2026-10-15 22:31
@@ -151,11 +167,12 @@ Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar
 - `milestone` es el título del hito, sin el código (`M2`), porque el código cambia al reordenar. En la bandeja de ideas, vacío.
 - `state` y `milestone` se pueden leer, pero `mt edit` no los cambia: para eso están `mt move` y `mt reorder` (decisión de la #018).
 - El historial muestra los 10 últimos eventos. Si un evento tiene motivo, va al final de su línea: `reordered it in its milestone: "lo pide la beta"`.
-- `## Related` lista lo que la bloquea y lo que bloquea, cada una con su estado: `Blocked by PG-45 Programar publicaciones (in progress).` / `Blocks PG-54 Reprogramar arrastrando en el calendario (defining).`
+- `## Related` lista lo que la bloquea y lo que bloquea, cada una con su estado: `Blocked by PG-45 Programar publicaciones (in progress).` / `Blocks PG-54 Reprogramar arrastrando en el calendario (defining).` Una pregunta abierta que bloquea sale aquí con el comando para contestarla: `Blocked by fran: Q12 from codex, asked 2026-10-21 10:12. Answer it with mt answer PG-50 <option>.`
+- `## Questions` (MT-29) sale de la tabla `questions`, no del cuerpo, y es solo lectura (`mt edit` no la toca). Primero las abiertas, con su comando `mt answer`; después las respondidas, con la opción elegida y la nota. La reversibilidad solo aparece si se indicó.
 
 ## `mt roadmap`
 
-Los hitos abiertos en orden, cada uno con sus historias en orden. Columnas fijas: estado (12), referencia (6), título (42) y metadato. El metadato es el mismo que en el Tablero y por el mismo orden de prioridad: quién la tiene, `← next`, `blocked by …`, `no criteria` o `mockup` (tiene mockup).
+Los hitos abiertos en orden, cada uno con sus historias en orden. Columnas fijas: estado (12), referencia (6), título (42) y metadato. El metadato es el mismo que en el Tablero y por el mismo orden de prioridad: quién la tiene, `← next`, `blocked by …` (una historia, o `blocked by fran` si espera a una pregunta), `no criteria` o `mockup` (tiene mockup).
 
 ```markdown
 # Roadmap · Postgram
@@ -166,7 +183,7 @@ Goal: Un maker programa una semana de posts en menos de 10 minutos.
 in progress  PG-48  Exportar post a PDF                         claude
 in progress  PG-45  Programar publicaciones                     codex
 ready        PG-49  Plantillas de post reutilizables            ← next
-ready        PG-50  Vista previa por red social                 mockup
+ready        PG-50  Vista previa por red social                 blocked by fran
 defining     PG-51  Métricas de engagement                      no criteria
 defining     PG-54  Reprogramar arrastrando en el calendario    blocked by PG-45
 idea         PG-52  Hilos de X en un solo post
@@ -233,6 +250,70 @@ D-12  Imágenes en Active Storage local                 fran    2026-10-02  supe
 D-9   Imágenes en S3 desde el principio                fran    2026-09-16  superseded by D-12
       Why: para no migrar cuando crezca el número de imágenes.
 ```
+
+## Preguntas (MT-29)
+
+Cuando un agente duda, pregunta con opciones y su recomendación (`mt ask`) en lugar de dejar un comentario. Bloquea por defecto: si la historia era suya, la suelta (vuelve a Lista) y está **bloqueada por fran** hasta que se contesta. Es derivado, como `blocked_by`: `mt next` la salta y `mt show`, `mt context` y `mt roadmap` lo dicen. Una pregunta con `--no-bloqueante` no suelta la historia ni la bloquea: el agente sigue con la opción recomendada salvo que fran diga otra cosa. Puede haber varias abiertas en la misma historia. Cada pregunta tiene un id (`Q12`).
+
+```text
+$ mt ask PG-50 "¿Qué redes enseñamos en la vista previa?" --context "Hoy hay tres conectadas." \
+    --option "Solo las marcadas" --option "Todas las conectadas" --option "Una a elegir" --recommend 2 --reversible
+Q12 asked on PG-50 by codex. PG-50 is released and waits for fran.
+
+Next:
+  mt next
+  mt show PG-50
+```
+
+- Sin `--reversible` la pregunta no dice nada de la reversibilidad: no se asume irreversible, y la UI solo enseña la etiqueta cuando está indicada.
+- Hacen falta al menos 2 `--option`. Con `--no-bloqueante`, `--recommend` es obligatorio (es lo que sigue el agente).
+
+```text
+$ mt ask PG-50 "¿Cabecera en el CSV?" --option "Sí" --option "No" --recommend 1 --no-bloqueante
+Q13 asked on PG-50 by codex. It does not block: carry on with option 1 (Sí) unless fran says otherwise.
+
+Next:
+  mt show PG-50
+  mt questions
+```
+
+```text
+$ mt answer PG-50 2 --note "El aviso nombra la variable" --decide
+Q12 answered on PG-50 by fran: 2 · Todas las conectadas. Recorded as D-15. PG-50 still waits for 1 blocking question.
+
+Next:
+  mt show PG-50
+  mt next
+  mt questions
+```
+
+Si la historia tiene varias abiertas, hay que elegir con `--question` (el id, `Q12` o `12`); con una sola, no hace falta. Con `--decide` queda además como decisión de la historia (`D-n`).
+
+```text
+$ mt answer PG-50 2
+Error: PG-50 has 2 open questions: Q12, Q13.
+Hint: choose one with --question <id>: mt answer PG-50 <option> --question 12
+```
+
+`mt questions` lista las preguntas abiertas **de todos los proyectos** (o de uno con `--project`), la que más lleva esperando primero, con sus opciones:
+
+```text
+$ mt questions
+2 open questions
+
+PG-50  Q12  ¿Qué redes enseñamos en la vista previa?    codex  40 min  blocking, reversible
+       1 Solo las marcadas
+       2 Todas las conectadas (recommended)
+       3 Una a elegir
+PG-50  Q13  ¿Cabecera en el CSV?                        codex  3 min   non-blocking, reversible
+       1 Sí (recommended)
+       2 No
+
+Next:
+  mt show PG-50
+```
+
+Errores: `Error: PG-50 Q12 is already answered.` (`ALREADY_ANSWERED`), `Error: PG-50 has no open questions.` y `Error: Answer must be the number of one of the 3 options.`
 
 ## Escribir
 

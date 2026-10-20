@@ -72,7 +72,7 @@
         <%= form.text_field :blocked_by, value: Array(story.blocked_by).join(", "), placeholder: "47, 45", "aria-label": "Bloqueada por, números de historia",
               class: "h-control-sm grow rounded-md border border-strong bg-surface-sunken px-2.5 font-mono text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
       <% else %>
-        <%= render "stories/related", stories: @project.stories.where(number: story.blocked_by).order(:number) %>
+        <%= render "stories/related", stories: @project.stories.where(number: story.blocked_by).order(:number), questions: story.blocking_questions %>
       <% end %>
     </div>
 

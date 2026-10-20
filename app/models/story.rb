@@ -28,6 +28,7 @@ class Story < ApplicationRecord
   belongs_to :claimed_by, class_name: "Actor", optional: true
   has_many :comments, -> { order(:created_at, :id) }, inverse_of: :story
   has_many :decisions, inverse_of: :story
+  has_many :questions, -> { oldest_first }, inverse_of: :story
 
   include NumberedInProject
   include Operations
@@ -74,8 +75,9 @@ class Story < ApplicationRecord
     super(value.presence&.strip)
   end
 
-  # Bloqueada no es un estado: se deriva de `blocked_by`.
-  def blocked?(done_numbers: nil) = pending_blockers(done_numbers: done_numbers).any?
+  # Bloqueada no es un estado: se deriva de `blocked_by` y de las preguntas
+  # abiertas que bloquean (MT-29).
+  def blocked?(done_numbers: nil) = pending_blockers(done_numbers: done_numbers).any? || blocking_questions.any?
 
   # Números de `blocked_by` que aún no están hechos.
   def pending_blockers(done_numbers: nil)
@@ -84,6 +86,15 @@ class Story < ApplicationRecord
     done_numbers ||= project.stories.done.where(number: blocked_by).pluck(:number)
     blocked_by - done_numbers
   end
+
+  # Preguntas abiertas que la bloquean: la historia espera a quien responde.
+  # Con `includes(:questions)` no consulta una vez por historia.
+  def blocking_questions = questions.select { it.open? && it.blocking? }
+
+  # Las abiertas, bloqueen o no, y las respondidas.
+  def open_questions_asked = questions.select(&:open?)
+
+  def answered_questions = questions.select(&:answered?)
 
   # Algún criterio (`- [ ]` / `- [x]`) en el cuerpo.
   def criteria? = body.to_s.match?(/^\s*[-*] \[[ xX]\]/)

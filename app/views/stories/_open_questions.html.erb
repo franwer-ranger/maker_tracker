@@ -1,0 +1,45 @@
+<%# Preguntas abiertas de una historia (5.10), arriba del todo. Responder con botones llega con la portada de Actividad: aquí cada opción enseña su comando. Local: story. %>
+<% questions = story.open_questions_asked %>
+<% blocking = questions.any?(&:blocking?) %>
+<section id="preguntas-abiertas" class="flex flex-col gap-3" aria-label="Preguntas abiertas">
+  <div class="flex items-baseline justify-between gap-4">
+    <div class="font-mono text-xs uppercase tracking-label <%= blocking ? "text-accent" : "text-text-muted" %>"><%= open_questions_label(questions) %></div>
+    <span class="font-mono text-xs text-text-subtle">mt show <%= story.reference %></span>
+  </div>
+  <% questions.each do |question| %>
+    <article id="pregunta-<%= question.id %>" class="overflow-clip rounded-xl border border-border">
+      <div class="flex flex-col gap-1.5 px-6 pb-6 pt-5 <%= question.blocking? ? "shadow-[inset_2px_0_0_var(--color-accent)]" : "shadow-[inset_2px_0_0_var(--color-border-strong)]" %>">
+        <div class="flex items-center justify-between gap-3">
+          <span class="flex items-center gap-2 font-mono text-xs <%= question.blocking? ? "text-accent" : "text-text-muted" %>">
+            <%= actor_dot question.actor %>
+            <%= question.actor.name %> pregunta · <%= question.blocking? ? "espera" : "hace" %> <%= short_time_ago(question.created_at) %><%= " · no bloquea" unless question.blocking? %>
+          </span>
+          <%= question_reversibility question %>
+        </div>
+        <h2 class="text-base font-medium"><%= question.title %></h2>
+        <% if question.context.present? %>
+          <p class="text-sm text-text-muted"><%= question.context %></p>
+        <% end %>
+        <ol class="flex flex-col gap-2 pt-3">
+          <% question.options.each_with_index do |text, index| %>
+            <% number = index + 1 %>
+            <% recommended = number == question.recommended %>
+            <li class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+              <span class="flex min-h-control items-center gap-2 rounded-md px-4 py-2 sm:w-[272px] sm:shrink-0 <%= recommended ? "bg-accent text-bg" : "border border-strong text-text" %>">
+                <span class="font-mono text-xs <%= recommended ? "text-bg" : "text-text-muted" %>"><%= number %></span>
+                <span class="text-sm font-medium"><%= text %></span>
+              </span>
+              <span class="flex gap-1.5 font-mono text-xs text-text-muted">
+                <%= question_answer_command story, question, number %>
+                <% if recommended %><span class="text-text">· recomendada</span><% end %>
+              </span>
+            </li>
+          <% end %>
+        </ol>
+        <% unless question.blocking? %>
+          <p class="pt-3 text-control leading-5 text-text-muted">No bloquea: <%= question.actor.name %> sigue con la opción <%= question.recommended %> salvo que contestes otra cosa.</p>
+        <% end %>
+      </div>
+    </article>
+  <% end %>
+</section>

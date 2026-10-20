@@ -12,3 +12,6 @@ en:
       missing_stories: "includes stories that don't exist in the project (%{numbers})"
       key_format: "must be 2 to 5 letters"
       name_format: "only takes lowercase letters, numbers, - and _"
+      too_few: "needs at least 2 options"
+      not_an_option: "must be the number of one of the %{count} options"
+      required_when_non_blocking: "is required when the question is non-blocking: the agent carries on with it"

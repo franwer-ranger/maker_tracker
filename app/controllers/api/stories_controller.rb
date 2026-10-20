@@ -190,7 +190,7 @@ class Api::StoriesController < Api::BaseController
 
   def story_breadcrumbs
     case story.state
-    when "ready" then [ "mt start #{story.reference}" ]
+    when "ready" then story.blocking_questions.any? ? [ "mt questions", "mt next" ] : [ "mt start #{story.reference}" ]
     when "in_progress" then story.claimed_by == Current.actor ? [ "mt done #{story.reference} --commit <sha>", "mt comment #{story.reference} \"…\"" ] : [ "mt next" ]
     when "idea", "defining" then [ "mt edit #{story.reference} --file <f.md>", "mt move #{story.reference} ready" ]
     else [ "mt next" ]

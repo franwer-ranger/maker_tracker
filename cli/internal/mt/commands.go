@@ -204,6 +204,13 @@ func init() {
 			}
 			return e.projectCall("GET", "/stories", q, nil)
 		}}, "state idea | defining | ready | in_progress | done", "milestone M2, its title or inbox", "label a label", "mine! only yours")
+	def(&command{name: "questions", group: readGroup, usage: "mt questions [--project PG]", maxArgs: 0,
+		summary:     "Open questions of all the projects, with how long they have been waiting",
+		description: "Across all the projects, not only the one in .mt, unless you pass --project.",
+		example:     "mt questions",
+		run: func(e *env) error {
+			return e.call("GET", "/api/questions", map[string]string{"project": e.opts.get("project")}, nil)
+		}})
 	def(&command{name: "decisions", group: readGroup, usage: "mt decisions", maxArgs: 0,
 		summary: "All decisions, newest first", example: "mt decisions",
 		run: func(e *env) error { return e.projectCall("GET", "/decisions", nil, nil) }})
@@ -234,6 +241,43 @@ func init() {
 			}
 			return e.storyCall("POST", e.arg(0), "/comments", map[string]any{"body": body})
 		}})
+	def(&command{name: "ask", group: workGroup, usage: "mt ask <story> \"…\" --option \"…\" --option \"…\" [--recommend n] [--context \"…\"] [--reversible] [--no-bloqueante]", minArgs: 2, maxArgs: 2,
+		summary:     "Asks a question with its options and your recommendation, instead of a comment",
+		description: "It blocks by default: if the story was yours it lets it go, and nobody picks it up until the question is answered. With --no-bloqueante it does not block: you carry on with the recommended option (--recommend is then required) unless it is answered otherwise. Without --reversible the question does not say whether it can be undone.",
+		example:     "mt ask PG-49 \"What if a variable has no value?\" --option \"Drop it\" --option \"Warn first\" --recommend 2 --reversible",
+		run: func(e *env) error {
+			body := map[string]any{"title": e.arg(1), "options": e.opts.all("option")}
+			if e.opts.has("recommend") {
+				n, err := strconv.Atoi(e.opts.get("recommend"))
+				if err != nil {
+					return usageErrorf("--recommend must be a number.")
+				}
+				body["recommended"] = n
+			}
+			if e.opts.has("reversible") {
+				body["reversible"] = true
+			}
+			if e.opts.has("no-bloqueante") {
+				body["blocking"] = false
+			}
+			return e.storyCall("POST", e.arg(0), "/questions", optional(body, e, "context"))
+		}}, "option* an option (repeat it, at least 2)", "recommend the number of the recommended option (from 1)", "context why you ask (markdown)",
+		"reversible! the decision can be undone", "no-bloqueante! it does not block: you carry on with the recommended option")
+	def(&command{name: "answer", group: workGroup, usage: "mt answer <story> <option> [--note \"…\"] [--question id] [--decide]", minArgs: 2, maxArgs: 2,
+		summary:     "Answers an open question with the number of an option",
+		description: "If the story has several open questions, choose one with --question (the id from mt show, Q12 or 12). With --decide it is also recorded as a decision (D-n).",
+		example:     "mt answer PG-49 2 --note \"The warning names the variable\" --decide",
+		run: func(e *env) error {
+			n, err := strconv.Atoi(e.arg(1))
+			if err != nil {
+				return usageHint("mt answer PG-49 2 (the number of the option, from 1).", "the option must be a number.")
+			}
+			body := optional(map[string]any{"option": n}, e, "note", "question")
+			if e.opts.has("decide") {
+				body["decide"] = true
+			}
+			return e.storyCall("POST", e.arg(0), "/answer", body)
+		}}, "note why (markdown)", "question the question's id, if there are several open (Q12 or 12)", "decide! also record it as a decision")
 	def(&command{name: "decide", group: workGroup, usage: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", minArgs: 1, maxArgs: 1,
 		summary: "Records a decision and its why", example: "mt decide \"Templates as JSON\" --why \"No need for another table\" --story PG-49",
 		run: func(e *env) error {

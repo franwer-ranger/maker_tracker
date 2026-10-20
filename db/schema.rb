@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -91,6 +91,27 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
     t.index ["slug"], name: "index_projects_on_slug", unique: true
   end
 
+  create_table "questions", force: :cascade do |t|
+    t.integer "story_id", null: false
+    t.integer "actor_id", null: false
+    t.string "title", null: false
+    t.text "context", default: "", null: false
+    t.json "options", default: [], null: false
+    t.integer "recommended"
+    t.boolean "reversible"
+    t.boolean "blocking", default: true, null: false
+    t.integer "answer"
+    t.text "answer_note"
+    t.integer "answered_by_id"
+    t.datetime "answered_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_questions_on_actor_id"
+    t.index ["answered_at"], name: "index_questions_on_answered_at"
+    t.index ["answered_by_id"], name: "index_questions_on_answered_by_id"
+    t.index ["story_id"], name: "index_questions_on_story_id"
+  end
+
   create_table "stories", force: :cascade do |t|
     t.integer "project_id", null: false
     t.integer "milestone_id"
@@ -122,6 +143,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_120000) do
   add_foreign_key "events", "projects"
   add_foreign_key "events", "stories"
   add_foreign_key "milestones", "projects"
+  add_foreign_key "questions", "actors"
+  add_foreign_key "questions", "actors", column: "answered_by_id"
+  add_foreign_key "questions", "stories"
   add_foreign_key "stories", "actors", column: "claimed_by_id"
   add_foreign_key "stories", "milestones"
   add_foreign_key "stories", "projects"
