@@ -9,6 +9,7 @@ class ActivityController < ApplicationController
     @cards = Activity.for_you
     @activity = Activity.new
     @in_progress = @activity.in_progress
+    @qa = @activity.qa_pending
     @recent = @activity.recent_events if @cards.empty?
     @away = visit_home
   end

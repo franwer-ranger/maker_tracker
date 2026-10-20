@@ -39,7 +39,23 @@ class Api::Markdown::Story
   end
 
   def read_only
-    [ READ_ONLY_MARK, related, questions, comments, history ].compact.join("\n\n")
+    [ READ_ONLY_MARK, related, qa, questions, comments, history ].compact.join("\n\n")
+  end
+
+  # Solo si espera QA o ya la tuvo (MT-32). Lo que se prueba son los criterios de aceptación.
+  #   ## QA · pending
+  #   Test it at https://testing.postgram.app. mt qa PG-49 ok | mt qa PG-49 fail --note "…"
+  def qa
+    return unless @story.qa
+
+    url = @story.project.qa_url
+    case @story.qa
+    when "pending"
+      where = url ? "Test it at #{url}." : "There is no \"Dónde se prueba\" line in the brief to say where."
+      "## QA · pending\n\n#{where} #{@story.reference} is done and does not block anything. Waiting for #{Actor.human.name}: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
+    else
+      "## QA · #{@story.qa}"
+    end
   end
 
   # "Blocked by PG-47 Borradores automáticos (done): no longer blocking."

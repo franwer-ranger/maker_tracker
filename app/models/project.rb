@@ -15,6 +15,10 @@ class Project < ApplicationRecord
 
     ## Fuera de alcance
 
+    ## Dónde se prueba
+
+    Testing o producción, con su URL, en una línea: aquí se prueba lo que los agentes dan por hecho.
+
     ## Glosario
   MARKDOWN
 
@@ -82,6 +86,16 @@ class Project < ApplicationRecord
         record_event!("decision.recorded", actor: actor, story: decision.story, data: { number: decision.number })
       end
     end
+  end
+
+  # Dónde se prueba (MT-32): la URL de la primera línea bajo «## Dónde se prueba»
+  # del brief. Nil si no hay sección o la línea no trae ninguna.
+  def qa_url
+    section = brief.to_s[/^## Dónde se prueba\s*$(.*?)(?=^## |\z)/m, 1].to_s
+    url = section[%r{https?://[^\s)>\]]+}]&.sub(/[.,;:]+\z/, "")
+    url if url && URI.parse(url).host.present?
+  rescue URI::InvalidURIError
+    nil
   end
 
   def last_editor

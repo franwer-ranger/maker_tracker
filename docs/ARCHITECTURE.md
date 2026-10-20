@@ -50,6 +50,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 - Los agentes escriben **contenido**: `body`, `brief`, `goal`, comentarios, decisiones.
 - Maker Tracker es dueño de los **hechos**: cada transición, reclamación, reordenación, commit o PR enlazado genera un `Event` con su actor y fecha. Los eventos no se editan ni se borran, y no hay endpoint que lo permita.
 - Preguntar y responder también son hechos: `question.asked` y `question.answered` (con actor y fecha; el segundo guarda la opción (o el texto, si fue libre) y, con `--decide`, el `D-n`). Si preguntar suelta la historia, es además un `story.state_changed` con `released`.
+- La QA también: `qa.passed` y `qa.failed` (actor, fecha, nota; el segundo guarda el número de la historia que crea). Pasar a Hecha escribe `qa: pending` en el evento `story.state_changed` y en `stories.qa` (`pending | passed | failed`; nulo en las hechas antes de MT-32, que no entran). Al salir de Hecha `qa` vuelve a nulo: lo que pasó con la QA solo queda en los eventos.
 - Los campos derivados (fecha de inicio y fin de una historia, PR actual, coste) se calculan a partir de los eventos y los runs, no los escribe nadie a mano.
 
 ### Roadmap como datos (propuesta)
@@ -105,6 +106,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 | `mt decide "…" --why "…"` | Registra una decisión |
 | `mt ask <n> "…" --option … --recommend 2` | Pregunta con opciones y recomendación; bloquea la historia y la suelta, salvo con `--no-bloqueante` |
 | `mt answer <n> 2 [--question id] [--decide]` o `mt answer <n> --text "…"` (respuesta libre; solo una persona; un agente recibe `FORBIDDEN`, D-52) · `mt questions` | Responde una pregunta (y, si quiere, la registra como decisión) · lista las abiertas de todos los proyectos |
+| `mt qa` · `mt qa <n> ok [--note]` · `mt qa <n> fail --note "…"` (solo una persona; un agente recibe `FORBIDDEN`) | Lista la QA pendiente de todos los proyectos · la da por probada · falla: crea una historia en Definiendo enlazada |
 | `mt create` · `mt edit` · `mt move` · `mt reorder` · `mt brief` | Escriben producto (crear y editar historias con `--file`, cambiar estado, ordenar con motivo, editar el brief) |
 
 **Skill + hook SessionStart**: la skill enseña al agente a usar `mt` y el hook inyecta `mt context` al empezar cada sesión, así cada conversación arranca sabiendo la filosofía del proyecto. `mt init PG --claude` los deja en el repo del proyecto.
@@ -161,6 +163,12 @@ Reglas:
 `/` es Actividad, con todos los proyectos. No tiene tabla: `Activity` (`app/models/activity.rb`) lo calcula al consultar y devuelve tarjetas (`Activity::Card`) ordenadas por desde cuándo esperan. «Te toca» junta tres tipos: preguntas abiertas de agentes (esperan desde que se hicieron), historias En Definiendo con preguntas abiertas en el cuerpo o paradas, es decir, 3 días sin cambios (esperan desde su último cambio: `updated_at` o su último evento), y proyectos sin ninguna historia Lista y desbloqueada en sus hitos abiertos (esperan desde su último evento). El contador de la barra es el número de tarjetas, y se memoiza por petición en `Current.activity_for_you`. Cada tipo es un partial en `app/views/activity/` (`card.partial`): los bloques de MT-31, MT-32 y MT-33 añaden su método a `Activity` y su partial. «En marcha» son las historias En curso de todos los proyectos.
 
 Las preguntas se responden desde la UI con `POST /p/:slug/stories/:n/questions/:id/answer` (`Questions::AnswersController`): `option` (botón), `note`, `decide=1` o `free=1` con `note` (respuesta libre). Responde el actor humano (D-52) y vuelve a la pantalla de origen; la página refresca con morph y conserva el scroll.
+
+## QA pendiente (MT-32)
+
+Es derivado de Hecha, no un estado y no bloquea nada: `Story::Qa` (`app/models/story/qa.rb`) y la columna `stories.qa`. `move_to!(:done)` la deja en `pending` (y salir de Hecha la vuelve a nulo; lo que pasó solo queda en los eventos); las historias hechas antes tienen `qa` nulo y no entran. `qa_pass!` y `qa_fail!` (solo actor humano) cambian `qa` y registran `qa.passed` / `qa.failed`; `qa_fail!` crea además, en la misma transacción, una historia en Definiendo en el mismo hito (`create_story!` con `qa_failed_from` en su evento) y su número va en `qa.failed`. Dónde se prueba: `Project#qa_url`, la primera URL bajo `## Dónde se prueba` del brief (sin configuración).
+
+En Actividad, `Activity#qa_pending` (tres consultas para todos los proyectos: historias con proyecto e hito, y sus eventos de Hecha; no entra en `for_you`, así que no cuenta en el contador ni añade consultas al resto de pantallas) pinta el grupo «Por probar» al final de «Te toca» (`activity/_qa_group`, `_qa_card`). La UI usa `POST /p/:slug/stories/:n/qa` (`Stories::QaController`, `result=ok|fail`, `note`) y la API `GET /api/qa` y `POST /api/projects/:key/stories/:n/qa`. La Historia enseña el bloque «QA pendiente» (`stories/_qa`) y la propiedad «QA».
 
 ## Mientras no mirabas (MT-31)
 

@@ -22,6 +22,12 @@ class Activity
     def question? = kind == :question
   end
 
+  # Una historia Hecha que Fran aún no ha probado (MT-32). `done_at` y `done_by`
+  # salen de su evento de Hecha; `url`, de la línea «Dónde se prueba» del brief.
+  QaCard = Data.define(:story, :project, :done_at, :done_by, :commits, :url, :criteria) do
+    def host = (URI.parse(url).host if url)
+  end
+
   # Memoizado por petición: la barra lateral y la pantalla lo piden a la vez.
   def self.for_you
     Current.activity_for_you ||= new.for_you
@@ -30,6 +36,22 @@ class Activity
   def for_you
     cards = question_cards + definition_cards + no_work_cards
     cards.each_with_index.sort_by { |card, index| [ card.since, index ] }.map(&:first)
+  end
+
+  # QA pendiente de todos los proyectos (MT-32): no cuenta en «Te toca» ni en el
+  # contador. Las que llevan más tiempo hechas, primero. Tres consultas en total
+  # (historias con su proyecto, y sus eventos de Hecha con su actor), no una por proyecto.
+  def qa_pending
+    stories = Story.qa_pending.includes(:project, :milestone).to_a
+    return [] if stories.empty?
+
+    done = Event.where(story_id: stories.map(&:id), action: "story.state_changed").includes(:actor).order(:occurred_at, :id)
+      .select { it.data["to"] == "done" }.index_by(&:story_id) # el último gana
+    stories.map do |story|
+      event = done[story.id]
+      QaCard.new(story: story, project: story.project, done_at: event&.occurred_at || story.updated_at, done_by: event&.actor,
+        commits: Array(event&.data&.dig("commits")).size, url: story.project.qa_url, criteria: story.criteria_list)
+    end.sort_by { [ it.done_at, it.story.id ] }
   end
 
   # Historias En curso de todos los proyectos, la que lleva más tiempo primero.

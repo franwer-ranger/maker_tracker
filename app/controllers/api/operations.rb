@@ -57,6 +57,13 @@ module Api::Operations
     { method: "GET", path: "/api/questions", params: { project: "a project key (optional)" }, command: "mt questions [--project PG]",
       description: "Open questions of all the projects (or one), the one waiting the longest first, with their options" },
 
+    # QA pendiente (MT-32): lo hecho que la persona aún no ha probado. Solo una persona prueba.
+    { method: "GET", path: "/api/qa", params: { project: "a project key (optional)" }, command: "mt qa [--project PG]",
+      description: "Stories done and not yet tested by the person, in all the projects (or one): the oldest first, with their acceptance criteria and where to test them (the \"Dónde se prueba\" line of the brief)" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/qa", params: { result: "ok | fail", note: "markdown; required with fail, optional with ok" },
+      command: "mt qa PG-49 ok [--note \"…\"] | mt qa PG-49 fail --note \"…\"",
+      description: "Passes the QA of a story, or fails it: fail creates a story in defining in the same milestone and links it in the event. FORBIDDEN for agents; NOT_PENDING if the story does not wait for QA" },
+
     # Definir producto (#018). Nada se borra; cada cambio deja su evento.
     { method: "POST", path: "/api/projects/:key/stories", command: "mt create \"Title\" [--milestone M2] [--state …] [--number 14] [--file f.md]",
       params: { markdown: "the story in the mt show format (or the separate fields)", title: "", milestone: "M2, its title or inbox", state: "idea | defining | ready",

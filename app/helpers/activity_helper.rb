@@ -113,6 +113,18 @@ module ActivityHelper
 
   def decided_meta(event) = [ event.story&.reference || event.project.key, event.actor.name, away_time(event.occurred_at) ].join(" · ")
 
+  # QA pendiente (MT-32) -------------------------------------------------------
+
+  # Plegada: "hecha 06:22 · 3 criterios".
+  def qa_collapsed_meta(card)
+    [ "hecha #{away_time(card.done_at)}", pluralize_es(card.criteria.size, "criterio") ].join(" · ")
+  end
+
+  # Desplegada: "Hecha ayer 18:40 · codex · QA pendiente" (en móvil, sin lo último).
+  def qa_card_meta(card)
+    [ "Hecha #{away_time(card.done_at)}", card.done_by&.name, ("#{card.commits} #{'commit'.pluralize(card.commits)}" if card.commits.positive?), "QA pendiente" ].compact.join(" · ")
+  end
+
   # Pestaña de la barra inferior del móvil (5.9 · Móvil): icono, etiqueta y, si hay, el contador.
   def tab_item(label, href, icon:, active:, count: nil)
     link_to href, class: class_names("flex w-20 shrink-0 flex-col items-center gap-1 rounded-md py-1.5 text-label leading-[14px] #{ComponentsHelper::FOCUS_RING}",

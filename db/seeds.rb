@@ -32,6 +32,10 @@ postgram.update!(name: "Postgram", brief: <<~MARKDOWN)
 
     Agencias y gestión de clientes. Generar contenido con IA por el usuario.
 
+    ## Dónde se prueba
+
+    Testing: https://testing.postgram.app
+
     ## Glosario
 
     Post: lo que escribe el maker, una vez. Publicación: cada copia de un post en una red.
@@ -128,9 +132,16 @@ end
 # M2 · en el orden de 5.1 Tablero y 5.3 Roadmap: 8 abiertas y 4 hechas.
 # Las hechas primero: #49 está bloqueada por #47.
 m2_done = [
-  seed_story(postgram, 47, "Borradores automáticos", milestone: m2, state: :done, labels: %w[editor]),
-  seed_story(postgram, 43, "Subir varias imágenes a la vez", milestone: m2, state: :done, labels: %w[editor]),
-  seed_story(postgram, 42, "Conectar Instagram", milestone: m2, state: :done, labels: %w[redes]),
+  seed_story(postgram, 47, "Borradores automáticos", milestone: m2, state: :done, labels: %w[editor],
+             body: story_body(historia: "Como maker, quiero que mi post se guarde solo, para no perder lo que escribo.",
+                              criterios: [ "Mientras escribes, el post se guarda solo cada pocos segundos.", "Si cierras la pestaña y vuelves, el borrador sigue ahí.",
+                                           "Los borradores salen en la lista de posts con la etiqueta «Borrador»." ])),
+  seed_story(postgram, 43, "Subir varias imágenes a la vez", milestone: m2, state: :done, labels: %w[editor],
+             body: story_body(historia: "Como maker, quiero subir varias imágenes de una vez, para no repetir el gesto.",
+                              criterios: [ "Puedo elegir varias imágenes en un solo selector.", "Cada imagen sale en el post en el orden en que la elegí." ])),
+  seed_story(postgram, 42, "Conectar Instagram", milestone: m2, state: :done, labels: %w[redes],
+             body: story_body(historia: "Como maker, quiero conectar mi cuenta de Instagram, para publicar allí.",
+                              criterios: [ "Desde Ajustes puedo conectar y desconectar Instagram.", "Un post publicado sale en mi perfil de Instagram." ])),
   seed_story(postgram, 41, "Conectar LinkedIn", milestone: m2, state: :done, labels: %w[redes])
 ]
 m2_stories = [
@@ -278,6 +289,16 @@ q50 = seed_question(s50, "¿Qué redes enseñamos en la vista previa?", actor: c
                     reversible: true, recommended: 2, options: [ "Solo las que el post tiene marcadas", "Todas las conectadas", "Una a elegir cada vez" ])
 seed_event(postgram, "question.asked", story: s50, actor: codex, at: q50.created_at,
            data: { question_id: q50.id, title: q50.title, blocking: true, recommended: 2 })
+
+# QA pendiente (5.9, 5.12): tres historias hechas hace poco que Fran aún no ha probado.
+# Las demás hechas son anteriores a la funcionalidad y no entran. Una que ya se probó
+# en desarrollo no vuelve a quedar pendiente.
+{ 47 => [ codex, 1.day.ago.change(hour: 18, min: 40), %w[4f3e2a1 9b1c7d0 c02e5f8] ], 43 => [ claude, today + 6.hours + 22.minutes, %w[a7d41e3 5e90b2c] ],
+  42 => [ codex, today + 3.hours + 5.minutes, %w[d1f8a64] ] }.each do |number, (actor, at, commits)|
+  story = postgram.stories.find_by!(number: number)
+  seed_event(postgram, "story.state_changed", story: story, actor: actor, at: not_future(at), data: { from: "in_progress", to: "done", commits: commits, qa: "pending" })
+  story.update_columns(qa: "pending") if story.qa.nil?
+end
 
 # Brief editado hace 3 días (5.5).
 seed_event(postgram, "brief.edited", actor: fran, at: 3.days.ago)

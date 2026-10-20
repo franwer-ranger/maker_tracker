@@ -1,4 +1,4 @@
-<%# «Te toca» (5.9): lo que solo puede hacer Fran, lo que más espera primero. Cada tarjeta se pinta con su partial (card.partial). Local: cards. %>
+<%# «Te toca» (5.9): lo que solo puede hacer Fran, lo que más espera primero. Cada tarjeta se pinta con su partial (card.partial). Local: cards, qa (QA pendiente, opcional: va al final y no cuenta). %>
 <section id="te-toca" class="-mx-4 flex flex-col gap-4 md:mx-0" aria-label="Te toca">
   <div class="flex items-baseline justify-between gap-4 px-4 md:px-0">
     <div class="font-mono text-xs uppercase tracking-label text-accent">Te toca · <%= cards.size %></div>
@@ -8,5 +8,6 @@
     <% cards.each do |card| %>
       <%= render card.partial, card: card %>
     <% end %>
+    <%= render "activity/qa_group", qa: qa if local_assigns[:qa].present? %>
   </div>
 </section>

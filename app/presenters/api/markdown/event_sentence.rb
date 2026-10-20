@@ -22,7 +22,7 @@ class Api::Markdown::EventSentence
   def sentence
     case @event.action
     when "story.created" then "created as #{state_words(@data['state'] || 'idea')}#{' (proposed in a daily)' if @data['daily']}"
-    when "story.state_changed" then "moved to #{state_words(@data['to'])}#{work}"
+    when "story.state_changed" then "moved to #{state_words(@data['to'])}#{work}#{' · QA pending' if @data['qa'] == 'pending'}"
     when "story.edited" then "edited #{Array(@data['fields']).join(', ')}"
     when "story.claimed" then "claimed it"
     when "story.released" then @data["from"] ? "released it from #{@data['from']}" : "released it"
@@ -31,6 +31,8 @@ class Api::Markdown::EventSentence
     when "comment.added" then "commented"
     when "question.asked" then "asked: #{@data['title']}#{' (non-blocking)' if @data['blocking'] == false}"
     when "question.answered" then "answered #{@data['asked_by']}: #{@data['option'] ? "#{@data['option']} " : ''}#{@data['answer']}#{", recorded as D-#{@data['decision']}" if @data['decision']}"
+    when "qa.passed" then "passed QA#{": #{@data['note']}" if @data['note']}"
+    when "qa.failed" then "failed QA: #{@data['note']} (created #{@event.project.key}-#{@data['story']})"
     when "decision.recorded" then "recorded D-#{@data['number']}"
     when "project.created" then "created the project"
     when "brief.edited" then "edited the brief"

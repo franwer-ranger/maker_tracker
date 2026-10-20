@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_21_213100) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_231000) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -128,12 +128,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_213100) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "version", default: 1, null: false
+    t.string "qa"
     t.index ["claimed_by_id"], name: "index_stories_on_claimed_by_id"
     t.index ["milestone_id"], name: "index_stories_on_milestone_id"
     t.index ["project_id", "milestone_id", "position"], name: "index_stories_on_project_id_and_milestone_id_and_position", unique: true
     t.index ["project_id", "number"], name: "index_stories_on_project_id_and_number", unique: true
     t.index ["project_id", "state"], name: "index_stories_on_project_id_and_state"
     t.index ["project_id"], name: "index_stories_on_project_id"
+    t.index ["qa"], name: "index_stories_on_qa", where: "qa IS NOT NULL"
   end
 
   create_table "visits", force: :cascade do |t|

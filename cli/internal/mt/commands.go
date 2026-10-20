@@ -225,6 +225,21 @@ func init() {
 		run: func(e *env) error {
 			return e.call("GET", "/api/questions", map[string]string{"project": e.opts.get("project")}, nil)
 		}})
+	def(&command{name: "qa", group: workGroup, usage: "mt qa [<story> ok|fail] [--note \"…\"] [--project PG]", maxArgs: 2,
+		summary:     "What is done and not tested yet (no arguments), or passes/fails a story's QA",
+		description: "Without arguments it lists, across all the projects (or one with --project), the stories done and still waiting for the person to test them, with their criteria and where to test (the \"Dónde se prueba\" line of the brief). Only a person passes or fails: ok closes it; fail needs --note and creates a story in defining in the same milestone, linked to this one. It never blocks or reopens the story.",
+		example:     "mt qa PG-49 fail --note \"The variable is not replaced in the preview\"",
+		run: func(e *env) error {
+			if e.arg(0) == "" {
+				return e.call("GET", "/api/qa", map[string]string{"project": e.opts.get("project")}, nil)
+			}
+			result := e.arg(1)
+			if result != "ok" && result != "fail" {
+				return usageHint("mt qa PG-49 ok [--note \"…\"] or mt qa PG-49 fail --note \"what fails\".", "say ok or fail after the story.")
+			}
+			body := optional(map[string]any{"result": result}, e, "note")
+			return e.storyCall("POST", e.arg(0), "/qa", body)
+		}}, "note what you saw (required with fail)")
 	def(&command{name: "decisions", group: readGroup, usage: "mt decisions", maxArgs: 0,
 		summary: "All decisions, newest first", example: "mt decisions",
 		run: func(e *env) error { return e.projectCall("GET", "/decisions", nil, nil) }})

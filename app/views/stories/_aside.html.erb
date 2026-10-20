@@ -76,6 +76,13 @@
       <% end %>
     </div>
 
+    <% if !form && story.qa %>
+      <div class="flex min-h-8 items-center gap-3">
+        <span class="w-28 shrink-0 text-control text-text-muted">QA</span>
+        <%= qa_status story %>
+      </div>
+    <% end %>
+
     <div class="flex min-h-8 items-center gap-3">
       <span class="w-28 shrink-0 text-control text-text-muted">Bloquea</span>
       <%= render "stories/related", stories: story.blocking.order(:number) %>
