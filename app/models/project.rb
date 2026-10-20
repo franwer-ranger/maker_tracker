@@ -8,6 +8,10 @@ class Project < ApplicationRecord
 
     ## Principios
 
+    ## Autonomía
+
+    Los agentes pueden crear ideas y historias en Definiendo, escribir el cuerpo de las historias, comentar y reordenar dentro de un hito con motivo. Preguntan antes de marcar una historia como Lista, tocar el brief, crear o reordenar hitos, o cerrar un hito.
+
     ## Fuera de alcance
 
     ## Glosario

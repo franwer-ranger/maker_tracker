@@ -26,7 +26,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 
 | Entidad | Para qué | Campos principales |
 |---|---|---|
-| **Project** | Un producto | `name`, `slug`, `key` (clave corta en mayúsculas para citar historias: `MT`), `brief` (md: visión, principios, fuera de alcance, glosario), `settings` (json: integraciones activas, p. ej. `wflow: true`) |
+| **Project** | Un producto | `name`, `slug`, `key` (clave corta en mayúsculas para citar historias: `MT`), `brief` (md: visión, principios, autonomía de los agentes, fuera de alcance, glosario), `settings` (json: integraciones activas, p. ej. `wflow: true`) |
 | **Milestone** (hito) | Un paso del roadmap | `project`, `title`, `goal` (md: objetivo y por qué), `position`, `closed_at` |
 | **Story** (historia) | Algo a construir | `project`, `milestone` (nulo = bandeja de ideas), `number` (por proyecto; se cita `MT-45`), `title`, `body` (md con la plantilla de `PRODUCT.md`), `properties` (json: `mockup`, `labels`, `blocked_by`), `state`, `position` (dentro del hito), `claimed_by` (actor), `claimed_at` |
 | **Decision** | Qué decidimos y por qué. Solo se añade | `project`, `story` (opcional), `number` (D-13), `title`, `body` (md: por qué), `actor` |

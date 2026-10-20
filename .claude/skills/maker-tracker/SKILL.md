@@ -38,6 +38,14 @@ A story is done whole or not closed. If something is left out when you finish, s
 
 Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
 
+## Autonomy
+
+The brief's `## Autonomía` section (or its equivalent in the project's language) says what agents may decide on their own. Read it before writing the product:
+
+- **What it allows, do it.** If it is a choice someone would want to know about later, record it with `mt decide … --story PG-49`.
+- **Everything else, ask** in the story (`mt comment`) and wait for the answer, even if `mt` would let you do it.
+- If the brief has no such section, ask before marking a story as ready, editing the brief, or creating, reordering or closing milestones.
+
 ## Writing the product
 
 Agents also write the backlog, directly and on the record (every change is logged in your name):
@@ -57,7 +65,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 2. **Read the repo**: `README`, `AGENTS.md` / `CLAUDE.md`, `docs/` (product, roadmap, decisions, ADRs, backlog) and recent `git log`. Add what the person tells you.
 3. **Propose, in the chat and before writing anything** (no `mt` command that writes yet):
    - the **key** (2 to 5 letters, it names every story: `PG-49`) and the **name**;
-   - the **brief** in markdown, with its four sections: `## Visión` · `## Principios` · `## Fuera de alcance` · `## Glosario` (headings in the project's language; these are Maker Tracker's template in Spanish). Short: it is read by every agent at the start of every session;
+   - the **brief** in markdown, with its five sections: `## Visión` · `## Principios` · `## Autonomía` · `## Fuera de alcance` · `## Glosario` (headings in the project's language; these are Maker Tracker's template in Spanish). Short: it is read by every agent at the start of every session;
    - the **milestones** in order, each with a one-line goal;
    - the **decisions** already taken, each with its why (one sentence). Only those that someone would want to know later.
 
