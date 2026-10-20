@@ -9,7 +9,7 @@
           <span class="font-mono text-xs text-text-muted"><%= question.actor.name %> preguntó · <%= relative_day(question.created_at, time_of_day: true) %></span>
           <%= question_reversibility question %>
         </div>
-        <h3 class="text-[15px] font-medium leading-[22px]"><%= question.title %></h3>
+        <h3 class="text-base font-medium"><%= question.title %></h3>
         <div class="flex flex-wrap items-center gap-3 pt-1">
           <span class="flex h-8 items-center gap-2 rounded-md bg-surface px-3 shadow-[inset_0_0_0_1px_var(--color-border-strong)]">
             <%= icon "check", size: 16, class: "text-state-done" %>

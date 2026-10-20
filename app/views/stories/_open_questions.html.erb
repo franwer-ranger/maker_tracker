@@ -25,7 +25,7 @@
             <% number = index + 1 %>
             <% recommended = number == question.recommended %>
             <li class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
-              <span class="flex min-h-control items-center gap-2 rounded-md px-4 py-2 sm:w-[272px] sm:shrink-0 <%= recommended ? "bg-accent text-bg" : "border border-strong text-text" %>">
+              <span class="flex min-h-control items-center gap-2 rounded-md px-4 py-2 sm:w-72 sm:shrink-0 <%= recommended ? "bg-accent text-bg" : "border border-strong text-text" %>">
                 <span class="font-mono text-xs <%= recommended ? "text-bg" : "text-text-muted" %>"><%= number %></span>
                 <span class="text-sm font-medium"><%= text %></span>
               </span>

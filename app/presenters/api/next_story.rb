@@ -18,7 +18,7 @@ class Api::NextStory
     return unless story
 
     empty, skipped = [], []
-    @project.milestones.open.includes(stories: %i[claimed_by project questions]).each do |milestone|
+    @project.milestones.open.includes(stories: [ :claimed_by, :project, { questions: :actor } ]).each do |milestone|
       before = milestone.stories.to_a
       before = before.take_while { it != story } if milestone == story.milestone
       blocked = before.select { it.ready? && it.blocked?(done_numbers: done_numbers) }
@@ -43,6 +43,13 @@ class Api::NextStory
     if open.empty?
       return Api::Error.new("NOTHING_READY", "no open milestone.", status: :not_found,
         hint: "see the closed ones with mt roadmap --closed, or ask #{human}.")
+    end
+
+    asking = @project.stories.ready.where(milestone: open).includes(:questions).select { it.blocking_questions.any? }
+    ready_count = @project.stories.ready.where(milestone: open).count
+    if asking.any? && asking.size == ready_count
+      return Api::Error.new("NOTHING_READY", "no ready, unblocked story in #{or_sentence(open.map(&:code))}.", status: :not_found,
+        hint: "#{plural(asking.size, 'ready story', 'ready stories')} #{asking.one? ? 'is' : 'are'} waiting for #{human} to answer (#{asking.map(&:reference).join(', ')}). See the questions with mt questions.")
     end
 
     defining = @project.stories.defining.where(milestone: open).sort_by { [ it.milestone.position, it.position ] }

@@ -102,7 +102,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 | `mt comment <n> "…"` | Comenta en la historia |
 | `mt decide "…" --why "…"` | Registra una decisión |
 | `mt ask <n> "…" --option … --recommend 2` | Pregunta con opciones y recomendación; bloquea la historia y la suelta, salvo con `--no-bloqueante` |
-| `mt answer <n> 2 [--question id] [--decide]` · `mt questions` | Responde una pregunta (y, si quiere, la registra como decisión) · lista las abiertas de todos los proyectos |
+| `mt answer <n> 2 [--question id] [--decide]` (solo una persona; un agente recibe `FORBIDDEN`, D-52) · `mt questions` | Responde una pregunta (y, si quiere, la registra como decisión) · lista las abiertas de todos los proyectos |
 | `mt create` · `mt edit` · `mt move` · `mt reorder` · `mt brief` | Escriben producto (crear y editar historias con `--file`, cambiar estado, ordenar con motivo, editar el brief) |
 
 **Skill + hook SessionStart**: la skill enseña al agente a usar `mt` y el hook inyecta `mt context` al empezar cada sesión, así cada conversación arranca sabiendo la filosofía del proyecto. `mt init PG --claude` los deja en el repo del proyecto.

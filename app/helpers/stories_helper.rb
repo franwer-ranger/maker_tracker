@@ -48,7 +48,7 @@ module StoriesHelper
   def state_explanation(story, next_story)
     if (questions = story.blocking_questions).any?
       askers = y_sentence(questions.map { it.actor.name }.uniq)
-      return "Bloqueada por ti: #{askers} #{questions.one? ? 'preguntó' : 'preguntaron'}#{' y la soltó' if story.ready?}. Ningún agente la cogerá hasta que contestes."
+      return "Bloqueada por ti: #{askers} #{questions.one? ? 'preguntó' : 'preguntaron'}#{' y la soltó' if released_for_question?(story, questions)}. Ningún agente la cogerá hasta que contestes."
     end
 
     case story.state
@@ -70,6 +70,12 @@ module StoriesHelper
       "La está construyendo #{who}#{since}."
     when "done" then "Hecha."
     end
+  end
+
+  # ¿La soltó de verdad? Hay un evento released poco antes de la primera pregunta o después.
+  def released_for_question?(story, questions)
+    since = questions.map(&:created_at).min - 1.minute
+    story.history.any? { it.data["released"] && it.occurred_at >= since }
   end
 
   # "Respondiste a codex: " si lo último que pasó en la historia fue una respuesta a una pregunta.
@@ -128,6 +134,6 @@ module StoriesHelper
   # Historias Listas y no bloqueadas de los hitos abiertos, en el orden del roadmap.
   def ready_queue(project)
     done = project.stories.done.pluck(:number)
-    project.milestones.open.flat_map { it.stories.ready.ordered.to_a }.reject { it.blocked?(done_numbers: done) }
+    project.milestones.open.flat_map { it.stories.ready.ordered.includes(:questions).to_a }.reject { it.blocked?(done_numbers: done) }
   end
 end

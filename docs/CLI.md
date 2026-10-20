@@ -287,7 +287,7 @@ Next:
   mt questions
 ```
 
-Si la historia tiene varias abiertas, hay que elegir con `--question` (el id, `Q12` o `12`); con una sola, no hace falta. Con `--decide` queda además como decisión de la historia (`D-n`).
+**Solo una persona responde** (D-52): un agente que ejecuta `mt answer` recibe `Error: only a person answers questions, and codex is an agent.` (`FORBIDDEN`, no cambia nada). Un agente deja su recomendación en `mt ask`. Si la historia tiene varias abiertas, hay que elegir con `--question` (el id, `Q12` o `12`); con una sola, no hace falta. Con `--decide` queda además como decisión de la historia (`D-n`).
 
 ```text
 $ mt answer PG-50 2

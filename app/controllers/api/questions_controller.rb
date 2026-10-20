@@ -29,6 +29,8 @@ class Api::QuestionsController < Api::BaseController
 
   # `mt answer PG-49 2 [--note "…"] [--question 12] [--decide]`
   def answer
+    raise forbidden_error if Current.actor.agent?
+
     question = find_question
     option = integer_param(:option) || raise(Api::Error.validation("missing the number of the option.",
       hint: "mt answer #{story.reference} <option> (1 to #{question.options.size}). See the options with mt show #{story.reference}."))
@@ -38,6 +40,13 @@ class Api::QuestionsController < Api::BaseController
   end
 
   private
+
+  # D-52: solo una persona responde preguntas. Un agente deja su recomendación en `mt ask`.
+  def forbidden_error
+    human = Actor.human.name
+    Api::Error.new("FORBIDDEN", "only a person answers questions, and #{Current.actor.name} is an agent.", status: :forbidden,
+      hint: "carry on with your recommended option if you asked with --no-bloqueante, or take another story with mt next; #{human} answers with mt answer or in the app.")
+  end
 
   # La pregunta que se contesta: la indicada con `question` o, si la historia
   # solo tiene una abierta, esa.

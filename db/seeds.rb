@@ -243,6 +243,8 @@ seed_event(postgram, "story.claimed", story: s45, actor: codex, at: s45.claimed_
 # abierta es de #50, con la forma de 5.10: bloquea, y codex la soltó.
 s50 = postgram.stories.find_by!(number: 50)
 today = Time.current.beginning_of_day
+# Las horas de los mockups (hoy 10:12…) nunca quedan en el futuro si se siembra antes.
+def not_future(time) = [ time, Time.current - 1.minute ].min
 
 def seed_question(story, title, actor:, at:, options:, answered: nil, **attributes)
   question = story.questions.find_or_initialize_by(title: title)
@@ -256,11 +258,11 @@ def seed_question(story, title, actor:, at:, options:, answered: nil, **attribut
   question
 end
 
-q49 = seed_question(s49, "¿Qué hacemos si una variable de la plantilla no tiene valor al publicar?", actor: codex, at: today + 10.hours + 12.minutes,
+q49 = seed_question(s49, "¿Qué hacemos si una variable de la plantilla no tiene valor al publicar?", actor: codex, at: not_future(today + 10.hours + 12.minutes),
                     context: "Pasa con {enlace} en los posts sin enlace.", reversible: true, recommended: 2,
                     options: [ "Quitarla y publicar", "Avisar antes de publicar", "Publicar el texto tal cual" ],
-                    answered: { option: 2, by: fran, at: today + 10.hours + 40.minutes, note: "Que el aviso diga qué variable falta y deje publicar igualmente." })
-seed_event(postgram, "story.state_changed", story: s49, actor: codex, at: today + 9.hours + 30.minutes, data: { from: "ready", to: "in_progress", claimed: true })
+                    answered: { option: 2, by: fran, at: not_future(today + 10.hours + 40.minutes), note: "Que el aviso diga qué variable falta y deje publicar igualmente." })
+seed_event(postgram, "story.state_changed", story: s49, actor: codex, at: not_future(today + 9.hours + 30.minutes), data: { from: "ready", to: "in_progress", claimed: true })
 seed_event(postgram, "story.state_changed", story: s49, actor: codex, at: q49.created_at, data: { from: "in_progress", to: "ready", released: true })
 seed_event(postgram, "question.asked", story: s49, actor: codex, at: q49.created_at,
            data: { question_id: q49.id, title: q49.title, blocking: true, recommended: 2 })
