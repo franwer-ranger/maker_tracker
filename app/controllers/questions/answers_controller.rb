@@ -25,7 +25,11 @@ class Questions::AnswersController < ApplicationController
 
   private
 
-  def from_activity? = URI(request.referer.to_s).path == root_path
+  def from_activity?
+    URI(request.referer.to_s).path == root_path
+  rescue URI::InvalidURIError
+    false
+  end
 
   # "Respondiste a codex en PG-49: «Avisar antes de publicar»".
   def answered_notice(question)

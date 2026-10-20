@@ -36,6 +36,10 @@ class Api::QuestionsController < Api::BaseController
     option = integer_param(:option)
     # Sin opción, `text` es una respuesta libre (MT-30): `mt answer PG-49 --text "…"`.
     free = params[:text].to_s.strip.presence
+    if option && free
+      raise Api::Error.validation("give an option or a text, not both.",
+        hint: "to add words to an option use --note: mt answer #{story.reference} #{option} --note \"…\".")
+    end
     if option.nil? && free.nil?
       raise Api::Error.validation("missing the number of the option.",
         hint: "mt answer #{story.reference} <option> (1 to #{question.options.size}) or mt answer #{story.reference} --text \"…\". See the options with mt show #{story.reference}.")

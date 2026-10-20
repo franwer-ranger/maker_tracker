@@ -1,6 +1,8 @@
 <%# Las opciones de una pregunta como botones (se contesta sin salir de la pantalla), con su comando `mt answer`, y la respuesta con texto libre. Locals: question, story, decide (muestra «Registrar también como decisión»), other_label. %>
 <% many = story.open_questions_asked.size > 1 %>
 <%= form_with url: project_story_question_answer_path(story.project, story, question), class: "flex flex-col gap-2.5 pt-2 md:pt-3" do %>
+  <%# Enter en un campo envía el primer botón: este, deshabilitado, evita que responda con la opción 1. %>
+  <button type="submit" disabled hidden tabindex="-1" aria-hidden="true"></button>
   <ol class="flex flex-col gap-2.5 md:gap-2">
     <% question.options.each_with_index do |text, index| %>
       <% number = index + 1 %>

@@ -46,7 +46,7 @@ class Activity
 
   # Las abiertas, bloqueen o no (una que no bloquea también espera su respuesta).
   def question_cards
-    Question.open.includes(:actor, story: :project).oldest_first.map do |question|
+    Question.open.includes(:actor, story: [ :project, :questions ]).oldest_first.map do |question|
       Card.new(kind: :question, project: question.story.project, story: question.story, question: question, since: question.created_at)
     end
   end
@@ -65,14 +65,29 @@ class Activity
     end
   end
 
-  # Proyectos con historias pero sin ninguna Lista y desbloqueada en sus hitos
-  # abiertos: los agentes se han quedado sin trabajo. Espera desde su último evento.
+  # Proyectos con trabajo pendiente en algún hito abierto pero sin ninguna
+  # historia Lista que un agente pueda coger: se han quedado sin trabajo. Espera
+  # desde su último evento. Un proyecto terminado (todo Hecho o con los hitos
+  # cerrados) no cuenta, ni el que tiene Listas paradas solo por preguntas que
+  # ya salen en «Te toca». Todo en un puñado de consultas para todos los proyectos.
   def no_work_cards
-    Project.order(:created_at).includes(:milestones).filter_map do |project|
-      next if project.stories.none? || project.next_story
+    projects = Project.order(:created_at).to_a
+    stories = Story.where(project_id: projects.map(&:id), milestone_id: Milestone.open.select(:id)).where.not(state: :done)
+      .includes(:milestone, :questions).order(:position).to_a
+    done = Story.done.pluck(:project_id, :number).group_by(&:first).transform_values { |rows| rows.map(&:last) }
+    last_events = Event.group(:project_id).maximum(:occurred_at)
+    by_project = stories.group_by(&:project_id)
 
-      defining = project.milestones.select { !it.closed? }.flat_map { |milestone| milestone.stories.defining.to_a }
-      Card.new(kind: :no_work, project: project, since: project.last_activity_at || project.created_at,
+    projects.filter_map do |project|
+      pending = by_project[project.id].to_a
+      next if pending.empty?
+
+      ready = pending.select(&:ready?)
+      # Libre, o parada solo por una pregunta que ya espera a Fran.
+      next if ready.any? { it.pending_blockers(done_numbers: done[project.id].to_a).empty? }
+
+      defining = pending.select(&:defining?).sort_by { [ it.milestone.position, it.position ] }
+      Card.new(kind: :no_work, project: project, since: last_events[project.id] || project.created_at,
         options: defining.first(SUGGESTIONS), defining_count: defining.size)
     end
   end
