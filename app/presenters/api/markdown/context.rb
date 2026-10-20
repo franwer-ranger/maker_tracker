@@ -20,7 +20,7 @@ class Api::Markdown::Context
 
   def to_s
     [ "# #{@project.name} · #{@project.key}", edited_line, brief, decisions_section,
-      milestone_section, in_progress_section ].join("\n\n") + "\n"
+      milestone_section, in_progress_section, questions_section ].compact.join("\n\n") + "\n"
   end
 
   private
@@ -82,5 +82,17 @@ class Api::Markdown::Context
       [ story.reference, story.title, story.claimed_by&.name || "nobody", ("since #{datetime(story.claimed_at)}" if story.claimed_at) ]
     end
     "## In progress\n\n#{table(rows, min: [ 0, TITLE_MIN ]).join("\n")}"
+  end
+
+  # Las preguntas abiertas del proyecto: un agente tiene que saber que hay
+  # historias esperando a una respuesta. Sin ninguna, no hay sección.
+  #   PG-50  Q12  codex  40 min  blocking
+  def questions_section
+    questions = @project.questions.open.includes(:actor, story: :project).oldest_first.to_a
+    return if questions.empty?
+
+    rows = questions.map { [ it.story.reference, it.reference, it.actor.name, waiting(it.created_at), (it.blocking? ? "blocking" : "non-blocking") ] }
+    lines = table(rows).zip(questions).map { |line, question| "#{line}\n#{' ' * 7}#{question.title}" }
+    "## Open questions\n\n#{lines.join("\n")}"
   end
 end

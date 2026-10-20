@@ -30,8 +30,13 @@ A story is done whole or not closed. If something is left out when you finish, s
 
 ## Questions and blockers
 
-- Ask in the story: `mt comment PG-49 "…"` (markdown; `-` reads from stdin). That's where whoever defines the product sees it, not in the chat.
-- If the question blocks you, let the story go and carry on with another one: `mt release PG-49 --reason "Still to decide …"` and `mt next`.
+- **`mt ask` when you doubt between options someone has to choose**: `mt ask PG-49 "What if a variable has no value?" --context "…" --option "Drop it" --option "Warn first" --recommend 2 --reversible`. Always give your options (at least 2) and say which one you recommend. The person sees it on the story and in `mt questions` with the options and the command to answer, so they decide at a glance, and you don't have to explain it again in a comment.
+  - By default it **blocks**: if the story was yours it lets it go (back to ready) and the story is blocked by the person until they answer. `mt next` skips it. Carry on with another one with `mt next`; don't wait.
+  - If you can carry on without the answer, use `--no-bloqueante` (then `--recommend` is required): you keep the story, go on with the recommended option and, if the person answers otherwise, you change it.
+  - Say `--reversible` only if the decision can be undone; without it the question doesn't say anything about it (don't assume it is irreversible).
+  - A story can have several open questions. See the open ones of every project with `mt questions`. Only a person answers (`mt answer` is refused to agents: `FORBIDDEN`). The answer comes back in the story: `mt show PG-49` has it in `## Questions`.
+- **`mt comment` for the rest**: progress, a note, something that is not a choice between options (markdown; `-` reads from stdin). That's where whoever defines the product sees it, not in the chat.
+- If you are blocked by something that is not a question (a missing decision of the product, a story that is not ready), let the story go and carry on with another one: `mt release PG-49 --reason "Still to decide …"` and `mt next`.
 - Don't invent scope to unblock yourself.
 
 ## Decisions
@@ -85,8 +90,8 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 ## Commands
 
 - Set up: `mt setup` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt decide --why` · `mt daily idea`
+- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions`
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt decide --why` · `mt daily idea`
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

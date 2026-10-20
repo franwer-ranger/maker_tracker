@@ -33,6 +33,10 @@ class Api::BaseController < ActionController::API
   rescue_from Story::ClaimedByOther do |e|
     render_error claimed_by_other_error(e.story)
   end
+  rescue_from Question::AlreadyAnswered do |e|
+    render_error Api::Error.new("ALREADY_ANSWERED", "#{e.question.story.reference} #{e.question.reference} is already answered.", status: :conflict,
+      hint: "see the open questions with mt questions.")
+  end
   rescue_from Versioned::Conflict do |e|
     render_error conflict_error(e)
   end

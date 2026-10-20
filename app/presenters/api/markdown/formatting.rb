@@ -38,6 +38,40 @@ module Api::Markdown::Formatting
     time.to_date == Time.current.localtime.to_date ? time.strftime("%H:%M") : time.strftime("%Y-%m-%d %H:%M")
   end
 
+  # Cuánto lleva esperando algo: "40 min", "2 h", "3 days".
+  def waiting(time)
+    seconds = Time.current - time
+    if seconds < 1.hour then "#{[ (seconds / 60).floor, 1 ].max} min"
+    elsif seconds < 1.day then "#{(seconds / 1.hour).floor} h"
+    else plural((seconds / 1.day).floor, "day")
+    end
+  end
+
+  # "PG-49 · Q12", la pregunta con su historia.
+  def question_label(question) = "#{question.story.reference} #{question.reference}"
+
+  # "blocking, reversible": lo que se sabe de una pregunta. Sin `reversible`, no dice nada de la reversibilidad.
+  def question_traits(question)
+    [ (question.blocking? ? "blocking" : "non-blocking"),
+      (question.reversible.nil? ? nil : (question.reversible ? "reversible" : "irreversible")) ].compact
+  end
+
+  # `mt answer PG-49 2`, con `--question 12` si la historia tiene varias abiertas.
+  def answer_command(question, option)
+    story = question.story
+    many = story.open_questions_asked.size > 1
+    "mt answer #{story.reference} #{option}#{" --question #{question.id}" if many}"
+  end
+
+  # La pregunta en datos, para la API.
+  def question_data(question)
+    { id: question.id, reference: question.story.reference, question: question.reference, title: question.title,
+      context: question.context.presence, options: question.options, recommended: question.recommended,
+      reversible: question.reversible, blocking: question.blocking?, asked_by: question.actor.name,
+      asked_at: question.created_at.iso8601, answer: question.answer, answer_note: question.answer_note,
+      answered_by: question.answered_by&.name, answered_at: question.answered_at&.iso8601 }.compact
+  end
+
   # "PR #63" si la url es de una PR de GitHub; si no, "PR <url>".
   def pr_label(url) = (number = url.to_s[%r{/pull/(\d+)}, 1]) ? "PR ##{number}" : "PR #{url}"
 
@@ -60,6 +94,7 @@ module Api::Markdown::Formatting
 
     blockers = story.pending_blockers(done_numbers: done_numbers)
     return "blocked by #{sentence(blockers.map { "#{story.project.key}-#{it}" })}" if blockers.any?
+    return "blocked by #{Actor.human.name}" if story.blocking_questions.any?
     return "no criteria" if story.missing_criteria?
 
     "mockup" if story.mockup.present?
@@ -69,7 +104,8 @@ module Api::Markdown::Formatting
   def story_data(story, done_numbers: nil)
     { reference: story.reference, number: story.number, title: story.title, state: story.state,
       milestone: story.milestone&.code, claimed_by: story.claimed_by&.name, version: story.version,
-      blocked_by: story.pending_blockers(done_numbers: done_numbers).presence }.compact
+      blocked_by: story.pending_blockers(done_numbers: done_numbers).presence,
+      blocked_by_questions: story.blocking_questions.map(&:reference).presence }.compact
   end
 
   # Avisos al pasar a ready (Story#readiness_problems), en inglés.

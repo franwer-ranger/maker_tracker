@@ -8,6 +8,7 @@ class Actor < ApplicationRecord
 
   has_many :decisions, dependent: :restrict_with_exception
   has_many :comments, dependent: :restrict_with_exception
+  has_many :questions, dependent: :restrict_with_exception
   has_many :claimed_stories, class_name: "Story", foreign_key: :claimed_by_id, inverse_of: :claimed_by, dependent: :restrict_with_exception
 
   normalizes :name, with: -> { it.strip.downcase }

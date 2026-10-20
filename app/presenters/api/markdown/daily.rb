@@ -19,11 +19,14 @@ class Api::Markdown::Daily
 
   # Para el resumen y los datos.
   def window
-    if @daily.explicit_since? then "since #{datetime(@daily.since)}"
-    elsif @daily.first? then "first daily: the last #{Daily::DEFAULT_WINDOW.in_days.to_i} days"
-    else "since your last daily, #{datetime(@daily.since)}"
+    if @daily.explicit_since? then "since #{since_iso}"
+    elsif @daily.first? then "first daily, since #{since_iso} (the last #{Daily::DEFAULT_WINDOW.in_days.to_i} days)"
+    else "since your last daily, #{since_iso}"
     end
   end
+
+  # Fecha completa, con zona: es la que va al `git log --since` de la skill.
+  def since_iso = @daily.since.localtime.iso8601
 
   private
 
@@ -32,19 +35,18 @@ class Api::Markdown::Daily
   end
 
   def happened
-    activity = @daily.activity
-    return "## What happened\n\nNothing#{' yet' if @project.events.none?}." if activity.empty?
+    changes = @daily.changes
+    return "## What happened\n\nNothing#{' yet' if @project.events.none?}." if changes.empty?
 
-    events = activity.events
-    skipped = [ events.size - MAX_EVENTS, 0 ].max
-    events = events.last(MAX_EVENTS)
+    events = changes.events(limit: MAX_EVENTS)
+    skipped = changes.size - events.size
     codes = Api::Markdown::EventSentence.milestone_codes(@project)
     lines = events.group_by(&:story).flat_map do |story, group|
       heading = story ? "#{story.reference}  #{story.title}" : "Project"
       rows = group.map { [ datetime(it.occurred_at), it.actor.name, Api::Markdown::EventSentence.new(it, codes).to_s ] }
       [ heading, *table(rows).map { "  #{it}" } ]
     end
-    title = "## What happened · #{plural(activity.size, 'event')} by #{activity.actors.map(&:name).sort.to_sentence(words_connector: ', ', two_words_connector: ' and ', last_word_connector: ' and ')}"
+    title = "## What happened · #{plural(changes.size, 'event')} by #{sentence(changes.actors.map(&:name))}"
     lines.unshift("… and #{plural(skipped, 'earlier event')} not shown (mt show <story> has each history).", "") if skipped.positive?
     "#{title}\n\n#{lines.join("\n")}"
   end
@@ -61,9 +63,12 @@ class Api::Markdown::Daily
   def blocked
     return "## Blocked\n\nNothing is blocked." if @daily.blocked.empty?
 
-    done = @project.stories.done.pluck(:number)
-    rows = @daily.blocked.map do |story|
-      [ story.reference, story.title, "by #{sentence(story.pending_blockers(done_numbers: done).map { "#{@project.key}-#{it}" })}" ]
+    human = Actor.human.name
+    rows = @daily.blocked.map do |story, blockers, questions|
+      parts = []
+      parts << "by #{sentence(blockers.map { "#{@project.key}-#{it}" })}" if blockers.any?
+      parts << "waiting for #{human} (#{questions.map(&:reference).join(', ')})" if questions.any?
+      [ story.reference, story.title, parts.join("; ") ]
     end
     "## Blocked\n\n#{table(rows, min: [ 0, TITLE_MIN ]).join("\n")}"
   end

@@ -6,13 +6,13 @@ class Api::DailiesController < Api::BaseController
   # actor en este proyecto (o desde la fecha), en curso, bloqueado, lo que
   # espera a Fran y lo que toca.
   def create
-    daily = Daily.new(project, Current.actor, since: since_param)
+    daily = Daily.new(project, Current.actor, since: since_param) # fija `now`: se lee hasta ahí y se registra ahí
     markdown = Api::Markdown::Daily.new(daily)
     text = markdown.to_s
     daily.hold!
 
-    render_ok({ since: daily.since.utc.iso8601, first: daily.first?, events: daily.activity.size,
-                in_progress: daily.in_progress.map(&:reference), blocked: daily.blocked.map(&:reference),
+    render_ok({ since: daily.since.localtime.iso8601, first: daily.first?, events: daily.changes.size,
+                in_progress: daily.in_progress.map(&:reference), blocked: daily.blocked.map { |story, *| story.reference },
                 waiting_for_human: daily.waiting_for_human.map { |story, _| story.reference },
                 next: daily.next_story&.reference, markdown: text }.compact,
       summary: "Daily of #{Current.actor.name} in #{project.key}, #{markdown.window}.",

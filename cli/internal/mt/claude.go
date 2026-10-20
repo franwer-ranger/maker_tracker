@@ -108,17 +108,17 @@ func runSkillInstall(e *env) error {
 
 // installClaude deja el hook en .claude/settings.json del repo y, de cada
 // skill que no esté global, la skill en .claude/skills/<nombre>/. Repetirlo no
-// duplica nada. Devuelve un aviso si alguna skill global está desfasada.
-func installClaude(e *env, dir string) (string, error) {
-	warning := ""
+// duplica nada. Devuelve un aviso por cada skill global desfasada.
+func installClaude(e *env, dir string) ([]string, error) {
+	var warnings []string
 	for _, s := range skill.All() {
 		switch state, path := globalSkillState(s); state {
 		case skillMissing:
 			if err := writeSkill(e, s, filepath.Join(dir, ".claude", "skills", s.Name, "SKILL.md")); err != nil {
-				return "", err
+				return nil, err
 			}
 		case skillOutdated:
-			warning = fmt.Sprintf("the global skill in %s is not this mt's version: update it with mt skill install.", path)
+			warnings = append(warnings, fmt.Sprintf("the global skill in %s is not this mt's version: update it with mt skill install.", path))
 		default:
 			fmt.Fprintf(e.stdout, "%s: using the global skill\n", path)
 		}
@@ -127,14 +127,14 @@ func installClaude(e *env, dir string) (string, error) {
 	settingsPath := filepath.Join(dir, ".claude", "settings.json")
 	added, err := addSessionStartHook(settingsPath)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if added {
 		fmt.Fprintf(e.stdout, "%s: SessionStart hook with mt context\n", settingsPath)
 	} else {
 		fmt.Fprintf(e.stdout, "%s: the hook was already there\n", settingsPath)
 	}
-	return warning, nil
+	return warnings, nil
 }
 
 // addSessionStartHook añade el hook sin tocar el resto de settings.json. Si

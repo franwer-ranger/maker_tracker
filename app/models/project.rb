@@ -20,6 +20,7 @@ class Project < ApplicationRecord
 
   has_many :milestones, -> { order(:position) }, inverse_of: :project
   has_many :stories, inverse_of: :project
+  has_many :questions, through: :stories
   has_many :decisions, -> { order(:number) }, inverse_of: :project
   has_many :events, inverse_of: :project
 
@@ -101,7 +102,7 @@ class Project < ApplicationRecord
   def next_story
     done = stories.done.pluck(:number)
     milestones.open.each do |milestone|
-      story = milestone.stories.ready.ordered.find { !it.blocked?(done_numbers: done) }
+      story = milestone.stories.ready.ordered.includes(:questions).find { !it.blocked?(done_numbers: done) }
       return story if story
     end
     nil

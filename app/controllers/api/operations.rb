@@ -46,6 +46,17 @@ module Api::Operations
     { method: "POST", path: "/api/projects/:key/decisions", params: { title: "the decision", body: "the why (markdown)", story: "PG-49 (optional)", supersedes: "D-9 (optional)" },
       command: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", description: "Records a decision. Returns its reference (D-15)" },
 
+    # Preguntas con opciones (MT-29). Bloquean por defecto la historia hasta que se contestan.
+    { method: "POST", path: "/api/projects/:key/stories/:number/questions", command: "mt ask PG-49 \"…\" --option \"…\" --option \"…\" [--recommend 2] [--context \"…\"] [--reversible] [--no-bloqueante]",
+      params: { title: "the question", context: "markdown (optional)", options: "list of at least 2 texts", recommended: "number of the recommended option (required if it does not block)",
+                reversible: "true if the decision can be undone; without it, not stated", blocking: "false to let the agent carry on with the recommended option (default true)" },
+      description: "Asks a question in the story in the actor's name. A blocking one releases the story if it was the actor's, and the story is blocked by the person who answers until it is answered" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/answer", command: "mt answer PG-49 2 [--note \"…\"] [--question 12] [--decide]",
+      params: { option: "number of the chosen option", note: "markdown (optional)", question: "id of the question (Q12 or 12); needed if the story has several open", decide: "true to also record it as a decision" },
+      description: "Answers an open question. The story is available again when no blocking questions are left. ALREADY_ANSWERED if it was answered" },
+    { method: "GET", path: "/api/questions", params: { project: "a project key (optional)" }, command: "mt questions [--project PG]",
+      description: "Open questions of all the projects (or one), the one waiting the longest first, with their options" },
+
     # Definir producto (#018). Nada se borra; cada cambio deja su evento.
     { method: "POST", path: "/api/projects/:key/stories", command: "mt create \"Title\" [--milestone M2] [--state …] [--number 14] [--file f.md]",
       params: { markdown: "the story in the mt show format (or the separate fields)", title: "", milestone: "M2, its title or inbox", state: "idea | defining | ready",

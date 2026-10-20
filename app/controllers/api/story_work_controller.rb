@@ -54,6 +54,8 @@ class Api::StoryWorkController < Api::BaseController
     warnings << "#{story.reference} was already done; it goes back to in progress." if story.done?
     blockers = project.stories.where(number: story.pending_blockers).order(:number)
     warnings << "it is blocked by #{Api::Markdown::Formatting.sentence(blockers.map { "#{it.reference} (#{state_words(it.state)})" })}." if blockers.any?
+    questions = story.blocking_questions
+    warnings << "it is waiting for #{Actor.human.name}: open #{questions.one? ? 'question' : 'questions'} #{Api::Markdown::Formatting.sentence(questions.map { "#{it.reference} from #{it.actor.name}" })}." if questions.any?
     warnings << "it has no acceptance criteria." unless story.criteria? || story.done?
     warnings
   end

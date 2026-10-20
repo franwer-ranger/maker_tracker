@@ -13,10 +13,10 @@ class Api::Markdown::Roadmap
   end
 
   def milestones
-    @milestones ||= (@closed ? @project.milestones : @project.milestones.open).includes(stories: %i[claimed_by project]).to_a
+    @milestones ||= (@closed ? @project.milestones : @project.milestones.open).includes(stories: %i[claimed_by project questions]).to_a
   end
 
-  def ideas = @ideas ||= @project.ideas.includes(:claimed_by, :project).to_a
+  def ideas = @ideas ||= @project.ideas.includes(:claimed_by, :project, :questions).to_a
 
   def done_numbers = @done_numbers ||= @project.stories.done.pluck(:number)
 
