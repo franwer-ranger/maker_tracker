@@ -10,9 +10,18 @@ class ActivityController < ApplicationController
     @activity = Activity.new
     @in_progress = @activity.in_progress
     @recent = @activity.recent_events if @cards.empty?
+    @away = visit_home
   end
 
   private
+
+  # Abrir la portada es mirarla (MT-31): se marca la visita y se enseña lo
+  # cambiado desde la anterior.
+  def visit_home
+    now = Time.current
+    since = Visit.open!(now: now)
+    WhileAway.home(since: since || now, now: now)
+  end
 
   # El de la barra lateral: el último que visitó o, si no, el más antiguo.
   def current_project

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_21_213100) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -136,6 +136,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
     t.index ["project_id"], name: "index_stories_on_project_id"
   end
 
+  create_table "visits", force: :cascade do |t|
+    t.integer "story_id"
+    t.datetime "since", null: false
+    t.datetime "seen_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["story_id"], name: "index_visits_on_story_id", unique: true
+  end
+
   add_foreign_key "comments", "actors"
   add_foreign_key "comments", "stories"
   add_foreign_key "decisions", "actors"
@@ -152,4 +161,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
   add_foreign_key "stories", "actors", column: "claimed_by_id"
   add_foreign_key "stories", "milestones"
   add_foreign_key "stories", "projects"
+  add_foreign_key "visits", "stories"
 end

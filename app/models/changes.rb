@@ -16,12 +16,16 @@ class Changes
   # `since`: instante (exclusivo). `until_time`: tope (inclusivo), para que lo
   # que se lee y lo que se marca como leído sean lo mismo. `except_actor`: deja
   # fuera lo que hizo ese actor (MT-31 no cuenta lo que hiciste tú).
-  def initialize(project, since:, until_time: nil, except_actor: nil)
+  def initialize(project, since:, until_time: nil, except_actor: nil, story: nil)
     @project = project
     @since = since
     @until_time = until_time
     @except_actor = except_actor
+    @story = story
   end
+
+  # Lo mismo, solo de una historia (el bloque «Qué cambió desde tu visita»).
+  def for_story(story) = self.class.new(project, since: since, until_time: until_time, except_actor: @except_actor, story: story)
 
   # En orden cronológico. Con `limit`, los N más recientes (sin cargar el resto).
   def events(limit: nil)
@@ -42,6 +46,7 @@ class Changes
     scope = project.events.where("occurred_at > ?", since).where.not(action: BOOKKEEPING).order(:occurred_at, :id)
     scope = scope.where("occurred_at <= ?", until_time) if until_time
     scope = scope.where.not(actor: @except_actor) if @except_actor
+    scope = scope.where(story: @story) if @story
     scope
   end
 end

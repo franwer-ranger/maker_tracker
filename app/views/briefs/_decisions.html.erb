@@ -11,7 +11,7 @@
 
   <% @decisions.each_with_index do |decision, index| %>
     <% if decision.superseded_by %>
-      <article class="flex flex-col gap-1.5 rounded-lg border border-dashed border-border px-4 py-3">
+      <article id="D-<%= decision.number %>" class="flex flex-col gap-1.5 scroll-mt-6 rounded-lg border border-dashed border-border px-4 py-3">
         <div class="flex items-center justify-between font-mono text-xs text-text-subtle">
           <span><%= decision.reference %></span>
           <span>sustituida por <%= decision.superseded_by.reference %></span>
@@ -19,7 +19,7 @@
         <h3 class="text-sm text-text-subtle line-through decoration-1"><%= decision.title %></h3>
       </article>
     <% else %>
-      <article class="<%= class_names("flex flex-col gap-1.5 rounded-lg border p-4", index.zero? ? "border-strong bg-surface" : "border-border") %>">
+      <article id="D-<%= decision.number %>" class="<%= class_names("flex flex-col gap-1.5 scroll-mt-6 rounded-lg border p-4", index.zero? ? "border-strong bg-surface" : "border-border") %>">
         <div class="flex items-center justify-between font-mono text-xs">
           <span class="text-text"><%= decision.reference %></span>
           <span class="text-text-muted"><%= decision.actor.name %> · <%= relative_day(decision.created_at) %></span>

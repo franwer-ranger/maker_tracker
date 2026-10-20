@@ -1,0 +1,67 @@
+<%# «Mientras no mirabas» (5.9): lo cambiado desde la visita anterior, por proyecto y desplegable, y «Decidido por agentes». Abrir la pantalla ya es mirarla: no hay botón «visto». Local: away (WhileAway::Home). %>
+<% if away.any? %>
+  <section id="mientras-no-mirabas" class="flex flex-col gap-4" aria-label="Mientras no mirabas">
+    <div class="flex items-baseline gap-3">
+      <%= section_label "Mientras no mirabas" %>
+      <span class="font-mono text-xs text-text-subtle">desde <%= away_time(away.since) %></span>
+    </div>
+
+    <div class="-mx-4 flex flex-col border-y border-border md:mx-0">
+      <% away.groups.each_with_index do |group, index| %>
+        <%= tag.details class: "group border-b border-border last:border-b-0", open: away_open?(index) do %>
+          <summary class="flex min-h-[52px] cursor-pointer list-none items-center gap-3 px-4 py-2 hover:bg-surface-sunken md:px-0 [&::-webkit-details-marker]:hidden <%= ComponentsHelper::FOCUS_RING %>">
+            <%= icon "chevron-down", size: 16, class: "text-text-muted -rotate-90 group-open:rotate-0" %>
+            <span class="flex h-6 w-9 shrink-0 items-center justify-center rounded-sm bg-surface font-mono text-xs text-text"><%= group.project.key %></span>
+            <span class="flex min-w-0 grow basis-0 flex-col text-[15px] leading-[22px] text-text">
+              <% group.summaries.each do |summary| %><span><%= summary %></span><% end %>
+            </span>
+            <span class="shrink-0 font-mono text-xs text-text-muted"><%= pluralize_es(group.count, "cambio") %></span>
+          </summary>
+          <ul class="flex flex-col gap-3 pb-4 pl-11 pr-4 pt-1 md:pl-[76px] md:pr-0">
+            <% group.stories.each do |change| %>
+              <li class="<%= away_story_marker(change) %>">
+                <%= link_to project_story_path(group.project, change.story), class: "flex flex-col gap-0.5 rounded-sm py-0.5 pl-3 #{ComponentsHelper::FOCUS_RING}" do %>
+                  <span class="text-control leading-[18px] text-text"><%= change.story.reference %> · <%= change.story.title %></span>
+                  <span class="font-mono text-xs text-text-muted"><%= away_story_meta(change) %></span>
+                <% end %>
+              </li>
+            <% end %>
+            <% group.project_events.each do |event| %>
+              <li class="<%= event_marker_class(event) %>">
+                <div class="flex flex-col gap-0.5 py-0.5 pl-3">
+                  <span class="text-control leading-[18px] text-text"><%= event_sentence(event) %></span>
+                  <span class="font-mono text-xs text-text-muted"><%= event.actor.name %> · <%= away_time(event.occurred_at) %></span>
+                </div>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      <% end %>
+    </div>
+
+    <% if away.decided.any? %>
+      <div id="decidido-por-agentes" class="flex flex-col gap-1 pt-4" aria-label="Decidido por agentes">
+        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 pb-2">
+          <%= section_label "Decidido por agentes · #{away.decided.size}" %>
+          <span class="text-control text-text-subtle">Ya está hecho. Si no te convence, sustitúyelo.</span>
+        </div>
+        <ul class="-mx-4 flex flex-col md:mx-0">
+          <% away.decided.each do |event| %>
+            <li class="border-b border-border">
+              <%= link_to decided_path(event), class: "flex min-h-14 items-center gap-4 px-4 py-2 hover:bg-surface-sunken md:px-0 #{ComponentsHelper::FOCUS_RING}" do %>
+                <span class="<%= class_names("w-12 shrink-0 font-mono text-control leading-5 md:w-16", event.action == "decision.recorded" ? "text-text" : "text-text-muted") %>"><%= decided_tag(event) %></span>
+                <span class="flex min-w-0 grow basis-0 flex-col gap-0.5">
+                  <span class="text-sm leading-5 text-text"><%= decided_text(event) %></span>
+                  <span class="font-mono text-xs text-text-muted"><%= decided_meta(event) %></span>
+                </span>
+                <span class="flex h-8 shrink-0 items-center gap-1 pl-3 text-control font-medium text-text-muted">
+                  <span class="max-md:hidden">Revisar</span><%= icon "chevron-right", size: 16 %>
+                </span>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+  </section>
+<% end %>

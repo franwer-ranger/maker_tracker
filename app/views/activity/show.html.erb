@@ -17,12 +17,13 @@
   <%# Dos columnas que empiezan a la misma altura: «Te toca» (o el vacío) y «En marcha». %>
   <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-16">
     <div class="flex min-w-0 grow basis-0 flex-col gap-10 lg:gap-12">
-      <%# Un bloque por apartado. MT-31 (Mientras no mirabas), MT-32 (QA pendiente) y MT-33 (trabajo listo) añaden aquí su partial. %>
+      <%# Un bloque por apartado. MT-31 (Mientras no mirabas, ya está), MT-32 (QA pendiente) y MT-33 (trabajo listo) añaden aquí su partial. %>
       <% if @cards.any? %>
         <%= render "activity/for_you", cards: @cards %>
       <% else %>
         <%= render "activity/empty", recent: @recent %>
       <% end %>
+      <%= render "activity/while_away", away: @away %>
     </div>
 
     <%= render "activity/in_progress", stories: @in_progress %>
