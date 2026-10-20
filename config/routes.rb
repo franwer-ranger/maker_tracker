@@ -19,6 +19,8 @@ Rails.application.routes.draw do
       get "context", to: "contexts#show"
       get "next", to: "next_stories#show"
       get "roadmap", to: "roadmaps#show"
+      post "daily", to: "dailies#create"
+      post "daily/ideas", to: "dailies#idea"
       resources :stories, param: :number, only: %i[index show create update] do
         member do
           post :start, to: "story_work#start"

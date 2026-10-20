@@ -10,9 +10,11 @@ module Eventable
   end
 
   # Público para que las seeds puedan añadir eventos a mano.
-  def record_event!(action, actor:, story: nil, data: {}, reason: nil)
+  def record_event!(action, actor:, story: nil, data: {}, reason: nil, occurred_at: nil)
     project = is_a?(Project) ? self : self.project
-    project.events.create!(action: action, actor: actor, story: story, data: data, reason: reason.presence)
+    attributes = { action: action, actor: actor, story: story, data: data, reason: reason.presence }
+    attributes[:occurred_at] = occurred_at if occurred_at
+    project.events.create!(attributes)
   end
 
   private

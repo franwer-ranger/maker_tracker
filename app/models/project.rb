@@ -52,10 +52,11 @@ class Project < ApplicationRecord
     end
   end
 
-  def create_story!(attributes, actor:)
+  # `data` se añade al evento (la daily marca así las ideas que propone).
+  def create_story!(attributes, actor:, data: {})
     transaction do
       stories.create!(attributes).tap do |story|
-        record_event!("story.created", actor: actor, story: story, data: { state: story.state, milestone_id: story.milestone_id })
+        record_event!("story.created", actor: actor, story: story, data: { state: story.state, milestone_id: story.milestone_id }.merge(data))
       end
     end
   end
