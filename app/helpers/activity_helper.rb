@@ -52,6 +52,67 @@ module ActivityHelper
     event.story ? "#{event.story.reference} · #{event.story.title} — #{sentence}" : sentence
   end
 
+  # Mientras no mirabas (MT-31) ----------------------------------------------
+
+  # "ayer 23:10", "hoy 08:10", "12 oct".
+  def away_time(time) = relative_day(time, time_of_day: true)
+
+  # Cuántas historias o proyectos se despliegan abiertos: solo el primer grupo.
+  def away_open?(index) = index.zero?
+
+  # Debajo de cada historia del grupo: "Hecha · claude · hoy 01:40 · 3 commits".
+  def away_story_meta(change)
+    events = change.events
+    state = events.reverse.find { it.action == "story.state_changed" }&.data&.dig("to")
+    commits = events.sum { Array(it.data["commits"]).size }
+    asked = events.count { it.action == "question.asked" }
+    comments = events.count { it.action == "comment.added" }
+    [
+      (Story.human_state(state) if state),
+      y_sentence(events.map { it.actor.name }.uniq),
+      away_time(events.last.occurred_at),
+      (pluralize_es(commits, "commit") if commits.positive?),
+      (pluralize_es(asked, "pregunta") if asked.positive?),
+      (pluralize_es(comments, "comentario") if comments.positive?)
+    ].compact.join(" · ")
+  end
+
+  # La marca de la izquierda: el color del estado al que pasó, o el neutro.
+  def away_story_marker(change)
+    state = change.events.reverse.find { it.action == "story.state_changed" }&.data&.dig("to")
+    event_marker_class(Event.new(action: "story.state_changed", data: { "to" => state }))
+  end
+
+  # La etiqueta de «Decidido por agentes»: D-37, a Lista, orden, hito o brief.
+  def decided_tag(event)
+    case event.action
+    when "decision.recorded" then "D-#{event.data['number']}"
+    when "story.state_changed" then "a Lista"
+    when "story.reordered", "story.moved" then "orden"
+    when "brief.edited" then "brief"
+    else "hito"
+    end
+  end
+
+  # El texto de la fila: el título de la decisión, o la historia con lo que le pasó y el motivo.
+  def decided_text(event)
+    return decision_title(event) || event_sentence(event) if event.action == "decision.recorded"
+
+    text = event.story ? "#{event.story.reference} · #{event.story.title}: #{event_sentence(event).downcase_first}" : event_sentence(event)
+    event.reason.present? ? "#{text} · «#{event.reason}»" : text
+  end
+
+  # Dónde se revisa: la historia, el brief (con sus decisiones) o el roadmap.
+  def decided_path(event)
+    project = event.project
+    return project_story_path(project, event.story) if event.story
+    return project_brief_path(project, anchor: ("D-#{event.data['number']}" if event.action == "decision.recorded")) if event.action.start_with?("decision", "brief")
+
+    project_roadmap_path(project)
+  end
+
+  def decided_meta(event) = [ event.story&.reference || event.project.key, event.actor.name, away_time(event.occurred_at) ].join(" · ")
+
   # Pestaña de la barra inferior del móvil (5.9 · Móvil): icono, etiqueta y, si hay, el contador.
   def tab_item(label, href, icon:, active:, count: nil)
     link_to href, class: class_names("flex w-20 shrink-0 flex-col items-center gap-1 rounded-md py-1.5 text-label leading-[14px] #{ComponentsHelper::FOCUS_RING}",

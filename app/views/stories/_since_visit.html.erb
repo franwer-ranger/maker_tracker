@@ -1,0 +1,23 @@
+<%# «Qué cambió desde tu visita» (5.11): lo nuevo desde la visita anterior, sin lo que hiciste tú. No hay botón «visto»: abrir la historia ya es mirarla. Locales: since, events. %>
+<% lines = story_change_lines(events) %>
+<section id="desde-tu-visita" class="flex flex-col gap-1 rounded-xl border border-strong bg-surface-sunken px-4 pb-3 pt-4 md:px-5" aria-label="Qué cambió desde tu visita">
+  <div class="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 pb-2">
+    <%= section_label "Qué cambió desde tu visita", class: "text-text max-md:hidden" %>
+    <%= section_label "Desde tu visita", class: "text-text md:hidden" %>
+    <span class="font-mono text-xs text-text-muted"><%= away_time(since) %> · <%= pluralize_es(lines.size, "cambio") %></span>
+  </div>
+  <ul class="flex flex-col">
+    <% lines.each do |line| %>
+      <li class="flex items-start gap-3 py-1.5">
+        <span class="<%= class_names("w-4 shrink-0 font-mono text-sm leading-5", StoriesHelper::CHANGE_MARKS.fetch(line.mark)) %>" aria-hidden="true"><%= line.mark %></span>
+        <div class="flex min-w-0 grow basis-0 flex-col gap-1">
+          <span class="text-sm leading-5 text-text"><%= line.text %></span>
+          <% if line.detail %>
+            <span class="font-mono text-xs leading-[18px] text-text-muted"><%= line.detail %></span>
+          <% end %>
+        </div>
+        <span class="shrink-0 font-mono text-xs leading-5 text-text-muted max-md:hidden"><%= line.who %> · <%= line.at.strftime("%H:%M") %></span>
+      </li>
+    <% end %>
+  </ul>
+</section>

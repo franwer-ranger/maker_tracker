@@ -12,6 +12,8 @@
       <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
     <% end %>
 
+    <%= render "stories/since_visit", since: @since, events: @changes if @changes&.any? %>
+
     <%= render "stories/open_questions", story: @story if @story.open_questions_asked.any? %>
 
     <div data-controller="markdown">

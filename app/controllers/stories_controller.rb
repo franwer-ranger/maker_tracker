@@ -3,7 +3,12 @@ class StoriesController < ApplicationController
 
   before_action :set_story, only: %i[show edit update]
 
+  # Abrir la historia es mirarla (MT-31): se marca la visita y arriba se enseña
+  # lo cambiado desde la anterior.
   def show
+    now = Time.current
+    @since = Visit.open!(@story, now: now, mark: !prefetch?)
+    @changes = WhileAway.story(@story, since: @since, now: now) if @since
   end
 
   def edit

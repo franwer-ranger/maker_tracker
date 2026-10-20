@@ -45,8 +45,19 @@ module Story::Operations
 
       bump_version
       save!
-      record_event!("story.edited", actor: actor, story: self, data: { fields: fields })
+      data = { fields: fields }
+      data[:criteria] = criteria_change(before["body"]) if fields.include?("body") && criteria?
+      record_event!("story.edited", actor: actor, story: self, data: data)
     end
+  end
+
+  # Qué criterios se marcaron o desmarcaron al editar el cuerpo: `checked` y
+  # `unchecked` son los que cambiaron; `done` y `total`, cómo queda (MT-31).
+  def criteria_change(old_body)
+    before = Story.criteria_counts(old_body)
+    now = Story.criteria_counts(body)
+    delta = now[:done] - before[:done]
+    { checked: [ delta, 0 ].max, unchecked: [ -delta, 0 ].max, done: now[:done], total: now[:total] }
   end
 
   # Quién editó el contenido por última vez y cuándo.

@@ -19,8 +19,20 @@ module StoriesHelper
     when "story.moved" then "Pasa a #{milestone_name(data.dig('to', 'milestone_id'))}"
     when "comment.added" then "#{event.actor.name} comenta"
     when "decision.recorded" then "Se decide D-#{data['number']}"
+    when "brief.edited" then "#{event.actor.name} edita el brief"
+    when "milestone.created" then "#{event.actor.name} crea el hito #{data['title']}"
+    when "milestone.edited" then "#{event.actor.name} edita #{milestone_event_ref(event)}"
+    when "milestone.closed" then "#{event.actor.name} cierra #{milestone_event_ref(event)}"
+    when "milestone.reopened" then "#{event.actor.name} reabre #{milestone_event_ref(event)}"
+    when "milestone.reordered" then "#{event.actor.name} reordena #{milestone_event_ref(event)}"
     else event.action
     end
+  end
+
+  # "M2", o "un hito borrado" si ya no existe.
+  def milestone_event_ref(event)
+    @milestone_codes ||= Milestone.pluck(:id, :position).to_h { |id, position| [ id, "M#{position}" ] }
+    @milestone_codes.fetch(event.data["milestone_id"], "un hito borrado")
   end
 
   # "Pasa a Lista"; si un agente la suelta (porque pregunta), "codex la suelta: vuelve a Lista".
@@ -41,6 +53,76 @@ module StoriesHelper
       "in_progress" => "shadow-[inset_2px_0_0_var(--color-accent)]",
       "done" => "shadow-[inset_2px_0_0_var(--color-state-done)]"
     }.fetch(state, "shadow-[inset_2px_0_0_var(--color-border-strong)]")
+  end
+
+  # «Qué cambió desde tu visita» (5.11): una línea por cosa nueva, no por evento.
+  # Marca: ! un cambio de estado o de sitio, − algo que deja de esperar, + algo nuevo.
+  ChangeLine = Data.define(:mark, :text, :who, :at, :detail)
+  CHANGE_MARKS = { "!" => "text-state-defining", "−" => "text-text-muted", "+" => "text-state-done" }.freeze
+
+  def story_change_lines(events)
+    lines = without_round_trips(events).group_by { it.action == "comment.added" ? [ it.action, it.actor_id ] : it.id }.flat_map do |_, group|
+      event = group.last
+      case event.action
+      when "comment.added"
+        [ ChangeLine.new("+", "#{pluralize_es(group.size, 'comentario')} de #{event.actor.name}", event.actor.name, event.occurred_at, nil) ]
+      when "story.state_changed" then state_change_lines(event)
+      when "decision.recorded"
+        title = decision_title(event)
+        [ ChangeLine.new("+", [ "D-#{event.data['number']}", title ].compact.join(" · "), event.actor.name, event.occurred_at, nil) ]
+      when "question.answered" then [ ChangeLine.new("−", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+      when "story.claimed", "story.released", "story.reordered", "story.moved"
+        [ ChangeLine.new("!", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+      when "story.edited" then [ edit_line(event) ]
+      else [ ChangeLine.new("+", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+      end
+    end
+    lines.sort_by.with_index { |line, index| [ { "!" => 0, "−" => 1, "+" => 2 }.fetch(line.mark), index ] }
+  end
+
+  # El título de la decisión de un evento `decision.recorded`; una sola consulta por petición.
+  def decision_title(event)
+    @decision_titles ||= Decision.pluck(:project_id, :number, :title).to_h { |project_id, number, title| [ [ project_id, number ], title ] }
+    @decision_titles[[ event.project_id, event.data["number"] ]]
+  end
+
+  # «codex marcó 2 criterios · 2 de 3»; los eventos de antes del dato dicen «edita el cuerpo».
+  def edit_line(event)
+    criteria = event.data["criteria"]
+    text = if criteria && criteria["checked"].to_i.positive?
+      "#{event.actor.name} marcó #{pluralize_es(criteria['checked'], 'criterio')} · #{criteria['done']} de #{criteria['total']}"
+    elsif criteria && criteria["unchecked"].to_i.positive?
+      "#{event.actor.name} desmarcó #{pluralize_es(criteria['unchecked'], 'criterio')} · #{criteria['done']} de #{criteria['total']}"
+    else
+      event_sentence(event)
+    end
+    ChangeLine.new("+", text, event.actor.name, event.occurred_at, nil)
+  end
+
+  # Quita las idas y vueltas del mismo actor (Lista → En curso y En curso → Lista), que no cambian nada.
+  def without_round_trips(events)
+    states = []
+    events.each do |event|
+      next unless event.action == "story.state_changed"
+
+      last = states.last
+      if last && event.actor_id == last.actor_id && event.data["from"] == last.data["to"] && event.data["to"] == last.data["from"]
+        states.pop
+      else
+        states << event
+      end
+    end
+    events.reject { it.action == "story.state_changed" && states.exclude?(it) }
+  end
+
+  # "Estado: Lista → En curso" y, si trae trabajo, sus commits en otra línea.
+  def state_change_lines(event)
+    data = event.data
+    lines = [ ChangeLine.new("!", "Estado: #{Story.human_state(data['from'])} → #{Story.human_state(data['to'])}", event.actor.name, event.occurred_at, nil) ]
+    commits = Array(data["commits"]).map { it.to_s.first(7) }
+    work = commits + [ (data["pr"].present? ? "PR #{data['pr'].to_s.delete_prefix('#')}" : nil) ].compact
+    lines << ChangeLine.new("+", pluralize_es(commits.size, "commit"), event.actor.name, event.occurred_at, work.join(", ")) if commits.any?
+    lines
   end
 
   # Qué significa el estado actual, debajo del selector. Una pregunta abierta
@@ -100,7 +182,8 @@ module StoriesHelper
   end
 
   def milestone_name(milestone_id)
-    milestone = milestone_id && Milestone.find_by(id: milestone_id)
+    @milestones ||= Milestone.all.index_by(&:id)
+    milestone = milestone_id && @milestones[milestone_id]
     milestone ? milestone_label(milestone) : "la bandeja de ideas"
   end
 

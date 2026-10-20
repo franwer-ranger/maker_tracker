@@ -226,11 +226,11 @@ seed_comment(s48, claude, "Empiezo con Prawn, como dice D-14. ¿El export incluy
 # Solo los que se ven en los mockups. Se añaden a mano y solo si la historia aún
 # no los tiene, para que las seeds sigan siendo idempotentes.
 
-def seed_event(project, action, actor:, at:, story: nil, data: {})
+def seed_event(project, action, actor:, at:, story: nil, data: {}, reason: nil)
   data = data.deep_stringify_keys
   return if project.events.where(story: story, action: action, actor: actor).any? { it.data == data }
 
-  project.events.create!(story: story, action: action, actor: actor, data: data, occurred_at: at)
+  project.events.create!(story: story, action: action, actor: actor, data: data, reason: reason, occurred_at: at)
 end
 
 # #49 (5.4 · Historial): creada como idea → pasa a Definiendo → claude la define → pasa a Lista.
@@ -287,5 +287,21 @@ seed_event(postgram, "brief.edited", actor: fran, at: 3.days.ago)
 maker_tracker = Project.find_or_create_by!(key: "MT") { it.name = "Maker Tracker" }
 seed_milestone(maker_tracker, "Núcleo v2", "El modelo nuevo funcionando, con la UI mínima para definir producto.")
 seed_event(maker_tracker, "project.created", actor: fran, at: 2.days.ago)
+
+# Mientras no mirabas (5.9, 5.11): lo que hicieron los agentes desde la visita anterior de Fran (ayer por la noche).
+visit_at = 1.day.ago.change(hour: 23, min: 10)
+seed_event(postgram, "decision.recorded", story: s48, actor: claude, at: not_future(visit_at + 70.minutes), data: { number: 14, title: postgram.decisions.find_by!(number: 14).title })
+seed_event(postgram, "story.reordered", story: s45, actor: claude, at: not_future(visit_at + 90.minutes), reason: "las reservas de Navidad abren el 1 de noviembre",
+           data: { from: { milestone_id: m2.id, position: 3 }, to: { milestone_id: m2.id, position: 1 } })
+seed_event(postgram, "brief.edited", actor: claude, at: not_future(visit_at + 100.minutes))
+seed_comment(s49, codex, "Aviso hecho: si falta {enlace}, el editor lo dice antes de publicar y deja seguir.", at: not_future(today + 12.hours + 21.minutes))
+seed_event(postgram, "comment.added", story: s49, actor: codex, at: not_future(today + 12.hours + 21.minutes))
+
+seed_event(postgram, "story.edited", story: s49, actor: codex, at: not_future(today + 12.hours + 20.minutes),
+           data: { fields: %w[body], criteria: { checked: 2, unchecked: 0, done: 2, total: 3 } })
+
+# Sus visitas a la portada y a #49. Solo si no existen: una visita real no se pisa.
+Visit.find_or_create_by!(key: Visit::HOME) { it.assign_attributes(since: visit_at, seen_at: visit_at) }
+Visit.find_or_create_by!(key: Visit.key_for(s49)) { it.assign_attributes(story: s49, since: visit_at, seen_at: visit_at) }
 
 puts "Seeds created!"
