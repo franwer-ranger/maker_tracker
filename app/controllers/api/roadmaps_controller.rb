@@ -7,7 +7,7 @@ class Api::RoadmapsController < Api::BaseController
       { code: milestone.code, title: milestone.title, goal: milestone.goal, closed: milestone.closed?,
         stories: milestone.stories.map { Api::Markdown::Formatting.story_data(it, done_numbers: done) } }
     end
-    render_ok({ milestones: milestones, ideas: roadmap.ideas.map { Api::Markdown::Formatting.story_data(it, done_numbers: done) },
+    render_ok({ ready_work: Api::Markdown::Formatting.ready_work_data(roadmap.ready_work), milestones: milestones, ideas: roadmap.ideas.map { Api::Markdown::Formatting.story_data(it, done_numbers: done) },
                 markdown: roadmap.to_s },
       summary: "Roadmap of #{project.name}: #{Api::Markdown::Formatting.plural(milestones.size, 'milestone')}.",
       breadcrumbs: [ "mt next", *("mt show #{roadmap.next_story.reference}" if roadmap.next_story) ])

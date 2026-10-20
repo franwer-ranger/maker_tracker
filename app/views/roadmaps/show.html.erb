@@ -8,7 +8,10 @@
       <h1 class="font-display text-display-sm tracking-[-0.01em]">Roadmap</h1>
       <p class="text-sm text-text-muted">Qué construimos y en qué orden. El orden es la prioridad: arrastra para cambiarlo.</p>
     </div>
-    <%= render "roadmaps/new_milestone" %>
+    <div class="flex shrink-0 items-center gap-6">
+      <%= render "shared/ready_work", project: @project %>
+      <%= render "roadmaps/new_milestone" %>
+    </div>
   </header>
 
   <%= render "roadmaps/pending" %>

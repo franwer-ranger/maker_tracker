@@ -25,6 +25,12 @@ module Api::Markdown::Formatting
   # "1 story", "3 stories"
   def plural(count, singular, plural = "#{singular}s") = "#{count} #{count == 1 ? singular : plural}"
 
+  # Trabajo listo (MT-33), la misma cuenta que la UI (`ReadyWork`):
+  # "3 ready and unblocked · 6 defining (all open milestones)".
+  def ready_work_line(summary) = "#{summary.ready} ready and unblocked · #{summary.defining_count} defining (all open milestones)"
+
+  def ready_work_data(summary) = { ready: summary.ready, defining: summary.defining_count }
+
   # En la prosa, en minúscula y con espacios: "in progress".
   def state_words(state) = state.to_s.tr("_", " ")
 

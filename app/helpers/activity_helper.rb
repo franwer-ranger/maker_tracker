@@ -125,6 +125,26 @@ module ActivityHelper
     [ "Hecha #{away_time(card.done_at)}", card.done_by&.name, ("#{card.commits} #{'commit'.pluralize(card.commits)}" if card.commits.positive?), "QA pendiente" ].compact.join(" · ")
   end
 
+  # Trabajo listo (MT-33) ----------------------------------------------------
+
+  # El resumen del proyecto (`ReadyWork`), calculado una vez por petición para todos.
+  def ready_work_for(project) = ReadyWork.all[project.id] || ReadyWork.for(project)
+
+  # "Lista" o "Listas" tras el número: "1 Lista", "3 Listas".
+  def ready_label(count) = count == 1 ? "Lista" : "Listas"
+
+  # "0 Listas · 2 en Definiendo".
+  def ready_work_counts(ready, defining) = "#{ready} #{ready_label(ready)} · #{defining} en Definiendo"
+
+  # "A PG no le quedan historias Listas", "A PG le queda 1 historia Lista".
+  def low_work_title(project, ready)
+    case ready
+    when 0 then "A #{project.key} no le quedan historias Listas"
+    when 1 then "A #{project.key} le queda una historia Lista"
+    else "A #{project.key} le quedan #{NUMBER_WORDS[ready] || ready} historias Listas"
+    end
+  end
+
   # Pestaña de la barra inferior del móvil (5.9 · Móvil): icono, etiqueta y, si hay, el contador.
   def tab_item(label, href, icon:, active:, count: nil)
     link_to href, class: class_names("flex w-20 shrink-0 flex-col items-center gap-1 rounded-md py-1.5 text-label leading-[14px] #{ComponentsHelper::FOCUS_RING}",

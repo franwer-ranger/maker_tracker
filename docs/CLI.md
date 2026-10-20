@@ -64,6 +64,10 @@ D-12  Imágenes en Active Storage local
 Goal: Un maker programa una semana de posts en menos de 10 minutos.
 4 of 12 done · 2 in progress · 2 ready · 2 defining · 2 ideas
 
+## Ready work
+
+2 ready and unblocked · 6 defining (all open milestones)
+
 ## In progress
 
 PG-48  Exportar post a PDF       claude  since 11:42
@@ -81,6 +85,7 @@ Next:
 
 - Las decisiones sustituidas no salen. Los objetivos de hito y los porqués son contenido: salen tal cual, sin cambiar mayúsculas. Si hay más de 5 vigentes, se añade `… and 8 more: mt decisions`.
 - `## Open questions` (MT-29) solo sale si el proyecto tiene preguntas abiertas: historia, id de la pregunta, quién la hizo, cuánto lleva esperando y si bloquea. Las opciones están en `mt show`.
+- `## Ready work` (MT-33) es la misma cifra que «Trabajo listo» en la app (Actividad y cabeceras del tablero y del roadmap): historias Listas y desbloqueadas (sin `blocked by`, ni historia pendiente ni pregunta bloqueante abierta, como `mt next`) en **todos** los hitos abiertos, no solo el actual, y cuántas hay en Definiendo. En el ejemplo: PG-49 y PG-31 (PG-50 espera a una pregunta). Con 2 o menos, la app avisa a fran en «Te toca». `mt roadmap` la repite bajo el título. En `--json`, `ready_work: { ready, defining }`.
 - Sin hito abierto, `## Current milestone` dice `No open milestone.` y sugiere `mt roadmap`.
 
 ## `mt daily`
@@ -227,6 +232,8 @@ Los hitos abiertos en orden, cada uno con sus historias en orden. Columnas fijas
 
 ```markdown
 # Roadmap · Postgram
+
+Ready work: 2 ready and unblocked · 6 defining (all open milestones)
 
 ## M2 · Publicar sin fricción · in progress · 4/12
 Goal: Un maker programa una semana de posts en menos de 10 minutos.

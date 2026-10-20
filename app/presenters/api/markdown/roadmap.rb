@@ -22,8 +22,10 @@ class Api::Markdown::Roadmap
 
   def next_story = defined?(@next_story) ? @next_story : (@next_story = @project.next_story)
 
+  def ready_work = @ready_work ||= ReadyWork.for(@project)
+
   def to_s
-    sections = [ "# Roadmap · #{@project.name}", *milestones.map { milestone_section(it) } ]
+    sections = [ "# Roadmap · #{@project.name}\n\nReady work: #{ready_work_line(ready_work)}", *milestones.map { milestone_section(it) } ]
     sections << inbox_section if ideas.any?
     sections << closed_line unless @closed || closed_milestones.empty?
     sections.join("\n\n") + "\n"
