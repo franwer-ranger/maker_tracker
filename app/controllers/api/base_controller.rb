@@ -11,6 +11,8 @@ class Api::BaseController < ActionController::API
   before_action { response.set_header("X-MT-API-Version", Api::Operations::VERSION.to_s) }
   before_action :authenticate_actor
   skip_before_action :authenticate_actor, only: :route_not_found
+  # Presencia (MT-36): cada petición autenticada marca al actor como activo.
+  after_action :record_presence, unless: -> { Current.actor.nil? }
 
   rescue_from StandardError, with: :render_internal_error
   rescue_from Api::Error, with: :render_error
@@ -57,6 +59,30 @@ class Api::BaseController < ActionController::API
 
     actor.token_used!
     Current.actor = actor
+  end
+
+  # GET lee, el resto escribe. Solo si la respuesta es 2xx: un 404 o un 422 no
+  # dejan presencia. Si la escritura ya marcó la presencia con su evento
+  # (Presence.wrote), no se pisa. Sin proyecto en la ruta también cuenta.
+  def record_presence
+    return if Current.presence_written || !response.successful?
+
+    reading = request.get? || request.head?
+    key = params[:project_key].to_s.upcase.presence
+    Presence.touch(Current.actor, project: (@project || Project.find_by(key: key) if key), project_key: key, target: presence_target(key),
+      mode: reading ? :reading : :writing, detail: reading ? nil : "#{controller_name}##{action_name}")
+  rescue => e
+    Rails.error.report(e, handled: true) # la presencia nunca rompe una petición
+  end
+
+  def presence_target(key)
+    if key && (number = params[:story_number] || params[:number])
+      "#{key}-#{number.to_s.upcase.delete_prefix("#{key}-")}"
+    elsif key && params[:code]
+      "#{key} #{params[:code].to_s.upcase}"
+    elsif controller_name != "projects"
+      controller_name.singularize
+    end
   end
 
   def render_ok(data = {}, summary:, breadcrumbs: [], warnings: [], status: :ok)
