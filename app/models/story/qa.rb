@@ -63,8 +63,10 @@ module Story::Qa
     with_lock do
       raise NotPending, self unless qa_pending?
 
+      # La referencia va como enlace de markdown a la historia original (el cuerpo se pinta como markdown).
+      context = "Falla la QA de [#{reference}](/p/#{project.slug}/stories/#{number}) · #{title}.\n\n#{note}\n"
       fix = project.create_story!({ title: "#{reference} falla en QA: #{note.lines.first.strip.truncate(70)}", milestone: milestone, state: :defining,
-                                    body: Story::BODY_TEMPLATE.sub("## Contexto\n", "## Contexto\n\nFalla la QA de #{reference} · #{title}.\n\n#{note}\n") },
+                                    body: Story::BODY_TEMPLATE.sub("## Contexto\n") { "## Contexto\n\n#{context}" } },
         actor: actor, data: { qa_failed_from: number })
       update!(qa: "failed")
       record_event!("qa.failed", actor: actor, story: self, data: { note: note, story: fix.number })

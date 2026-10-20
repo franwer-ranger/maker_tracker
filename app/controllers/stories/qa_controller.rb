@@ -5,6 +5,10 @@ class Stories::QaController < ApplicationController
 
   def create
     story = @project.stories.find_by!(number: params[:story_number])
+    unless %w[ok fail].include?(params[:result])
+      return redirect_back_or_to project_story_path(@project, story), alert: "Elige «Probada» o «Falla».", status: :see_other
+    end
+
     notice = if params[:result] == "fail"
       fix = story.qa_fail!(note: params[:note], actor: Current.actor)
       "#{story.reference} falla: #{fix.reference} queda en Definiendo."

@@ -50,7 +50,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 - Los agentes escriben **contenido**: `body`, `brief`, `goal`, comentarios, decisiones.
 - Maker Tracker es dueño de los **hechos**: cada transición, reclamación, reordenación, commit o PR enlazado genera un `Event` con su actor y fecha. Los eventos no se editan ni se borran, y no hay endpoint que lo permita.
 - Preguntar y responder también son hechos: `question.asked` y `question.answered` (con actor y fecha; el segundo guarda la opción (o el texto, si fue libre) y, con `--decide`, el `D-n`). Si preguntar suelta la historia, es además un `story.state_changed` con `released`.
-- La QA también: `qa.passed` y `qa.failed` (actor, fecha, nota; el segundo guarda el número de la historia que crea). Pasar a Hecha escribe `qa: pending` en el evento `story.state_changed` y en `stories.qa` (`pending | passed | failed`; nulo en las hechas antes de MT-32, que no entran).
+- La QA también: `qa.passed` y `qa.failed` (actor, fecha, nota; el segundo guarda el número de la historia que crea). Pasar a Hecha escribe `qa: pending` en el evento `story.state_changed` y en `stories.qa` (`pending | passed | failed`; nulo en las hechas antes de MT-32, que no entran). Al salir de Hecha `qa` vuelve a nulo: lo que pasó con la QA solo queda en los eventos.
 - Los campos derivados (fecha de inicio y fin de una historia, PR actual, coste) se calculan a partir de los eventos y los runs, no los escribe nadie a mano.
 
 ### Roadmap como datos (propuesta)
@@ -166,7 +166,7 @@ Las preguntas se responden desde la UI con `POST /p/:slug/stories/:n/questions/:
 
 ## QA pendiente (MT-32)
 
-Es derivado de Hecha, no un estado y no bloquea nada: `Story::Qa` (`app/models/story/qa.rb`) y la columna `stories.qa`. `move_to!(:done)` la deja en `pending` (y salir de Hecha la quita); las historias hechas antes tienen `qa` nulo y no entran. `qa_pass!` y `qa_fail!` (solo actor humano) cambian `qa` y registran `qa.passed` / `qa.failed`; `qa_fail!` crea además, en la misma transacción, una historia en Definiendo en el mismo hito (`create_story!` con `qa_failed_from` en su evento) y su número va en `qa.failed`. Dónde se prueba: `Project#qa_url`, la primera URL bajo `## Dónde se prueba` del brief (sin configuración).
+Es derivado de Hecha, no un estado y no bloquea nada: `Story::Qa` (`app/models/story/qa.rb`) y la columna `stories.qa`. `move_to!(:done)` la deja en `pending` (y salir de Hecha la vuelve a nulo; lo que pasó solo queda en los eventos); las historias hechas antes tienen `qa` nulo y no entran. `qa_pass!` y `qa_fail!` (solo actor humano) cambian `qa` y registran `qa.passed` / `qa.failed`; `qa_fail!` crea además, en la misma transacción, una historia en Definiendo en el mismo hito (`create_story!` con `qa_failed_from` en su evento) y su número va en `qa.failed`. Dónde se prueba: `Project#qa_url`, la primera URL bajo `## Dónde se prueba` del brief (sin configuración).
 
 En Actividad, `Activity#qa_pending` (tres consultas para todos los proyectos: historias con proyecto e hito, y sus eventos de Hecha; no entra en `for_you`, así que no cuenta en el contador ni añade consultas al resto de pantallas) pinta el grupo «Por probar» al final de «Te toca» (`activity/_qa_group`, `_qa_card`). La UI usa `POST /p/:slug/stories/:n/qa` (`Stories::QaController`, `result=ok|fail`, `note`) y la API `GET /api/qa` y `POST /api/projects/:key/stories/:n/qa`. La Historia enseña el bloque «QA pendiente» (`stories/_qa`) y la propiedad «QA».
 
