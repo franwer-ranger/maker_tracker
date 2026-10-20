@@ -36,6 +36,7 @@ class Api::StoriesController < Api::BaseController
   # (#025, para migrar un backlog) usa ese número si está libre.
   def create
     attributes = story_attributes
+    attributes.delete("version")
     number = requested_number(attributes.delete("number"))
     state = attributes.delete("state").presence || "idea"
     unless CREATABLE_STATES.include?(state)
@@ -53,14 +54,17 @@ class Api::StoriesController < Api::BaseController
   end
 
   # `mt edit PG-49 --file f.md`: título, cuerpo y propiedades con Story#edit!.
+  # El `version:` del frontmatter es la que leyó el agente: si la historia ya
+  # cambió, CONFLICT y no se guarda nada. Sin versión no se comprueba.
   # Estado e hito son hechos con su propia operación: si cambian, error.
   def update
     attributes = story_attributes
+    version = version_param(attributes.delete("version"))
     reject_fact_changes!(attributes)
     attributes = attributes.slice(*Story::Operations::EDITABLE_FIELDS)
     attributes.delete("body") if attributes.key?("body") && attributes["body"].to_s.strip == story.body.to_s.strip
 
-    changed = story.edit!(attributes, actor: Current.actor)
+    changed = story.edit!(attributes, actor: Current.actor, version: version)
     fields = changed ? story.history.first.data["fields"] : []
     render_ok({ story: Api::Markdown::Formatting.story_data(story), fields: fields },
       warnings: story.ready? ? Api::Markdown::Formatting.readiness_warnings(story) : [],
@@ -101,11 +105,17 @@ class Api::StoriesController < Api::BaseController
 
   # Atributos desde `markdown` (formato de ver), desde campos sueltos o ambos.
   def story_attributes
-    fields = params.permit(:number, :title, :milestone, :state, :body, :mockup, :blocked_by, :labels, labels: [], blocked_by: []).to_h
+    fields = params.permit(:number, :version, :title, :milestone, :state, :body, :mockup, :blocked_by, :labels, labels: [], blocked_by: []).to_h
     return fields if params[:markdown].blank?
 
     # Los campos sueltos mandan sobre el documento: mt create --file f.md --milestone M2.
     Api::StoryDocument.parse(params[:markdown]).except("claimed_by").merge(fields)
+  end
+
+  def version_param(value)
+    return if value.blank?
+
+    Integer(value.to_s, exception: false) || raise(Api::Error.validation("version must be a whole number, not #{value}.", hint: "use the version: line of mt show."))
   end
 
   # El número pedido al crear, si está libre. Editar lo ignora.

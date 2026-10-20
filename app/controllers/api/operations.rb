@@ -45,8 +45,8 @@ module Api::Operations
                 number: "keeps this number if it is free (to migrate a backlog); without it, the next one" },
       description: "Creates a story. Without state it is an idea, and without milestone it goes to the inbox" },
     { method: "PATCH", path: "/api/projects/:key/stories/:number", command: "mt edit PG-49 --file f.md",
-      params: { markdown: "the story in the mt show format", title: "", body: "", mockup: "", labels: "", blocked_by: "" },
-      description: "Edits title, body and properties; number is ignored. Changing state or milestone is an error: use move or reorder" },
+      params: { markdown: "the story in the mt show format", version: "the version you read (the version: line of mt show); optional", title: "", body: "", mockup: "", labels: "", blocked_by: "" },
+      description: "Edits title, body and properties; number is ignored. CONFLICT (409, nothing saved) if the version is not the current one. Changing state or milestone is an error: use move or reorder" },
     { method: "POST", path: "/api/projects/:key/stories/:number/move", params: { state: "idea | defining | ready | in_progress | done" },
       command: "mt move PG-49 ready", description: "Changes the state. Moving to ready without meeting the rule gives warnings" },
     { method: "POST", path: "/api/projects/:key/stories/:number/reorder", command: "mt reorder PG-49 --position 1 [--milestone M3] --reason \"…\"",
@@ -54,13 +54,16 @@ module Api::Operations
       description: "Reorders the story in its milestone or moves it to another" },
     { method: "POST", path: "/api/projects/:key/milestones", params: { title: "", goal: "markdown" },
       command: "mt milestone create \"Title\" [--goal \"…\"]", description: "Creates a milestone at the end of the roadmap" },
-    { method: "PATCH", path: "/api/projects/:key/milestones/:code", params: { title: "", goal: "markdown" },
-      command: "mt milestone edit M2 [--title …] [--goal …]", description: "Edits a milestone's title or goal" },
+    { method: "GET", path: "/api/projects/:key/milestones/:code", params: {}, command: "mt milestone show M2",
+      description: "A milestone with its version (the one to send when editing it)" },
+    { method: "PATCH", path: "/api/projects/:key/milestones/:code", params: { title: "", goal: "markdown", version: "the version you read; optional" },
+      command: "mt milestone edit M2 [--title …] [--goal …] [--version n]", description: "Edits a milestone's title or goal. CONFLICT (409, nothing saved) if the version is not the current one" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/reorder", params: { position: "from 1", reason: "required for agents" },
       command: "mt milestone reorder M3 --position 2 --reason \"…\"", description: "Changes a milestone's position (and with it, its code)" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/close", params: {}, command: "mt milestone close M2", description: "Closes a milestone" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/reopen", params: {}, command: "mt milestone reopen M2", description: "Reopens a milestone" },
-    { method: "GET", path: "/api/projects/:key/brief", params: {}, command: "mt brief", description: "The brief as markdown" },
-    { method: "PUT", path: "/api/projects/:key/brief", params: { markdown: "the whole brief" }, command: "mt brief --file f.md", description: "Replaces the brief" }
+    { method: "GET", path: "/api/projects/:key/brief", params: {}, command: "mt brief", description: "The brief as markdown, with its version in a frontmatter" },
+    { method: "PUT", path: "/api/projects/:key/brief", params: { markdown: "the whole brief; a leading version: frontmatter is checked", version: "optional, instead of the frontmatter" },
+      command: "mt brief --file f.md", description: "Replaces the brief. CONFLICT (409, nothing saved) if the version is not the current one" }
   ].freeze
 end

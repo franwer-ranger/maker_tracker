@@ -25,6 +25,7 @@ class Api::Markdown::Story
     <<~YAML.strip
       ---
       number: #{@story.number}
+      version: #{@story.version}
       title: #{scalar(@story.title)}
       milestone: #{scalar(@story.milestone&.title)}
       state: #{@story.state}

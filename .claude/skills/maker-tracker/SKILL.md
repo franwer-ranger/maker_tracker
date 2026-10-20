@@ -51,11 +51,12 @@ The brief's `## Autonomía` section (or its equivalent in the project's language
 Agents also write the backlog, directly and on the record (every change is logged in your name):
 
 - **Create**: `mt create "Title" [--milestone M2] [--state defining]`, or from a file: `mt create --file f.md`. Without a milestone it goes to the inbox; without a state, it is an idea.
-- **Edit**: `mt show PG-49 > f.md`, change the file and `mt edit PG-49 --file f.md`. Everything below the `<!-- mt: read-only … -->` mark (related, comments, history) is ignored. Editing doesn't change the state or the milestone.
+- **Edit**: `mt show PG-49 > f.md`, change the file and `mt edit PG-49 --file f.md`. Everything below the `<!-- mt: read-only … -->` mark (related, comments, history) is ignored. Editing doesn't change the state or the milestone. The file carries `version: N` in its frontmatter: keep it, it is how `mt` knows what you read.
+- **If `mt edit` (or `mt brief --file`, `mt milestone edit --version`) says `CONFLICT`**: someone changed it after you read it and **nothing was saved**. Don't retry the same file and don't force it. Read it again (`mt show PG-49`, `mt brief`, `mt milestone show M2`), see what changed (the `Hint:` says who and when), apply your changes on top of the new text and edit again with the new version. If both changes touch the same lines and you can't tell what is right, leave a comment (`mt comment`) and ask. Moving, reordering and closing don't use versions.
 - **Body template** (in the project's language; in Spanish: `## Contexto` · `## Historia` · `## Criterios de aceptación` · `## Fuera de alcance` · `## Notas para quien lo construya` · `## Preguntas abiertas`): why and what exists already · As a…, I want…, so that… · checkable criteria as `- [ ] …` · out of scope · notes for whoever builds it · open questions.
 - **State**: `mt move PG-49 ready` only if it has no open questions and, if it is UI work (label `ui`), it has a mockup. If `mt` warns that it doesn't meet the rule, move it back to defining or fix it.
 - **Order**: order is priority. `mt reorder PG-49 --position 1 [--milestone M3] --reason "…"` and `mt milestone reorder M3 --position 2 --reason "…"`. **Always with a reason**: it's what gets read later. If the change matters, also record it with `mt decide`.
-- **Milestones and brief**: `mt milestone create|edit|close|reopen`, `mt brief` to read it and `mt brief --file f.md` to replace it.
+- **Milestones and brief**: `mt milestone create|edit|close|reopen`, `mt brief` to read it and `mt brief --file f.md` to replace it (keep its `version:` frontmatter), `mt milestone show M2` to read a milestone with its version.
 
 ## Onboard an existing project
 

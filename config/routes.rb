@@ -29,7 +29,7 @@ Rails.application.routes.draw do
         resources :comments, only: :create
       end
       resources :decisions, only: %i[index create]
-      resources :milestones, param: :code, only: %i[create update] do
+      resources :milestones, param: :code, only: %i[create show update] do
         member do
           post :reorder
           post :close

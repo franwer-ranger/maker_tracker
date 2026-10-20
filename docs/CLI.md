@@ -87,6 +87,7 @@ Why this one: first ready, unblocked story in M2. PG-48 and PG-45 come before it
 
 ---
 number: 49
+version: 3
 title: Plantillas de post reutilizables
 milestone: Publicar sin fricción
 state: ready
@@ -149,6 +150,7 @@ Hint: 2 stories are being defined (PG-51, PG-54). See them with mt list --state 
 Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar (frontmatter y cuerpo); debajo de la marca `<!-- mt: … -->`, lo que es solo lectura. Así `mt show PG-49 > f.md`, editar `f.md` y `mt edit PG-49 --file f.md` funciona sin limpiar nada.
 
 - `milestone` es el título del hito, sin el código (`M2`), porque el código cambia al reordenar. En la bandeja de ideas, vacío.
+- `version` sube cada vez que alguien edita el contenido (título, cuerpo, mockup, labels, bloqueos). `mt edit` la manda de vuelta y, si ya no es la actual, no guarda nada (ver «Conflictos de edición»). Mover, reordenar o cerrar no la cambian.
 - `state` y `milestone` se pueden leer, pero `mt edit` no los cambia: para eso están `mt move` y `mt reorder` (decisión de la #018).
 - El historial muestra los 10 últimos eventos. Si un evento tiene motivo, va al final de su línea: `reordered it in its milestone: "lo pide la beta"`.
 - `## Related` lista lo que la bloquea y lo que bloquea, cada una con su estado: `Blocked by PG-45 Programar publicaciones (in progress).` / `Blocks PG-54 Reprogramar arrastrando en el calendario (defining).`
@@ -316,4 +318,30 @@ Hint: pick another one with mt next, or ask fran to release it.
 $ mt reorder PG-50 --position 1
 Error: reordering needs a reason.
 Hint: mt reorder PG-50 --position 1 --reason "why it goes first"
+```
+
+## Conflictos de edición
+
+Historias, brief y hitos llevan una versión (MT-37, decisión D-43: la protección está en la API; la UI nunca se bloquea). Se lee en `mt show` (`version:` del frontmatter), en `mt brief` (frontmatter `---\nversion: 3\n---` encima del texto) y en `mt milestone show M2`. `mt edit --file` y `mt brief --file` la mandan sin que el agente haga nada, porque ya va en el fichero; `mt milestone edit M2 --version 3 …` la lleva como opción. Si no se manda versión no se comprueba.
+
+Si la versión no es la actual, la API responde `CONFLICT` (HTTP 409, no reintentable tal cual) y no guarda nada. Quién cambió y cuándo salen del último evento de edición:
+
+```text
+$ mt edit PG-49 --file f.md
+Error: PG-49 changed since you read it: fran edited it at 10:42 (you had version 3, it is on 4). Nothing was saved.
+Hint: Someone changed it (fran, 10:42). Read it again with mt show PG-49 and apply your changes on top.
+```
+
+El mismo error en `mt brief --file` (`Read it again with mt brief …`) y `mt milestone edit` (`… mt milestone show M2 …`). Con `--json`, `error.details` trae `expected_version` y `current_version`. `mt milestone show` imprime:
+
+```text
+$ mt milestone show M2
+---
+version: 3
+code: M2
+title: Publicar sin fricción
+status: open
+---
+
+Un maker programa una semana de posts en menos de 10 minutos.
 ```
