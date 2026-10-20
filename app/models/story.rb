@@ -32,6 +32,7 @@ class Story < ApplicationRecord
 
   include NumberedInProject
   include Operations
+  include Qa
 
   enum :state, STATE_NAMES.keys.index_by(&:itself), default: :idea, validate: true
   positioned on: %i[project milestone]

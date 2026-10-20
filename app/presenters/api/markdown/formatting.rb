@@ -105,7 +105,7 @@ module Api::Markdown::Formatting
     { reference: story.reference, number: story.number, title: story.title, state: story.state,
       milestone: story.milestone&.code, claimed_by: story.claimed_by&.name, version: story.version,
       blocked_by: story.pending_blockers(done_numbers: done_numbers).presence,
-      blocked_by_questions: story.blocking_questions.map(&:reference).presence }.compact
+      blocked_by_questions: story.blocking_questions.map(&:reference).presence, qa: story.qa }.compact
   end
 
   # Avisos al pasar a ready (Story#readiness_problems), en inglés.

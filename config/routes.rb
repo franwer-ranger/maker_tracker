@@ -14,6 +14,7 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     get "/", to: "root#show"
     get "questions", to: "questions#index"
+    get "qa", to: "qa#index"
     resources :projects, param: :key, only: %i[index create]
     scope "projects/:project_key", as: :project do
       get "context", to: "contexts#show"
@@ -29,6 +30,7 @@ Rails.application.routes.draw do
           post :move
           post :reorder
           post :answer, to: "questions#answer"
+          post :qa, to: "qa#create"
         end
         resources :comments, only: :create
         resources :questions, only: :create
@@ -70,6 +72,7 @@ Rails.application.routes.draw do
       scope module: :stories do
         resource :state, only: :update
         resource :position, only: :update
+        resource :qa, only: :create, controller: "qa"
       end
     end
   end

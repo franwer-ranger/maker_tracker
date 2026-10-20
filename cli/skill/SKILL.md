@@ -39,6 +39,12 @@ A story is done whole or not closed. If something is left out when you finish, s
 - If you are blocked by something that is not a question (a missing decision of the product, a story that is not ready), let the story go and carry on with another one: `mt release PG-49 --reason "Still to decide …"` and `mt next`.
 - Don't invent scope to unblock yourself.
 
+## QA pending
+
+When your story is done it is not tested yet: it stays with **QA pending** until the person tries it where it is deployed. It is derived, not a state: it blocks nothing and `mt next` ignores it, so carry on. `mt qa` lists what is waiting in every project, with the criteria and where to test it. Only a person passes (`mt qa PG-49 ok`) or fails it (`mt qa PG-49 fail --note "…"`, which creates a new story in defining linked to the original); `mt qa` with ok/fail is refused to agents (`FORBIDDEN`). If it failed, the new story arrives through `mt next` like any other.
+
+Where each project is tested is one line under `## Dónde se prueba` in its brief (`Testing: https://…`, or production). Read it with `mt context`. If the brief has no such line, ask the person where it is tested; add it to the brief only if the person agrees (the brief is theirs).
+
 ## Decisions
 
 Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
@@ -71,7 +77,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 2. **Read the repo**: `README`, `AGENTS.md` / `CLAUDE.md`, `docs/` (product, roadmap, decisions, ADRs, backlog) and recent `git log`. Add what the person tells you.
 3. **Propose, in the chat and before writing anything** (no `mt` command that writes yet):
    - the **key** (2 to 5 letters, it names every story: `PG-49`) and the **name**;
-   - the **brief** in markdown, with its five sections: `## Visión` · `## Principios` · `## Autonomía` · `## Fuera de alcance` · `## Glosario` (headings in the project's language; these are Maker Tracker's template in Spanish). Short: it is read by every agent at the start of every session;
+   - the **brief** in markdown, with its six sections: `## Visión` · `## Principios` · `## Autonomía` · `## Fuera de alcance` · `## Dónde se prueba` (one line: testing or production and its URL) · `## Glosario` (headings in the project's language; these are Maker Tracker's template in Spanish). Short: it is read by every agent at the start of every session;
    - the **milestones** in order, each with a one-line goal;
    - the **decisions** already taken, each with its why (one sentence). Only those that someone would want to know later.
 
@@ -90,8 +96,8 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 ## Commands
 
 - Set up: `mt setup` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt decide --why` · `mt daily idea`
+- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa`
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea`
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

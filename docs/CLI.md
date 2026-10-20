@@ -366,6 +366,39 @@ Next:
 
 Errores: `Error: PG-50 Q12 is already answered.` (`ALREADY_ANSWERED`), `Error: PG-50 has no open questions.` y `Error: Answer must be the number of one of the 3 options.`
 
+## QA pendiente (MT-32)
+
+Una historia que pasa a Hecha queda con **QA pendiente**: lo que la persona aún no ha probado allí donde ya está. Es derivado de Hecha, no un estado; no bloquea nada ni cambia `mt next`. Solo entran las que pasan a Hecha a partir de esta funcionalidad (el evento lleva `qa: pending`); las anteriores no. Dónde se prueba cada proyecto es una línea bajo `## Dónde se prueba` en el brief (la plantilla la incluye), con la URL: `Testing: https://testing.postgram.app`. Sin ella, la historia sigue pendiente pero sin enlace.
+
+`mt qa` sin argumentos lista lo pendiente **de todos los proyectos** (o de uno con `--project`), lo que más lleva hecho primero, con los criterios de aceptación y dónde probarlo:
+
+```text
+$ mt qa
+2 stories waiting for QA.
+
+PG-47  Borradores automáticos          done 2026-10-20 18:40 by codex  https://testing.postgram.app
+       1 Mientras escribes, el post se guarda solo cada pocos segundos.
+       2 Si cierras la pestaña y vuelves, el borrador sigue ahí.
+PG-43  Subir varias imágenes a la vez  done 01:12 by claude            https://testing.postgram.app
+       1 Puedo elegir varias imágenes en un solo selector.
+
+Next:
+  mt show PG-47
+  mt show PG-43
+```
+
+```text
+$ mt qa PG-47 ok [--note "…"]
+PG-47 passed QA.
+
+$ mt qa PG-47 fail --note "El borrador no sale con la etiqueta"
+PG-47 failed QA. PG-55 was created in M2 · Publicar sin fricción as defining, linked to it.
+```
+
+`ok` la cierra (repetirlo no es un error: `PG-47 had already passed QA.`). `fail` **exige** `--note`, crea una historia en Definiendo en el mismo hito, con la nota y la referencia a la original en `## Contexto`, y la enlaza en el evento; la original no se reabre. Eventos `qa.passed` y `qa.failed` (con actor, fecha, la nota y, en el segundo, el número de la historia creada). **Solo una persona prueba**: un agente recibe `Error: only a person tests QA, and codex is an agent.` (`FORBIDDEN`); puede listar con `mt qa`. Una historia sin QA pendiente da `NOT_PENDING` (409). Endpoints: `GET /api/qa` y `POST /api/projects/:key/stories/:n/qa` (`result: ok|fail`, `note`).
+
+En `mt show`, una historia con QA lleva `## QA · pending` (con dónde probarla) o `## QA · passed|failed` antes de `## Questions`, y su historial dice `moved to done (…) · QA pending`.
+
 ## Escribir
 
 Una línea con lo que ha pasado, los avisos y `Next:`. Con una historia con la label `ui` y sin mockup, `move … ready` añade también `Warning: it has the ui label but no mockup.`
