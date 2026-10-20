@@ -128,4 +128,31 @@ module Story::Operations
       end
     end
   end
+
+  # Pregunta con sus opciones y la recomendación (`mt ask`). Si bloquea y la
+  # historia era del que pregunta, la suelta antes: vuelve a Lista y ya no la
+  # coge nadie hasta que se conteste. Una no bloqueante no la suelta.
+  def ask!(attributes, actor:)
+    transaction do
+      question = questions.build(attributes.to_h.symbolize_keys.merge(actor: actor))
+      question.validate!
+      move_to!(:ready, actor: actor) if question.blocking? && in_progress? && claimed_by == actor
+      question.save!
+      record_event!("question.asked", actor: actor, story: self,
+        data: { question_id: question.id, title: question.title, blocking: question.blocking?, recommended: question.recommended }.compact)
+      question
+    end
+  end
+
+  # Responde con el número de una opción. Con `decide`, queda además como
+  # decisión de la historia (D-n). Devuelve la pregunta.
+  def answer_question!(question, option:, note: nil, actor:, decide: false)
+    question.with_lock do
+      question.answer!(option: option, note: note, actor: actor)
+      decision = project.record_decision!({ title: "#{question.title} → #{question.answer_text}", body: question.answer_note.to_s, story: self }, actor: actor) if decide
+      record_event!("question.answered", actor: actor, story: self,
+        data: { question_id: question.id, option: question.answer, answer: question.answer_text, asked_by: question.actor.name, decision: decision&.number }.compact)
+      question
+    end
+  end
 end

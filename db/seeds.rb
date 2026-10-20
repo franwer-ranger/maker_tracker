@@ -238,6 +238,43 @@ seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 1.day.a
 seed_event(postgram, "story.claimed", story: s48, actor: claude, at: s48.claimed_at)
 seed_event(postgram, "story.claimed", story: s45, actor: codex, at: s45.claimed_at)
 
+# Preguntas de agentes (5.10b y 5.10). La de #49 es la del mockup, ya respondida por
+# Fran y con la historia otra vez en Lista; así #49 sigue siendo la siguiente. La
+# abierta es de #50, con la forma de 5.10: bloquea, y codex la soltó.
+s50 = postgram.stories.find_by!(number: 50)
+today = Time.current.beginning_of_day
+# Las horas de los mockups (hoy 10:12…) nunca quedan en el futuro si se siembra antes.
+def not_future(time) = [ time, Time.current - 1.minute ].min
+
+def seed_question(story, title, actor:, at:, options:, answered: nil, **attributes)
+  question = story.questions.find_or_initialize_by(title: title)
+  return question unless question.new_record?
+
+  question.assign_attributes(actor: actor, options: options, created_at: at, updated_at: at, **attributes)
+  question.save!
+  return question unless answered
+
+  question.update!(answer: answered[:option], answer_note: answered[:note], answered_by: answered[:by], answered_at: answered[:at])
+  question
+end
+
+q49 = seed_question(s49, "¿Qué hacemos si una variable de la plantilla no tiene valor al publicar?", actor: codex, at: not_future(today + 10.hours + 12.minutes),
+                    context: "Pasa con {enlace} en los posts sin enlace.", reversible: true, recommended: 2,
+                    options: [ "Quitarla y publicar", "Avisar antes de publicar", "Publicar el texto tal cual" ],
+                    answered: { option: 2, by: fran, at: not_future(today + 10.hours + 40.minutes), note: "Que el aviso diga qué variable falta y deje publicar igualmente." })
+seed_event(postgram, "story.state_changed", story: s49, actor: codex, at: not_future(today + 9.hours + 30.minutes), data: { from: "ready", to: "in_progress", claimed: true })
+seed_event(postgram, "story.state_changed", story: s49, actor: codex, at: q49.created_at, data: { from: "in_progress", to: "ready", released: true })
+seed_event(postgram, "question.asked", story: s49, actor: codex, at: q49.created_at,
+           data: { question_id: q49.id, title: q49.title, blocking: true, recommended: 2 })
+seed_event(postgram, "question.answered", story: s49, actor: fran, at: q49.answered_at,
+           data: { question_id: q49.id, option: 2, answer: q49.answer_text, asked_by: "codex" })
+
+q50 = seed_question(s50, "¿Qué redes enseñamos en la vista previa?", actor: codex, at: 40.minutes.ago,
+                    context: "Hoy hay tres conectadas: X, LinkedIn e Instagram. codex ha soltado PG-50 hasta que contestes.",
+                    reversible: true, recommended: 2, options: [ "Solo las que el post tiene marcadas", "Todas las conectadas", "Una a elegir cada vez" ])
+seed_event(postgram, "question.asked", story: s50, actor: codex, at: q50.created_at,
+           data: { question_id: q50.id, title: q50.title, blocking: true, recommended: 2 })
+
 # Brief editado hace 3 días (5.5).
 seed_event(postgram, "brief.edited", actor: fran, at: 3.days.ago)
 

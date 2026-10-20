@@ -3,9 +3,9 @@ class RoadmapsController < ApplicationController
   include ProjectScoped
 
   def show
-    @milestones = @project.milestones.includes(stories: :claimed_by).to_a
+    @milestones = @project.milestones.includes(stories: %i[claimed_by questions]).to_a
     @open_milestone = @milestones.find { !it.closed? }
-    @ideas = @project.ideas.includes(:claimed_by).to_a
+    @ideas = @project.ideas.includes(:claimed_by, :questions).to_a
     @context = { next_story: @project.next_story, done_numbers: @project.stories.done.pluck(:number) }
   end
 end

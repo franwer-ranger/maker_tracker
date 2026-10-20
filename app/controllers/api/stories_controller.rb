@@ -4,7 +4,7 @@ class Api::StoriesController < Api::BaseController
   # `mt list`: filtros state, milestone (M2, su título o inbox), label y
   # claimed_by (un nombre o "me"). Las columnas, como en docs/CLI.md.
   def index
-    stories = project.stories.includes(:milestone, :claimed_by, :project)
+    stories = project.stories.includes(:milestone, :claimed_by, :project, :questions)
     if params[:state].present?
       raise Api::Error.validation("unknown state: #{params[:state]}.", hint: "the states are #{Story.states.keys.join(', ')}.") unless Story.states.key?(params[:state])
 
@@ -200,7 +200,7 @@ class Api::StoriesController < Api::BaseController
 
   def story_breadcrumbs
     case story.state
-    when "ready" then [ "mt start #{story.reference}" ]
+    when "ready" then story.blocking_questions.any? ? [ "mt questions", "mt next" ] : [ "mt start #{story.reference}" ]
     when "in_progress" then story.claimed_by == Current.actor ? [ "mt done #{story.reference} --commit <sha>", "mt comment #{story.reference} \"…\"" ] : [ "mt next" ]
     when "idea", "defining" then [ "mt edit #{story.reference} --file <f.md>", "mt move #{story.reference} ready" ]
     else [ "mt next" ]

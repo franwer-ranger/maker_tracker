@@ -7,7 +7,7 @@ class BoardsController < ApplicationController
 
   def show
     set_filter
-    stories = filtered_stories.includes(:claimed_by, :milestone).to_a
+    stories = filtered_stories.includes(:claimed_by, :milestone, :questions).to_a
     @columns = Story::STATE_NAMES.keys.index_with { |state| stories.select { it.state == state } }
     limit_done_column if @filter == :all && params[:hechas] != "todas"
     @context = { next_story: @project.next_story, done_numbers: @project.stories.done.pluck(:number) }
