@@ -7,8 +7,8 @@
 # después (QA pendiente, trabajo listo…) añaden su método a `for_you` y su
 # partial en `app/views/activity/`; el contador de la barra es el número de tarjetas.
 class Activity
-  # Una historia en Definiendo está parada tras tanto tiempo sin cambios.
-  STALLED_AFTER = 3.days
+  # Una historia en Definiendo está parada tras tanto tiempo sin cambios: el mismo umbral que el daily.
+  STALLED_AFTER = Daily::STALE_DEFINING
   # Cuántas historias en Definiendo se ofrecen en la tarjeta de un proyecto sin trabajo.
   SUGGESTIONS = 2
   RECENT = 5
