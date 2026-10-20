@@ -85,13 +85,13 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
    mt decide "PDFs con Prawn" --why "…"                     # one per decision, oldest first
    ```
    Write the files in a temporary place, not in the repo. If a command fails, read the `Hint:` and fix it before going on.
-5. **Finish with `mt context`**, show it, and offer to start writing stories with the body template (see "Writing the product"). Stories come afterwards, with the person: don't import them from the repo's docs on your own.
+5. **Finish with `mt context`**, show it, and then do the project's first daily (the `daily` skill, `/daily`): it works with no history and, with the repo at hand, it is the moment to propose evolutionaries as ideas. Offer to start writing stories with the body template (see "Writing the product"). Stories come afterwards, with the person: don't import them from the repo's docs on your own.
 
 ## Commands
 
 - Set up: `mt setup` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt decide --why`
+- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions`
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt decide --why` · `mt daily idea`
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.
