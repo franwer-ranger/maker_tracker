@@ -71,6 +71,8 @@ class Api::BaseController < ActionController::API
     key = params[:project_key].to_s.upcase.presence
     Presence.touch(Current.actor, project: (@project || Project.find_by(key: key) if key), project_key: key, target: presence_target(key),
       mode: reading ? :reading : :writing, detail: reading ? nil : "#{controller_name}##{action_name}")
+  rescue => e
+    Rails.error.report(e, handled: true) # la presencia nunca rompe una petición
   end
 
   def presence_target(key)

@@ -9,7 +9,7 @@
 # actores y habría que mover el registro a una caché compartida.
 #
 # Los cambios (empieza a estar activo, pasa de leer a escribir, cambia de
-# historia, deja de estarlo) se emiten por Turbo Streams a `[project, :presence]`
+# historia, deja de estarlo; la ventana real es de 60 a 65 s por el barrido) se emiten por Turbo Streams a `[project, :presence]`
 # y `:presence` (la portada). La emisión es en diferido y agrupada, y la
 # presencia nunca rompe una petición: si algo falla, se reporta y sigue.
 module Presence
@@ -60,6 +60,13 @@ module Presence
       PENDING.clear
     end
 
+    # Para el barrido y el hilo de emisión. Lo llama config/initializers/presence.rb
+    # antes de cada recarga de código en desarrollo, para no dejar los viejos vivos.
+    def shutdown!
+      @sweeper&.shutdown
+      EXECUTOR.shutdown
+    end
+
     # Retira a quien lleva más de WINDOW sin peticiones y emite el cambio.
     def sweep
       now = Time.current
@@ -95,6 +102,8 @@ module Presence
       (@mutex ||= Mutex.new).synchronize do
         @sweeper ||= Concurrent::TimerTask.new(execution_interval: SWEEP_EVERY, run_now: false) do
           Rails.application.executor.wrap { sweep }
+        rescue => e
+          Rails.error.report(e, handled: true)
         end
         @sweeper.execute unless @sweeper.running?
       end
