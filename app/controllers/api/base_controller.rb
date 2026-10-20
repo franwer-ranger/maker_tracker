@@ -11,6 +11,8 @@ class Api::BaseController < ActionController::API
   before_action { response.set_header("X-MT-API-Version", Api::Operations::VERSION.to_s) }
   before_action :authenticate_actor
   skip_before_action :authenticate_actor, only: :route_not_found
+  # Presencia (MT-36): cada petición autenticada marca al actor como activo.
+  before_action :record_presence, unless: -> { Current.actor.nil? }
 
   rescue_from StandardError, with: :render_internal_error
   rescue_from Api::Error, with: :render_error
@@ -57,6 +59,27 @@ class Api::BaseController < ActionController::API
 
     actor.token_used!
     Current.actor = actor
+  end
+
+  # GET lee, el resto escribe. Proyecto e historia salen de la ruta, sin
+  # consultar la BD; la escritura concreta la completa Event (Presence.wrote).
+  def record_presence
+    return unless params[:project_key]
+
+    reading = request.get? || request.head?
+    Presence.touch(Current.actor, project_key: params[:project_key].to_s.upcase, target: presence_target,
+      mode: reading ? :reading : :writing, detail: reading ? nil : "#{controller_name}##{action_name}")
+  end
+
+  def presence_target
+    key = params[:project_key].to_s.upcase
+    if (number = params[:story_number] || params[:number])
+      "#{key}-#{number.to_s.upcase.delete_prefix("#{key}-")}"
+    elsif params[:code]
+      "#{key} #{params[:code].to_s.upcase}"
+    elsif controller_name != "projects"
+      controller_name.singularize
+    end
   end
 
   def render_ok(data = {}, summary:, breadcrumbs: [], warnings: [], status: :ok)

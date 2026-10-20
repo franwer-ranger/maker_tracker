@@ -12,5 +12,21 @@ class Event < ApplicationRecord
 
   validates :action, presence: true
 
+  # Cada escritura se emite en directo (MT-36) para el proyecto y la portada; si
+  # la hizo el actor de una petición de la API, además lo marca «escribiendo».
+  # No es un callback de dominio: no cambia datos, solo avisa.
+  after_create_commit :broadcast_write
+
   def readonly? = persisted? || super
+
+  private
+
+  def broadcast_write
+    locals = { event: self }
+    Turbo::StreamsChannel.broadcast_append_to([ project, :writes ], target: "writes", partial: "presences/write", locals: locals)
+    Turbo::StreamsChannel.broadcast_append_to(:writes, target: "writes", partial: "presences/write", locals: locals)
+    Presence.wrote(self) if Current.actor == actor && actor.agent?
+  rescue => e
+    Rails.error.report(e, handled: true) # emitir no puede romper la escritura ya hecha
+  end
 end

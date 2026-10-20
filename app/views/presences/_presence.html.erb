@@ -1,0 +1,9 @@
+<%# Quién está activo ahora (Presence). Sin diseño: lo viste MT-38; aquí solo
+    el contenedor que los streams reemplazan y los datos de cada actor. %>
+<ul id="presence" hidden>
+  <% entries.each do |entry| %>
+    <li data-actor="<%= entry.actor.name %>" data-mode="<%= entry.mode %>" data-project="<%= entry.project_key %>" data-target="<%= entry.target %>">
+      <%= entry.actor.name %> · <%= entry.reading? ? "leyendo" : "escribiendo" %><%= " #{entry.target}" if entry.target %><%= " (#{entry.detail})" if entry.detail %>
+    </li>
+  <% end %>
+</ul>
