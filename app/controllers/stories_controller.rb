@@ -7,7 +7,7 @@ class StoriesController < ApplicationController
   # lo cambiado desde la anterior.
   def show
     now = Time.current
-    @since = Visit.open!(@story, now: now)
+    @since = Visit.open!(@story, now: now, mark: !prefetch?)
     @changes = WhileAway.story(@story, since: @since, now: now) if @since
   end
 

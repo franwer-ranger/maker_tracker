@@ -30,7 +30,7 @@ class Changes
   # En orden cronológico. Con `limit`, los N más recientes (sin cargar el resto).
   def events(limit: nil)
     rows = limit ? scope.reorder(occurred_at: :desc, id: :desc).limit(limit) : scope
-    rows = rows.includes(:actor, :story).to_a
+    rows = rows.includes(:actor, :story, :project).to_a
     limit ? rows.reverse : rows
   end
 

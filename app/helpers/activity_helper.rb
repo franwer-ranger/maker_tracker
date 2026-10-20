@@ -96,7 +96,7 @@ module ActivityHelper
 
   # El texto de la fila: el título de la decisión, o la historia con lo que le pasó y el motivo.
   def decided_text(event)
-    return Decision.find_by(project_id: event.project_id, number: event.data["number"])&.title || event_sentence(event) if event.action == "decision.recorded"
+    return decision_title(event) || event_sentence(event) if event.action == "decision.recorded"
 
     text = event.story ? "#{event.story.reference} · #{event.story.title}: #{event_sentence(event).downcase_first}" : event_sentence(event)
     event.reason.present? ? "#{text} · «#{event.reason}»" : text

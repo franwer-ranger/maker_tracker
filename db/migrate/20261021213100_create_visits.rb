@@ -4,7 +4,8 @@
 class CreateVisits < ActiveRecord::Migration[8.1]
   def change
     create_table :visits do |t|
-      t.references :story, foreign_key: true, index: { unique: true } # nulo: la portada
+      t.string :key, null: false, index: { unique: true } # "home" o "story-12": SQLite no ve únicos los NULL
+      t.references :story, foreign_key: true # nulo: la portada
       t.datetime :since, null: false # desde cuándo cuenta lo que se enseña
       t.datetime :seen_at, null: false # la última vez que se abrió
 

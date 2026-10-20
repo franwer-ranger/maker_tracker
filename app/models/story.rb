@@ -97,6 +97,12 @@ class Story < ApplicationRecord
   def answered_questions = questions.select(&:answered?)
 
   # Algún criterio (`- [ ]` / `- [x]`) en el cuerpo.
+  # Criterios marcados y totales de un cuerpo, para el resumen de ediciones (MT-31).
+  def self.criteria_counts(body)
+    boxes = body.to_s.scan(/^\s*[-*] \[([ xX])\]/).flatten
+    { done: boxes.count { it != " " }, total: boxes.size }
+  end
+
   def criteria? = body.to_s.match?(/^\s*[-*] \[[ xX]\]/)
 
   # En Definiendo y sin ningún criterio.

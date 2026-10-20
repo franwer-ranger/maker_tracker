@@ -297,8 +297,11 @@ seed_event(postgram, "brief.edited", actor: claude, at: not_future(visit_at + 10
 seed_comment(s49, codex, "Aviso hecho: si falta {enlace}, el editor lo dice antes de publicar y deja seguir.", at: not_future(today + 12.hours + 21.minutes))
 seed_event(postgram, "comment.added", story: s49, actor: codex, at: not_future(today + 12.hours + 21.minutes))
 
+seed_event(postgram, "story.edited", story: s49, actor: codex, at: not_future(today + 12.hours + 20.minutes),
+           data: { fields: %w[body], criteria: { checked: 2, unchecked: 0, done: 2, total: 3 } })
+
 # Sus visitas a la portada y a #49. Solo si no existen: una visita real no se pisa.
-Visit.find_or_create_by!(story: nil) { it.assign_attributes(since: visit_at, seen_at: visit_at) }
-Visit.find_or_create_by!(story: s49) { it.assign_attributes(since: visit_at, seen_at: visit_at) }
+Visit.find_or_create_by!(key: Visit::HOME) { it.assign_attributes(since: visit_at, seen_at: visit_at) }
+Visit.find_or_create_by!(key: Visit.key_for(s49)) { it.assign_attributes(story: s49, since: visit_at, seen_at: visit_at) }
 
 puts "Seeds created!"

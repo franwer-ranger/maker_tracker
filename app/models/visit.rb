@@ -6,23 +6,33 @@
 # desde la última apertura.
 class Visit < ApplicationRecord
   SESSION_GAP = 30.minutes
+  # No se escribe si la última apertura fue hace menos de esto.
+  WRITE_EVERY = 1.minute
+  HOME = "home".freeze
 
   belongs_to :story, optional: true
 
-  # Marca la visita de ahora a `story` (o a la portada) y devuelve desde cuándo
-  # enseñar los cambios, o nil si es la primera vez (no hay con qué comparar).
-  def self.open!(story = nil, now: Time.current)
-    transaction do
-      visit = find_by(story: story)
-      if visit.nil?
-        create!(story: story, since: now, seen_at: now)
-        next
-      end
+  def self.key_for(story) = story ? "story-#{story.id}" : HOME
 
-      visit.since = visit.seen_at if now - visit.seen_at > SESSION_GAP
-      visit.seen_at = now
-      visit.save!
-      visit.since
+  # Marca la visita de ahora a `story` (o a la portada) y devuelve desde cuándo
+  # enseñar los cambios, o nil si no hay con qué comparar. Con `mark: false`
+  # (precarga de Turbo: pasar el ratón por un enlace) solo lo calcula.
+  def self.open!(story = nil, now: Time.current, mark: true)
+    key = key_for(story)
+    visit = find_by(key: key)
+    unless visit
+      # La primera vez en una historia, lo que la portada marcó como cambiado también cuenta aquí.
+      since = story ? find_by(key: HOME)&.since : nil
+      return since unless mark
+
+      visit = create_or_find_by!(key: key) { it.assign_attributes(story: story, since: since || now, seen_at: now) }
+      return since if visit.previously_new_record?
     end
+
+    since = visit.seen_at && now - visit.seen_at > SESSION_GAP ? visit.seen_at : visit.since
+    if mark && (since != visit.since || now - visit.seen_at >= WRITE_EVERY)
+      visit.update!(since: since, seen_at: now)
+    end
+    since < now ? since : nil
   end
 end

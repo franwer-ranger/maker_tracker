@@ -137,12 +137,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_213100) do
   end
 
   create_table "visits", force: :cascade do |t|
+    t.string "key", null: false
     t.integer "story_id"
     t.datetime "since", null: false
     t.datetime "seen_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["story_id"], name: "index_visits_on_story_id", unique: true
+    t.index ["key"], name: "index_visits_on_key", unique: true
+    t.index ["story_id"], name: "index_visits_on_story_id"
   end
 
   add_foreign_key "comments", "actors"

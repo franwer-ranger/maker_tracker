@@ -19,7 +19,7 @@ class ActivityController < ApplicationController
   # cambiado desde la anterior.
   def visit_home
     now = Time.current
-    since = Visit.open!(now: now)
+    since = Visit.open!(now: now, mark: !prefetch?)
     WhileAway.home(since: since || now, now: now)
   end
 
