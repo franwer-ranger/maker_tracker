@@ -8,8 +8,16 @@ class Api::MilestonesController < Api::BaseController
       breadcrumbs: [ "mt milestone reorder #{milestone.code} --position 1 --reason \"…\"", "mt roadmap" ])
   end
 
+  # `mt milestone show M2`: con su versión, que es la que se manda al editar.
+  def show
+    render_ok(milestone_data(milestone).merge(markdown: milestone_markdown),
+      summary: "#{label(milestone)} (version #{milestone.version}).",
+      breadcrumbs: [ "mt milestone edit #{milestone.code} --version #{milestone.version} --goal \"…\"" ])
+  end
+
+  # `version` es la que leyó quien edita: si el hito ya cambió, CONFLICT.
   def update
-    changed = milestone.edit!(params.permit(:title, :goal).to_h, actor: Current.actor)
+    changed = milestone.edit!(params.permit(:title, :goal).to_h, actor: Current.actor, version: version_param)
     render_ok(milestone_data(milestone), summary: changed ? "#{label(milestone)} edited." : "#{label(milestone)} did not change.",
       breadcrumbs: [ "mt roadmap" ])
   end
@@ -41,6 +49,16 @@ class Api::MilestonesController < Api::BaseController
 
   def milestone = @milestone ||= find_milestone(params[:code])
 
+  def version_param
+    return if params[:version].blank?
+
+    Integer(params[:version].to_s, exception: false) || raise(Api::Error.validation("version must be a whole number.", hint: "see it with mt milestone show #{milestone.code}."))
+  end
+
+  def milestone_markdown
+    "---\nversion: #{milestone.version}\ncode: #{milestone.code}\ntitle: #{Api::Markdown::Formatting.scalar(milestone.title)}\nstatus: #{milestone.closed? ? 'closed' : 'open'}\n---\n\n#{milestone.goal.strip}\n"
+  end
+
   def label(milestone) = Api::Markdown::Formatting.milestone_label(milestone)
 
   def reason_required_error
@@ -48,6 +66,6 @@ class Api::MilestonesController < Api::BaseController
   end
 
   def milestone_data(milestone)
-    { milestone: { code: milestone.code, title: milestone.title, goal: milestone.goal, closed: milestone.closed? } }
+    { milestone: { code: milestone.code, title: milestone.title, goal: milestone.goal, closed: milestone.closed?, version: milestone.version } }
   end
 end

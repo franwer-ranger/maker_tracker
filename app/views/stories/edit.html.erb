@@ -1,6 +1,11 @@
 <% content_for :title, "Editar #{@story.reference}" %>
 <%= form_with model: @story, url: project_story_path(@project, @story), method: :patch, id: "story-form",
       class: "flex items-start gap-16 px-12 py-10" do |form| %>
+  <%# Versión y valores con los que se abrió: si la historia cambia mientras editas, el servidor lo detecta y enseña qué cambió (MT-37). %>
+  <%= hidden_field_tag :version, @form_version || @story.version, id: nil %>
+  <% (@base || { "title" => @story.title, "body" => @story.body, "mockup" => @story.mockup, "labels" => @story.labels.join(", "), "blocked_by" => @story.blocked_by.join(", ") }).each do |field, value| %>
+    <%= hidden_field_tag "base_#{field}", value, id: nil %>
+  <% end %>
   <div class="flex min-w-0 grow basis-0 flex-col gap-5">
     <%= render "stories/breadcrumb", story: @story %>
 
@@ -9,11 +14,18 @@
 
     <%= render "components/markdown_editor", form: form, attribute: :body, label: "Cuerpo en markdown" %>
 
-    <div class="flex items-center justify-end gap-2">
-      <span class="grow font-mono text-xs text-text-subtle">Se guarda como <%= Current.actor.name %> · queda en el historial</span>
-      <%= ui_button "Cancelar", variant: :ghost, href: project_story_path(@project, @story) %>
-      <%= ui_button "Guardar", type: "submit" %>
-    </div>
+    <% if @notice %>
+      <p class="text-control leading-[18px] text-state-defining" role="status"><%= @notice %> Revisa y guarda.</p>
+    <% end %>
+    <% if @conflict %>
+      <%= render "shared/edit_conflict", conflict: @conflict, form_id: "story-form", discard_path: edit_project_story_path(@project, @story) %>
+    <% else %>
+      <div class="flex items-center justify-end gap-2">
+        <span class="grow font-mono text-xs text-text-subtle">Se guarda como <%= Current.actor.name %> · queda en el historial</span>
+        <%= ui_button "Cancelar", variant: :ghost, href: project_story_path(@project, @story) %>
+        <%= ui_button "Guardar", type: "submit" %>
+      </div>
+    <% end %>
   </div>
 
   <%= render "stories/aside", story: @story, form: form %>

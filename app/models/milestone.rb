@@ -1,6 +1,7 @@
 # Un paso del roadmap. Su posición dentro del proyecto es su prioridad.
 class Milestone < ApplicationRecord
   include Eventable
+  include Versioned
 
   belongs_to :project
   has_many :stories, -> { order(:position) }, inverse_of: :milestone
@@ -31,17 +32,26 @@ class Milestone < ApplicationRecord
   # Si no cambia nada, no hay evento y devuelven false.
 
   # Título y objetivo. El evento guarda qué campos cambiaron, como story.edited.
-  def edit!(attributes, actor:)
+  # Con `version:` falla con Versioned::Conflict si el hito ya cambió.
+  def edit!(attributes, actor:, version: nil)
     attributes = attributes.to_h.stringify_keys.slice("title", "goal")
 
     transaction do
+      check_version!(version)
       assign_attributes(attributes)
       fields = changed & %w[title goal]
       next false if fields.empty?
 
+      bump_version
       save!
       record_event!("milestone.edited", actor: actor, data: { milestone_id: id, fields: fields })
     end
+  end
+
+  def last_editor
+    event = project.events.where(action: "milestone.edited").where("json_extract(data, '$.milestone_id') = ?", id)
+      .reorder(occurred_at: :desc, id: :desc).includes(:actor).first
+    [ event&.actor, event&.occurred_at ]
   end
 
   def close!(actor:)
