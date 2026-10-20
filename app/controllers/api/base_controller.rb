@@ -12,7 +12,7 @@ class Api::BaseController < ActionController::API
   before_action :authenticate_actor
   skip_before_action :authenticate_actor, only: :route_not_found
   # Presencia (MT-36): cada petición autenticada marca al actor como activo.
-  before_action :record_presence, unless: -> { Current.actor.nil? }
+  after_action :record_presence, unless: -> { Current.actor.nil? }
 
   rescue_from StandardError, with: :render_internal_error
   rescue_from Api::Error, with: :render_error
@@ -61,21 +61,22 @@ class Api::BaseController < ActionController::API
     Current.actor = actor
   end
 
-  # GET lee, el resto escribe. Proyecto e historia salen de la ruta, sin
-  # consultar la BD; la escritura concreta la completa Event (Presence.wrote).
+  # GET lee, el resto escribe. Solo si la respuesta es 2xx: un 404 o un 422 no
+  # dejan presencia. Si la escritura ya marcó la presencia con su evento
+  # (Presence.wrote), no se pisa. Sin proyecto en la ruta también cuenta.
   def record_presence
-    return unless params[:project_key]
+    return if Current.presence_written || !response.successful?
 
     reading = request.get? || request.head?
-    Presence.touch(Current.actor, project_key: params[:project_key].to_s.upcase, target: presence_target,
+    key = params[:project_key].to_s.upcase.presence
+    Presence.touch(Current.actor, project: (@project || Project.find_by(key: key) if key), project_key: key, target: presence_target(key),
       mode: reading ? :reading : :writing, detail: reading ? nil : "#{controller_name}##{action_name}")
   end
 
-  def presence_target
-    key = params[:project_key].to_s.upcase
-    if (number = params[:story_number] || params[:number])
+  def presence_target(key)
+    if key && (number = params[:story_number] || params[:number])
       "#{key}-#{number.to_s.upcase.delete_prefix("#{key}-")}"
-    elsif params[:code]
+    elsif key && params[:code]
       "#{key} #{params[:code].to_s.upcase}"
     elsif controller_name != "projects"
       controller_name.singularize

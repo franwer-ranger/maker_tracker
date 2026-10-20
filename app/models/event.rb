@@ -23,9 +23,12 @@ class Event < ApplicationRecord
 
   def broadcast_write
     locals = { event: self }
-    Turbo::StreamsChannel.broadcast_append_to([ project, :writes ], target: "writes", partial: "presences/write", locals: locals)
-    Turbo::StreamsChannel.broadcast_append_to(:writes, target: "writes", partial: "presences/write", locals: locals)
-    Presence.wrote(self) if Current.actor == actor && actor.agent?
+    Turbo::StreamsChannel.broadcast_append_later_to([ project, :writes ], target: "writes", partial: "presences/write", locals: locals)
+    Turbo::StreamsChannel.broadcast_append_later_to(:writes, target: "writes", partial: "presences/write", locals: locals)
+    if Current.actor == actor && actor.agent?
+      Presence.wrote(self)
+      Current.presence_written = true
+    end
   rescue => e
     Rails.error.report(e, handled: true) # emitir no puede romper la escritura ya hecha
   end
