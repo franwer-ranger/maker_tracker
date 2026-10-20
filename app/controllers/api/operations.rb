@@ -26,6 +26,14 @@ module Api::Operations
     { method: "GET", path: "/api/projects/:key/decisions", params: {}, command: "mt decisions",
       description: "All decisions, newest first, marking the superseded ones" },
 
+    # La daily (MT-42). Es un POST porque deja constancia de la daily del actor.
+    { method: "POST", path: "/api/projects/:key/daily", params: { since: "a date like 2026-10-15 or 2026-10-15 22:40; without it, since the actor's last daily (or the last 7 days if none)" },
+      command: "mt daily [--since date]",
+      description: "The project's daily for the token's actor: what happened since their last daily, in progress, blocked, waiting for the human and what is next. Records the daily, so the next one starts here; another actor's is not moved" },
+    { method: "POST", path: "/api/projects/:key/daily/ideas", params: { title: "the evolutionary idea", why: "markdown for the Contexto section (optional)" },
+      command: "mt daily idea \"…\" [--why \"…\"]",
+      description: "Proposes an evolutionary as an idea in the inbox, never in the roadmap. At most 3 per daily; VALIDATION_FAILED if the actor has not done their daily or has reached the limit" },
+
     # Trabajar (#017). Todo queda a nombre del actor del token, con su evento.
     { method: "POST", path: "/api/projects/:key/stories/:number/start", params: {}, command: "mt start PG-49",
       description: "Claims the story and moves it to in_progress. CLAIMED_BY_OTHER if someone else has it; warnings if it was not ready, is blocked or has no criteria" },

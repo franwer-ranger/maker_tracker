@@ -77,6 +77,53 @@ Next:
 - Las decisiones sustituidas no salen. Los objetivos de hito y los porqués son contenido: salen tal cual, sin cambiar mayúsculas. Si hay más de 5 vigentes, se añade `… and 8 more: mt decisions`.
 - Sin hito abierto, `## Current milestone` dice `No open milestone.` y sugiere `mt roadmap`.
 
+## `mt daily`
+
+La daily del proyecto para quien la pide: lo que ha pasado desde **su** última daily en ese proyecto (la de otro actor no la mueve), lo que está en curso, bloqueado o esperando a Fran, y lo que toca. Es la versión para agentes de lo que la UI enseña en Actividad. Maker Tracker pone los datos; el resumen y las propuestas los pone el agente (skill `daily`, `/daily`), que los cruza con `git log`. Es un `POST`: ejecutarla deja constancia (evento `daily.held`) y la siguiente cuenta desde ahí. `--since 2026-10-15` (o `"2026-10-15 22:40"`) cuenta desde esa fecha. Sin daily anterior enseña los últimos 7 días; en un proyecto recién creado funciona igual.
+
+```markdown
+# Postgram · PG · daily of claude
+
+Daily of claude in PG, since your last daily, 2026-10-20 18:02. Today is 11:50.
+
+## What happened · 5 events by claude, codex and fran
+
+PG-49  Plantillas de post reutilizables
+  2026-10-20 22:31  claude  edited body, mockup
+  2026-10-20 22:40  fran    moved to ready
+Project
+  2026-10-21 09:12  fran    edited the brief
+PG-45  Programar publicaciones
+  2026-10-21 11:20  codex   moved to done (4f3e2a1, PR #63)
+
+## In progress
+
+PG-48  Exportar post a PDF       claude  since 11:42
+
+## Blocked
+
+PG-54  Reprogramar arrastrando en el calendario  by PG-45
+
+## Waiting for fran
+
+PG-49  Plantillas de post reutilizables          claude commented 2026-10-20 22:31 and nobody replied
+PG-51  Métricas de engagement                    no criteria
+
+## What is next
+
+PG-49  Plantillas de post reutilizables
+Why this one: first ready, unblocked story in M2. PG-48 comes before it and is in progress. 2 more ready stories.
+
+Next:
+  mt daily idea "…" --why "…"   (up to 3 evolutionary ideas, after cross-checking with git log)
+  mt start PG-49
+  mt roadmap
+```
+
+- «What happened» agrupa por historia (y «Project» para lo que no es de ninguna), con un máximo de 40 eventos (los más recientes). «Waiting for fran» (el nombre del actor humano) junta las historias en Definiendo sin criterios, con preguntas abiertas o paradas más de 3 días, y las no hechas cuyo último comentario es de un agente; máximo 10.
+- Sin historial: `Nothing yet.`; sin nada en curso, `Nothing in progress.`, etc. Sin historias listas, `What is next` dice `No ready, unblocked story`.
+- `mt daily idea "Title" --why "…"` propone un evolutivo como **idea** en la bandeja (D-44): nunca entra en el roadmap. Responde con el summary (`PG-55 proposed as an idea in the inbox (1 of 3 in this daily).`) y, como mucho, **3 por daily** (`VALIDATION_FAILED` a la cuarta). Hay que haber hecho la daily antes. Su evento `story.created` lleva `daily: true` y el historial dice `created as idea (proposed in a daily)`.
+
 ## `mt next`
 
 La primera historia Lista y no bloqueada del primer hito abierto, entera, con una línea que explica por qué es esa. Lo que viene después de esa línea es exactamente `mt show`.

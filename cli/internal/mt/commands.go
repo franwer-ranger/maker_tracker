@@ -144,7 +144,7 @@ func init() {
 		example:     "mt setup https://tower.your-tailnet.ts.net mt_…", run: runSetup})
 	def(&command{name: "init", group: setupGroup, usage: "mt init <KEY> [--claude]", minArgs: 1, maxArgs: 1,
 		summary:     "Creates .mt with the project in the current directory (the root of the repo)",
-		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart hook (mt context) to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skill to .claude/skills/.",
+		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart hook (mt context) to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skills (maker-tracker and daily) to .claude/skills/.",
 		example:     "mt init PG --claude", run: runInit}, "claude! adds the Claude Code hook (and the skill, if it is not installed globally) to the repo")
 	def(&command{name: "project create", group: setupGroup, usage: "mt project create \"Name\" --key <KEY>", minArgs: 1, maxArgs: 1,
 		summary:     "Creates a project, with the brief template",
@@ -157,7 +157,7 @@ func init() {
 			return e.call("POST", "/api/projects", nil, map[string]any{"name": e.arg(0), "key": strings.ToUpper(e.opts.get("key"))})
 		}}, "key 2 to 5 letters, like PG")
 	def(&command{name: "skill install", group: setupGroup, usage: "mt skill install", maxArgs: 0,
-		summary:     "Installs (or updates) the Maker Tracker skill for Claude Code in ~/.claude/skills/",
+		summary:     "Installs (or updates) the Maker Tracker skills (maker-tracker and daily) for Claude Code in ~/.claude/skills/",
 		description: "With the skill installed globally, an agent knows Maker Tracker in any folder, also in a repo that is not in Maker Tracker yet. Uses $CLAUDE_CONFIG_DIR if it is set.",
 		example:     "mt skill install", run: runSkillInstall})
 	def(&command{name: "projects", group: setupGroup, usage: "mt projects", maxArgs: 0,
@@ -181,6 +181,20 @@ func init() {
 	def(&command{name: "next", group: readGroup, usage: "mt next", maxArgs: 0,
 		summary: "The next ready, unblocked story, whole and with why", example: "mt next",
 		run: func(e *env) error { return e.projectCall("GET", "/next", nil, nil) }})
+	def(&command{name: "daily", group: readGroup, usage: "mt daily [--since date]", maxArgs: 0,
+		summary:     "The project's daily: what happened, in progress, blocked, waiting for the human and what is next",
+		description: "Counts from your last daily in this project (another actor's daily does not move yours), or from --since (2026-10-15 or \"2026-10-15 22:40\"). Without a previous daily it shows the last 7 days. Running it records your daily, so the next one starts here. It works in a project with no history yet.",
+		example:     "mt daily",
+		run: func(e *env) error {
+			return e.projectCall("POST", "/daily", nil, optional(map[string]any{}, e, "since"))
+		}}, "since count from this date, not from your last daily")
+	def(&command{name: "daily idea", group: workGroup, usage: "mt daily idea \"…\" [--why \"…\"]", minArgs: 1, maxArgs: 1,
+		summary:     "Proposes an evolutionary as an idea in the inbox (up to 3 per daily)",
+		description: "For what the daily suggests: it goes to the inbox as an idea, never to the roadmap, and needs you to have run mt daily first. Whoever defines the product decides what happens next.",
+		example:     "mt daily idea \"Exportar el calendario a iCal\" --why \"Hay un TODO en calendar.rb y los makers lo usan en Google Calendar\"",
+		run: func(e *env) error {
+			return e.projectCall("POST", "/daily/ideas", nil, optional(map[string]any{"title": e.arg(0)}, e, "why"))
+		}}, "why the context of the idea (markdown)")
 	def(&command{name: "roadmap", group: readGroup, usage: "mt roadmap [--closed]", maxArgs: 0,
 		summary: "The roadmap: milestones in order with their stories, and the inbox", example: "mt roadmap --closed",
 		run: func(e *env) error {
@@ -403,7 +417,7 @@ func runSetup(e *env) error {
 		warnings = append(warnings, "MT_URL or MT_TOKEN are set and take precedence over this file.")
 	}
 	next := []string{"mt init <KEY> --claude   (at the root of the project's repo)"}
-	if installed, _ := globalSkillState(); installed != skillCurrent {
+	if !allSkillsCurrent() {
 		next = append([]string{"mt skill install"}, next...)
 	}
 	printFooter(e.stdout, warnings, next)

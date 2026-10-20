@@ -24,9 +24,9 @@ const (
 	skillCurrent
 )
 
-// globalSkillPath: ~/.claude/skills/maker-tracker/SKILL.md, o bajo
+// globalSkillPath: ~/.claude/skills/<nombre>/SKILL.md, o bajo
 // $CLAUDE_CONFIG_DIR si está definida (como hace Claude Code).
-func globalSkillPath() (string, error) {
+func globalSkillPath(name string) (string, error) {
 	dir := os.Getenv("CLAUDE_CONFIG_DIR")
 	if dir == "" {
 		home, err := os.UserHomeDir()
@@ -35,12 +35,12 @@ func globalSkillPath() (string, error) {
 		}
 		dir = filepath.Join(home, ".claude")
 	}
-	return filepath.Join(dir, "skills", "maker-tracker", "SKILL.md"), nil
+	return filepath.Join(dir, "skills", name, "SKILL.md"), nil
 }
 
 // globalSkillState dice si la skill global está, y si es la de este mt.
-func globalSkillState() (skillState, string) {
-	path, err := globalSkillPath()
+func globalSkillState(s skill.Skill) (skillState, string) {
+	path, err := globalSkillPath(s.Name)
 	if err != nil {
 		return skillMissing, ""
 	}
@@ -48,43 +48,55 @@ func globalSkillState() (skillState, string) {
 	switch {
 	case err != nil:
 		return skillMissing, path
-	case bytes.Equal(current, skill.Markdown):
+	case bytes.Equal(current, s.Content):
 		return skillCurrent, path
 	default:
 		return skillOutdated, path
 	}
 }
 
+// allSkillsCurrent: todas las skills globales están y son las de este mt.
+func allSkillsCurrent() bool {
+	for _, s := range skill.All() {
+		if state, _ := globalSkillState(s); state != skillCurrent {
+			return false
+		}
+	}
+	return true
+}
+
 // writeSkill deja la skill en path y dice qué ha hecho.
-func writeSkill(e *env, path string) error {
+func writeSkill(e *env, s skill.Skill, path string) error {
 	current, err := os.ReadFile(path)
-	if err == nil && bytes.Equal(current, skill.Markdown) {
+	if err == nil && bytes.Equal(current, s.Content) {
 		fmt.Fprintf(e.stdout, "%s: already up to date\n", path)
 		return nil
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	if err := os.WriteFile(path, skill.Markdown, 0o644); err != nil {
+	if err := os.WriteFile(path, s.Content, 0o644); err != nil {
 		return err
 	}
 	verb := "installed"
 	if err == nil {
 		verb = "updated"
 	}
-	fmt.Fprintf(e.stdout, "%s: maker-tracker skill %s\n", path, verb)
+	fmt.Fprintf(e.stdout, "%s: %s skill %s\n", path, s.Name, verb)
 	return nil
 }
 
-// mt skill install: la skill global, para que un agente conozca Maker
-// Tracker en cualquier carpeta.
+// mt skill install: las skills globales (maker-tracker y daily), para que un
+// agente conozca Maker Tracker en cualquier carpeta.
 func runSkillInstall(e *env) error {
-	path, err := globalSkillPath()
-	if err != nil {
-		return err
-	}
-	if err := writeSkill(e, path); err != nil {
-		return err
+	for _, s := range skill.All() {
+		path, err := globalSkillPath(s.Name)
+		if err != nil {
+			return err
+		}
+		if err := writeSkill(e, s, path); err != nil {
+			return err
+		}
 	}
 	next := []string{"mt init <KEY> --claude   (at the root of the project's repo)"}
 	if e.cfg.URL == "" {
@@ -94,20 +106,22 @@ func runSkillInstall(e *env) error {
 	return nil
 }
 
-// installClaude deja el hook en .claude/settings.json del repo y, si no está
-// la skill global, la skill en .claude/skills/maker-tracker/. Repetirlo no
-// duplica nada. Devuelve un aviso si la skill global está desfasada.
+// installClaude deja el hook en .claude/settings.json del repo y, de cada
+// skill que no esté global, la skill en .claude/skills/<nombre>/. Repetirlo no
+// duplica nada. Devuelve un aviso si alguna skill global está desfasada.
 func installClaude(e *env, dir string) (string, error) {
 	warning := ""
-	switch state, path := globalSkillState(); state {
-	case skillMissing:
-		if err := writeSkill(e, filepath.Join(dir, ".claude", "skills", "maker-tracker", "SKILL.md")); err != nil {
-			return "", err
+	for _, s := range skill.All() {
+		switch state, path := globalSkillState(s); state {
+		case skillMissing:
+			if err := writeSkill(e, s, filepath.Join(dir, ".claude", "skills", s.Name, "SKILL.md")); err != nil {
+				return "", err
+			}
+		case skillOutdated:
+			warning = fmt.Sprintf("the global skill in %s is not this mt's version: update it with mt skill install.", path)
+		default:
+			fmt.Fprintf(e.stdout, "%s: using the global skill\n", path)
 		}
-	case skillOutdated:
-		warning = fmt.Sprintf("the global skill in %s is not this mt's version: update it with mt skill install.", path)
-	default:
-		fmt.Fprintf(e.stdout, "%s: using the global skill\n", path)
 	}
 
 	settingsPath := filepath.Join(dir, ".claude", "settings.json")
