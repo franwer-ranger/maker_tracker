@@ -59,8 +59,10 @@ class Project < ApplicationRecord
   # Versioned::Conflict si el brief ya cambió.
   def edit_brief!(text, actor:, version: nil)
     transaction do
-      check_version!(version, attribute: :brief_version)
+      lock!
       next false if text == brief
+
+      check_version!(version, attribute: :brief_version)
 
       bump_version(:brief_version)
       update!(brief: text)

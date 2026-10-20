@@ -17,10 +17,16 @@ module Versioned
 
   private
 
-  # Dentro de la transacción de la edición, con el registro bloqueado y
-  # recargado (antes de asignar nada).
+  # Dentro de la transacción de la edición, con el registro ya bloqueado
+  # (`lock!`, que lo recarga) y solo si hay cambios reales: guardar sin cambiar
+  # nada es un no-op aunque la versión sea vieja.
+  #
+  # La atomicidad (que dos ediciones no pasen la comprobación a la vez) depende
+  # de que Rails 8.1 abra las transacciones de SQLite en modo IMMEDIATE: el
+  # `lock!` no bloquea nada en SQLite, es la transacción la que serializa a los
+  # escritores. Con otra base de datos, `lock!` hace un SELECT … FOR UPDATE.
   def check_version!(expected, attribute: :version)
-    lock!
+    expected = nil if expected.blank?
     return if expected.nil?
 
     current = public_send(attribute)

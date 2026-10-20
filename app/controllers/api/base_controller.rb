@@ -111,14 +111,13 @@ class Api::BaseController < ActionController::API
   def conflict_error(conflict)
     record = conflict.record
     at = Api::Markdown::Formatting.datetime(conflict.edited_at) if conflict.edited_at
-    who = conflict.editor&.name || "someone"
     by = " (#{[ conflict.editor&.name, at ].compact.join(', ')})" if conflict.editor || at
     subject, reread = case record
     when Story then [ record.reference, "mt show #{record.reference}" ]
     when Milestone then [ record.code, "mt milestone show #{record.code}" ]
     else [ "the brief of #{record.name}", "mt brief" ]
     end
-    Api::Error.new("CONFLICT", "#{subject} changed since you read it: #{who} edited it#{" at #{at}" if at} (you had version #{conflict.expected}, it is on #{conflict.current}). Nothing was saved.",
+    Api::Error.new("CONFLICT", "#{subject} changed since you read it (you had version #{conflict.expected}, it is on #{conflict.current}). Nothing was saved.",
       status: :conflict, details: { expected_version: conflict.expected, current_version: conflict.current },
       hint: "Someone changed it#{by}. Read it again with #{reread} and apply your changes on top.")
   end

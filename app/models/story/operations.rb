@@ -35,11 +35,13 @@ module Story::Operations
     raise ArgumentError, "No se puede editar con edit!: #{unknown.join(', ')}" if unknown.any?
 
     transaction do
-      check_version!(version)
+      lock!
       before = EDITABLE_FIELDS.index_with { public_send(it) }
       assign_attributes(attributes)
       fields = EDITABLE_FIELDS.reject { public_send(it) == before[it] }
       next false if fields.empty?
+
+      check_version!(version)
 
       bump_version
       save!

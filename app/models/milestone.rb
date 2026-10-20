@@ -37,10 +37,12 @@ class Milestone < ApplicationRecord
     attributes = attributes.to_h.stringify_keys.slice("title", "goal")
 
     transaction do
-      check_version!(version)
+      lock!
       assign_attributes(attributes)
       fields = changed & %w[title goal]
       next false if fields.empty?
+
+      check_version!(version)
 
       bump_version
       save!
