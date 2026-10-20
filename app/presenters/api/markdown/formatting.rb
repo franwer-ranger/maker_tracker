@@ -103,7 +103,7 @@ module Api::Markdown::Formatting
   # Lo mismo en datos.
   def story_data(story, done_numbers: nil)
     { reference: story.reference, number: story.number, title: story.title, state: story.state,
-      milestone: story.milestone&.code, claimed_by: story.claimed_by&.name,
+      milestone: story.milestone&.code, claimed_by: story.claimed_by&.name, version: story.version,
       blocked_by: story.pending_blockers(done_numbers: done_numbers).presence,
       blocked_by_questions: story.blocking_questions.map(&:reference).presence }.compact
   end

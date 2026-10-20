@@ -2,6 +2,7 @@
 # hitos ordenados, cada uno con sus historias ordenadas.
 class Project < ApplicationRecord
   include Eventable
+  include Versioned
 
   BRIEF_TEMPLATE = <<~MARKDOWN.freeze
     ## Visión
@@ -59,10 +60,16 @@ class Project < ApplicationRecord
     end
   end
 
-  def edit_brief!(text, actor:)
-    return false if text == brief
-
+  # Con `version:` (la del brief que leyó quien edita) falla con
+  # Versioned::Conflict si el brief ya cambió.
+  def edit_brief!(text, actor:, version: nil)
     transaction do
+      lock!
+      next false if text == brief
+
+      check_version!(version, attribute: :brief_version)
+
+      bump_version(:brief_version)
       update!(brief: text)
       record_event!("brief.edited", actor: actor)
     end
@@ -74,6 +81,11 @@ class Project < ApplicationRecord
         record_event!("decision.recorded", actor: actor, story: decision.story, data: { number: decision.number })
       end
     end
+  end
+
+  def last_editor
+    event = events.where(action: "brief.edited").recent_first.includes(:actor).first
+    [ event&.actor, event&.occurred_at ]
   end
 
   # El hito en el que se trabaja: el primero abierto.

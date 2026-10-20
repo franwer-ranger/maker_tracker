@@ -37,6 +37,9 @@ class Api::BaseController < ActionController::API
     render_error Api::Error.new("ALREADY_ANSWERED", "#{e.question.story.reference} #{e.question.reference} is already answered.", status: :conflict,
       hint: "see the open questions with mt questions.")
   end
+  rescue_from Versioned::Conflict do |e|
+    render_error conflict_error(e)
+  end
   rescue_from Eventable::ReasonRequired do
     render_error reason_required_error
   end
@@ -132,6 +135,21 @@ class Api::BaseController < ActionController::API
     since = " since #{Api::Markdown::Formatting.datetime(story.claimed_at)}" if story.claimed_at
     Api::Error.new("CLAIMED_BY_OTHER", "#{story.reference} is claimed by #{story.claimed_by.name}#{since}.", status: :conflict,
       hint: "pick another one with mt next, or ask #{Actor.human.name} to release it.")
+  end
+
+  # "PG-49 changed since you read it: claude edited it at 10:42 (you had version 4, it is on 5)."
+  def conflict_error(conflict)
+    record = conflict.record
+    at = Api::Markdown::Formatting.datetime(conflict.edited_at) if conflict.edited_at
+    by = " (#{[ conflict.editor&.name, at ].compact.join(', ')})" if conflict.editor || at
+    subject, reread = case record
+    when Story then [ record.reference, "mt show #{record.reference}" ]
+    when Milestone then [ record.code, "mt milestone show #{record.code}" ]
+    else [ "the brief of #{record.name}", "mt brief" ]
+    end
+    Api::Error.new("CONFLICT", "#{subject} changed since you read it (you had version #{conflict.expected}, it is on #{conflict.current}). Nothing was saved.",
+      status: :conflict, details: { expected_version: conflict.expected, current_version: conflict.current },
+      hint: "Someone changed it#{by}. Read it again with #{reread} and apply your changes on top.")
   end
 
   # Cada controlador que pide motivo dice cómo repetir el comando con él.

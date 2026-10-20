@@ -365,10 +365,27 @@ func init() {
 		run: func(e *env) error {
 			return e.projectCall("POST", "/milestones", nil, optional(map[string]any{"title": e.arg(0)}, e, "goal"))
 		}}, "goal the milestone's goal (markdown)")
-	def(&command{name: "milestone edit", group: defineGroup, usage: "mt milestone edit <milestone> [--title …] [--goal …]", minArgs: 1, maxArgs: 1,
-		summary: "Edits a milestone's title or goal (M2 or its title)", example: "mt milestone edit M2 --goal \"Schedule a week in 10 minutes\"",
-		run: func(e *env) error { return milestone(e, "", optional(map[string]any{}, e, "title", "goal")) }},
-		"title new title", "goal new goal (markdown)")
+	def(&command{name: "milestone show", group: readGroup, usage: "mt milestone show <milestone>", minArgs: 1, maxArgs: 1,
+		summary: "A milestone with its version, the one to send when editing it", example: "mt milestone show M2",
+		run: func(e *env) error {
+			return e.projectCall("GET", "/milestones/"+url.PathEscape(e.arg(0)), nil, nil)
+		}})
+	def(&command{name: "milestone edit", group: defineGroup, usage: "mt milestone edit <milestone> [--title …] [--goal …] [--version n]", minArgs: 1, maxArgs: 1,
+		summary:     "Edits a milestone's title or goal (M2 or its title)",
+		description: "With --version (the one mt milestone show prints) it fails with CONFLICT if someone changed the milestone since, and saves nothing.",
+		example:     "mt milestone edit M2 --goal \"Schedule a week in 10 minutes\" --version 3",
+		run: func(e *env) error {
+			body := optional(map[string]any{}, e, "title", "goal")
+			if e.opts.has("version") {
+				n, err := strconv.Atoi(e.opts.get("version"))
+				if err != nil {
+					return usageErrorf("--version must be a number.")
+				}
+				body["version"] = n
+			}
+			return milestone(e, "", body)
+		}},
+		"title new title", "goal new goal (markdown)", "version the version you read (mt milestone show)")
 	def(&command{name: "milestone reorder", group: defineGroup, usage: "mt milestone reorder <milestone> --position n --reason \"…\"", minArgs: 1, maxArgs: 1,
 		summary: "Changes a milestone's position (and with it, its code)", example: "mt milestone reorder M4 --position 3 --reason \"Teams before analytics\"",
 		run: func(e *env) error {

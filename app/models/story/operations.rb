@@ -5,6 +5,7 @@ module Story::Operations
   extend ActiveSupport::Concern
 
   include Eventable
+  include Versioned
 
   EDITABLE_FIELDS = %w[title body mockup labels blocked_by].freeze
 
@@ -25,21 +26,33 @@ module Story::Operations
   # Sus eventos, del más reciente al más antiguo.
   def history = events.recent_first
 
-  # Título, cuerpo y propiedades. El evento guarda qué campos cambiaron, no su contenido.
-  def edit!(attributes, actor:)
+  # Título, cuerpo y propiedades. El evento guarda qué campos cambiaron, no su
+  # contenido. Con `version:` (la que leyó quien edita) falla con
+  # Versioned::Conflict si la historia ya cambió, sin guardar nada.
+  def edit!(attributes, actor:, version: nil)
     attributes = attributes.to_h.stringify_keys
     unknown = attributes.keys - EDITABLE_FIELDS
     raise ArgumentError, "No se puede editar con edit!: #{unknown.join(', ')}" if unknown.any?
 
     transaction do
+      lock!
       before = EDITABLE_FIELDS.index_with { public_send(it) }
       assign_attributes(attributes)
       fields = EDITABLE_FIELDS.reject { public_send(it) == before[it] }
       next false if fields.empty?
 
+      check_version!(version)
+
+      bump_version
       save!
       record_event!("story.edited", actor: actor, story: self, data: { fields: fields })
     end
+  end
+
+  # Quién editó el contenido por última vez y cuándo.
+  def last_editor
+    event = events.where(action: "story.edited").recent_first.includes(:actor).first
+    [ event&.actor, event&.occurred_at ]
   end
 
   # Pasar a En curso la reclama para el actor (si es de otro, falla). Volver

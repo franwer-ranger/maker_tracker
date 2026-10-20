@@ -73,6 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
     t.datetime "closed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version", default: 1, null: false
     t.index ["project_id", "position"], name: "index_milestones_on_project_id_and_position", unique: true
     t.index ["project_id"], name: "index_milestones_on_project_id"
   end
@@ -87,6 +88,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "last_decision_number", default: 0, null: false
+    t.integer "brief_version", default: 1, null: false
     t.index ["key"], name: "index_projects_on_key", unique: true
     t.index ["slug"], name: "index_projects_on_slug", unique: true
   end
@@ -125,6 +127,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_200000) do
     t.datetime "claimed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "version", default: 1, null: false
     t.index ["claimed_by_id"], name: "index_stories_on_claimed_by_id"
     t.index ["milestone_id"], name: "index_stories_on_milestone_id"
     t.index ["project_id", "milestone_id", "position"], name: "index_stories_on_project_id_and_milestone_id_and_position", unique: true
