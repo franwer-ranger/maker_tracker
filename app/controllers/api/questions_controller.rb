@@ -27,14 +27,20 @@ class Api::QuestionsController < Api::BaseController
       hint: "mt ask #{story.reference} \"…\" --option \"…\" --option \"…\" [--recommend 2] (--recommend is required with --no-bloqueante).")
   end
 
-  # `mt answer PG-49 2 [--note "…"] [--question 12] [--decide]`
+  # `mt answer PG-49 2 [--note "…"] [--question 12] [--decide]` o, con texto libre,
+  # `mt answer PG-49 --text "…" [--question 12] [--decide]`
   def answer
     raise forbidden_error if Current.actor.agent?
 
     question = find_question
-    option = integer_param(:option) || raise(Api::Error.validation("missing the number of the option.",
-      hint: "mt answer #{story.reference} <option> (1 to #{question.options.size}). See the options with mt show #{story.reference}."))
-    story.answer_question!(question, option: option, note: params[:note], actor: Current.actor, decide: boolean_param(:decide) == true)
+    option = integer_param(:option)
+    # Sin opción, `text` es una respuesta libre (MT-30): `mt answer PG-49 --text "…"`.
+    free = params[:text].to_s.strip.presence
+    if option.nil? && free.nil?
+      raise Api::Error.validation("missing the number of the option.",
+        hint: "mt answer #{story.reference} <option> (1 to #{question.options.size}) or mt answer #{story.reference} --text \"…\". See the options with mt show #{story.reference}.")
+    end
+    story.answer_question!(question, option: option, note: option ? params[:note] : free, actor: Current.actor, decide: boolean_param(:decide) == true)
     render_ok({ question: Formatting.question_data(question.reload), story: Formatting.story_data(story.reload) },
       summary: answered_summary(question), breadcrumbs: answered_breadcrumbs)
   end
@@ -87,7 +93,8 @@ class Api::QuestionsController < Api::BaseController
   end
 
   def answered_summary(question)
-    parts = [ "#{question.reference} answered on #{story.reference} by #{Current.actor.name}: #{question.answer} · #{question.answer_text}." ]
+    given = question.free_answer? ? "“#{question.answer_text.truncate(60)}”" : "#{question.answer} · #{question.answer_text}"
+    parts = [ "#{question.reference} answered on #{story.reference} by #{Current.actor.name}: #{given}." ]
     decision = story.events.recent_first.find { it.action == "question.answered" }&.data&.dig("decision")
     parts << "Recorded as D-#{decision}." if decision
     waiting = story.reload.blocking_questions

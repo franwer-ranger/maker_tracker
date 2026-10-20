@@ -13,11 +13,15 @@
         <div class="flex flex-wrap items-center gap-3 pt-1">
           <span class="flex h-8 items-center gap-2 rounded-md bg-surface px-3 shadow-[inset_0_0_0_1px_var(--color-border-strong)]">
             <%= icon "check", size: 16, class: "text-state-done" %>
-            <span class="font-mono text-xs text-text-muted"><%= question.answer %></span>
-            <span class="text-control font-medium"><%= question.answer_text %></span>
+            <% if question.free_answer? %>
+              <span class="text-control font-medium">Respuesta libre</span>
+            <% else %>
+              <span class="font-mono text-xs text-text-muted"><%= question.answer %></span>
+              <span class="text-control font-medium"><%= question.answer_text %></span>
+            <% end %>
           </span>
           <span class="font-mono text-xs text-text-muted">
-            <%= question.answered_by.name %> · <%= relative_day(question.answered_at, time_of_day: true) %><%= " · la recomendada" if question.answer == question.recommended %>
+            <%= question.answered_by.name %> · <%= relative_day(question.answered_at, time_of_day: true) %><%= " · la recomendada" if question.answer && question.answer == question.recommended %>
           </span>
         </div>
         <% if question.answer_note.present? %>

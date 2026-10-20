@@ -1,4 +1,4 @@
-<%# Preguntas abiertas de una historia (5.10), arriba del todo. Responder con botones llega con la portada de Actividad: aquí cada opción enseña su comando. Local: story. %>
+<%# Preguntas abiertas de una historia (5.10), arriba del todo. Las opciones son botones que responden (MT-30) y cada una enseña su comando. Local: story. %>
 <% questions = story.open_questions_asked %>
 <% blocking = questions.any?(&:blocking?) %>
 <section id="preguntas-abiertas" class="flex flex-col gap-3" aria-label="Preguntas abiertas">
@@ -20,22 +20,7 @@
         <% if question.context.present? %>
           <p class="text-sm text-text-muted"><%= question.context %></p>
         <% end %>
-        <ol class="flex flex-col gap-2 pt-3">
-          <% question.options.each_with_index do |text, index| %>
-            <% number = index + 1 %>
-            <% recommended = number == question.recommended %>
-            <li class="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
-              <span class="flex min-h-control items-center gap-2 rounded-md px-4 py-2 sm:w-72 sm:shrink-0 <%= recommended ? "bg-accent text-bg" : "border border-strong text-text" %>">
-                <span class="font-mono text-xs <%= recommended ? "text-bg" : "text-text-muted" %>"><%= number %></span>
-                <span class="text-sm font-medium"><%= text %></span>
-              </span>
-              <span class="flex gap-1.5 font-mono text-xs text-text-muted">
-                <%= question_answer_command story, question, number %>
-                <% if recommended %><span class="text-text">· recomendada</span><% end %>
-              </span>
-            </li>
-          <% end %>
-        </ol>
+        <%= render "questions/answer", question: question, story: story, decide: true, other_label: "Responder con una nota…" %>
         <% unless question.blocking? %>
           <p class="pt-3 text-control leading-5 text-text-muted">No bloquea: <%= question.actor.name %> sigue con la opción <%= question.recommended %> salvo que contestes otra cosa.</p>
         <% end %>

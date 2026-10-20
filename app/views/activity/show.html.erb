@@ -1,0 +1,27 @@
+<% content_for :title, "Actividad" %>
+<div class="flex flex-col gap-10 px-4 pb-10 pt-8 md:px-12 md:pb-16 md:pt-10 lg:flex-row lg:items-start lg:gap-16">
+  <div class="flex min-w-0 grow basis-0 flex-col gap-10 lg:gap-12">
+    <% if @cards.any? %>
+      <header class="flex flex-col gap-1.5 md:gap-2">
+        <h1 class="text-[26px] font-semibold leading-8 tracking-[-0.01em] md:text-3xl md:leading-[38px]">Actividad</h1>
+        <p class="text-sm text-text-muted md:text-[15px] md:leading-6"><%= activity_summary(@cards) %></p>
+      </header>
+    <% end %>
+
+    <% if flash[:notice] %>
+      <p class="font-mono text-control text-text-muted" role="status"><%= flash[:notice] %></p>
+    <% end %>
+    <% if flash[:alert] %>
+      <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
+    <% end %>
+
+    <%# Un bloque por apartado. MT-31 (Mientras no mirabas), MT-32 (QA pendiente) y MT-33 (trabajo listo) añaden aquí su partial. %>
+    <% if @cards.any? %>
+      <%= render "activity/for_you", cards: @cards %>
+    <% else %>
+      <%= render "activity/empty", recent: @recent %>
+    <% end %>
+  </div>
+
+  <%= render "activity/in_progress", stories: @in_progress, offset: @cards.any? %>
+</div>

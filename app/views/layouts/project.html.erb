@@ -5,11 +5,13 @@
   </head>
 
   <body class="bg-bg font-sans text-text">
-    <div class="flex h-svh">
+    <%# Desde 768px, barra lateral; por debajo, barra inferior de cuatro pestañas (5.9 · Móvil). %>
+    <div class="flex h-svh flex-col md:flex-row">
       <%= render "layouts/sidebar", project: @project %>
       <main class="min-w-0 flex-1 overflow-y-auto">
         <%= yield %>
       </main>
+      <%= render "layouts/tab_bar", project: @project %>
     </div>
   </body>
 </html>

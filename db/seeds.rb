@@ -181,10 +181,14 @@ m3_stories = [
   seed_story(postgram, 27, "Panel de rendimiento por post", milestone: m3, state: :defining, labels: %w[analítica]),
   seed_story(postgram, 28, "Comparar redes", milestone: m3, state: :defining, labels: %w[analítica], blocked_by: [ 51 ]),
   seed_story(postgram, 29, "Resumen semanal por email", milestone: m3, state: :defining),
-  seed_story(postgram, 30, "Mejores horas para publicar", milestone: m3, state: :defining, labels: %w[analítica]),
+  # Con una pregunta abierta en el cuerpo: sale en «Te toca» de Actividad (MT-30).
+  seed_story(postgram, 30, "Mejores horas para publicar", milestone: m3, state: :defining, labels: %w[analítica],
+             body: Story::BODY_TEMPLATE + "¿Las horas se calculan por red o con todas juntas?\n"),
   seed_story(postgram, 32, "Alertas cuando un post despega", milestone: m3)
 ]
 m3_stories.each.with_index(1) { |story, position| story.update!(position: position) }
+# #29 lleva 4 días en Definiendo sin cambios: está parada y sale en «Te toca» (MT-30).
+postgram.stories.find_by!(number: 29).update_columns(updated_at: 4.days.ago)
 
 # Decisiones (5.5) ------------------------------------------------------------
 # El cuerpo es el porqué; se pinta tras «Por qué:», así que empieza en minúscula.

@@ -1,0 +1,21 @@
+# La portada: lo que le toca a Fran en todos los proyectos (MT-30).
+class ActivityController < ApplicationController
+  layout "project"
+
+  def show
+    return redirect_to projects_path if Project.none?
+
+    @project = current_project
+    @cards = Activity.for_you
+    @activity = Activity.new
+    @in_progress = @activity.in_progress
+    @recent = @activity.recent_events if @cards.empty?
+  end
+
+  private
+
+  # El de la barra lateral: el último que visitó o, si no, el más antiguo.
+  def current_project
+    Project.find_by(slug: session[:project_slug]) || Project.order(:created_at).first
+  end
+end

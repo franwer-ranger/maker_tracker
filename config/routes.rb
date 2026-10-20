@@ -44,8 +44,8 @@ Rails.application.routes.draw do
     match "*path", to: "base#route_not_found", via: :all
   end
 
-  # "/" redirige al proyecto si solo hay uno; "/p" lista siempre los proyectos.
-  root "projects#index"
+  # "/" es Actividad, con todos los proyectos (MT-30); "/p" los lista.
+  root "activity#show"
   resources :projects, path: "p", only: %i[index create]
 
   # Todo lo de un proyecto cuelga de su slug: /p/postgram, /p/postgram/roadmap…
@@ -62,6 +62,9 @@ Rails.application.routes.draw do
     resources :decisions, only: :create
     resources :stories, param: :number, only: %i[show create edit update] do
       resources :comments, only: :create
+      resources :questions, only: [] do
+        resource :answer, only: :create, module: :questions
+      end
       scope module: :stories do
         resource :state, only: :update
         resource :position, only: :update

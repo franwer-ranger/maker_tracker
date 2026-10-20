@@ -31,7 +31,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 | **Story** (historia) | Algo a construir | `project`, `milestone` (nulo = bandeja de ideas), `number` (por proyecto; se cita `MT-45`), `title`, `body` (md con la plantilla de `PRODUCT.md`), `properties` (json: `mockup`, `labels`, `blocked_by`), `state`, `position` (dentro del hito), `claimed_by` (actor), `claimed_at` |
 | **Decision** | Qué decidimos y por qué. Solo se añade | `project`, `story` (opcional), `number` (D-13), `title`, `body` (md: por qué), `actor` |
 | **Comment** | Conversación en una historia | `story`, `actor`, `body` (md) |
-| **Question** | Pregunta de un agente en una historia, con opciones y recomendación (MT-29). Bloquea por defecto | `story`, `actor` (quien pregunta), `title`, `context`, `options` (json), `recommended`, `reversible` (nulo = sin indicar), `blocking` (por defecto sí), `answer`, `answer_note`, `answered_by`, `answered_at` |
+| **Question** | Pregunta de un agente en una historia, con opciones y recomendación (MT-29). Bloquea por defecto | `story`, `actor` (quien pregunta), `title`, `context`, `options` (json), `recommended`, `reversible` (nulo = sin indicar), `blocking` (por defecto sí), `answer`, `answer_note`, `answered_by`, `answered_at`. Una respuesta libre (MT-30) no tiene `answer`: su texto es `answer_note` |
 | **Actor** | Quién hace algo: yo o un agente | `name`, `kind` (`human` / `agent`), `token_digest` (solo agentes) |
 | **Event** | Registro de actividad. Solo se añade | `project`, `story` (opcional), `actor`, `action`, `data` (json), `reason`, `occurred_at` |
 | **Run** | Una ejecución externa de una historia | `story`, `source` (texto libre: `wflow`, `codex`…), `external_id`, `status`, `started_at`, `finished_at`, `cost_usd`, `tokens` |
@@ -49,7 +49,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 
 - Los agentes escriben **contenido**: `body`, `brief`, `goal`, comentarios, decisiones.
 - Maker Tracker es dueño de los **hechos**: cada transición, reclamación, reordenación, commit o PR enlazado genera un `Event` con su actor y fecha. Los eventos no se editan ni se borran, y no hay endpoint que lo permita.
-- Preguntar y responder también son hechos: `question.asked` y `question.answered` (con actor y fecha; el segundo guarda la opción y, con `--decide`, el `D-n`). Si preguntar suelta la historia, es además un `story.state_changed` con `released`.
+- Preguntar y responder también son hechos: `question.asked` y `question.answered` (con actor y fecha; el segundo guarda la opción (o el texto, si fue libre) y, con `--decide`, el `D-n`). Si preguntar suelta la historia, es además un `story.state_changed` con `released`.
 - Los campos derivados (fecha de inicio y fin de una historia, PR actual, coste) se calculan a partir de los eventos y los runs, no los escribe nadie a mano.
 
 ### Roadmap como datos (propuesta)
@@ -103,7 +103,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 | `mt comment <n> "…"` | Comenta en la historia |
 | `mt decide "…" --why "…"` | Registra una decisión |
 | `mt ask <n> "…" --option … --recommend 2` | Pregunta con opciones y recomendación; bloquea la historia y la suelta, salvo con `--no-bloqueante` |
-| `mt answer <n> 2 [--question id] [--decide]` (solo una persona; un agente recibe `FORBIDDEN`, D-52) · `mt questions` | Responde una pregunta (y, si quiere, la registra como decisión) · lista las abiertas de todos los proyectos |
+| `mt answer <n> 2 [--question id] [--decide]` o `mt answer <n> --text "…"` (respuesta libre; solo una persona; un agente recibe `FORBIDDEN`, D-52) · `mt questions` | Responde una pregunta (y, si quiere, la registra como decisión) · lista las abiertas de todos los proyectos |
 | `mt create` · `mt edit` · `mt move` · `mt reorder` · `mt brief` | Escriben producto (crear y editar historias con `--file`, cambiar estado, ordenar con motivo, editar el brief) |
 
 **Skill + hook SessionStart**: la skill enseña al agente a usar `mt` y el hook inyecta `mt context` al empezar cada sesión, así cada conversación arranca sabiendo la filosofía del proyecto. `mt init PG --claude` los deja en el repo del proyecto.
@@ -154,3 +154,9 @@ Reglas:
 1. **Dependencia en un solo sentido**: el módulo usa el núcleo (`Event`, `Run`, `Story`); el núcleo nunca referencia `Wflow::`. Los puntos donde la UI del núcleo deja hueco (una pestaña extra, una sección en Stats) se resuelven comprobando si la integración está activa en `project.settings`.
 2. **Los datos siguen siendo genéricos**: el módulo solo interpreta y presenta eventos que ya están guardados. Desactivarlo o borrarlo no pierde nada.
 3. Sin el módulo, la historia muestra igualmente sus runs y eventos en una vista genérica sencilla.
+
+## Actividad, la portada (MT-30)
+
+`/` es Actividad, con todos los proyectos. No tiene tabla: `Activity` (`app/models/activity.rb`) lo calcula al consultar y devuelve tarjetas (`Activity::Card`) ordenadas por desde cuándo esperan. «Te toca» junta tres tipos: preguntas abiertas de agentes (esperan desde que se hicieron), historias En Definiendo con preguntas abiertas en el cuerpo o paradas, es decir, 3 días sin cambios (esperan desde su último cambio: `updated_at` o su último evento), y proyectos sin ninguna historia Lista y desbloqueada en sus hitos abiertos (esperan desde su último evento). El contador de la barra es el número de tarjetas, y se memoiza por petición en `Current.activity_for_you`. Cada tipo es un partial en `app/views/activity/` (`card.partial`): los bloques de MT-31, MT-32 y MT-33 añaden su método a `Activity` y su partial. «En marcha» son las historias En curso de todos los proyectos.
+
+Las preguntas se responden desde la UI con `POST /p/:slug/stories/:n/questions/:id/answer` (`Questions::AnswersController`): `option` (botón), `note`, `decide=1` o `free=1` con `note` (respuesta libre). Responde el actor humano (D-52) y vuelve a la pantalla de origen; la página refresca con morph y conserva el scroll.
