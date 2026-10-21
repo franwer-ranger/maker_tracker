@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Avisos push en este dispositivo (MT-47). Registra el service worker, enseña
-// el estado de la línea (por activar, activado, bloqueado, sin soporte o, en
-// iPhone sin la PWA instalada, instalar) y activa o desactiva la suscripción.
+// el estado de la línea (por activar, activado, bloqueado, sin HTTPS, sin
+// soporte o, en iPhone sin la PWA instalada, instalar) y activa o desactiva la suscripción.
 // El permiso se pide solo al pulsar «Activar», nunca al cargar la página.
 export default class extends Controller {
   static targets = ["state"]
@@ -19,6 +19,7 @@ export default class extends Controller {
   }
 
   async refresh() {
+    if (!window.isSecureContext) return this.show("insecure")
     if (!this.supported) return this.show(this.ios && !this.standalone ? "install" : "unsupported")
     if (Notification.permission === "denied") return this.show("blocked")
 
@@ -31,8 +32,10 @@ export default class extends Controller {
       subscription = null
     }
     if (subscription && Notification.permission === "granted") {
-      this.save(subscription) // por si el servidor la perdió; es un upsert
       this.show("on")
+      // Por si el servidor la perdió. Solo la línea visible (la barra lateral o la
+      // de la portada en el móvil), para no mandarla dos veces en cada carga.
+      if (this.element.offsetParent) this.save(subscription)
     } else {
       this.show("idle")
     }

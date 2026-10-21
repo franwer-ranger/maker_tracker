@@ -17,8 +17,20 @@ async function appVisible() {
   return windows.some((client) => client.visibilityState === "visible")
 }
 
+// Lo que manda el servidor: `{ title, options }`. Si no se puede leer, un
+// aviso genérico (en iOS no se puede dejar un push sin aviso).
+function readPush(event) {
+  try {
+    const { title, options } = event.data.json()
+    if (title) return { title, options: options || {} }
+  } catch {
+    // payload vacío o no es JSON
+  }
+  return { title: "Maker Tracker", options: { data: { path: "/" }, icon: "/icon-192.png" } }
+}
+
 self.addEventListener("push", (event) => {
-  const { title, options } = event.data.json()
+  const { title, options } = readPush(event)
   event.waitUntil((async () => {
     if (!mustShow && await appVisible()) return
     await self.registration.showNotification(title, options)

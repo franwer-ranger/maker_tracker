@@ -13,15 +13,17 @@ class Push::Notifier
 
   def self.call(event) = new(event).call
 
-  # El resumen al cerrar la ventana, calculado con lo que `Activity` tiene
-  # pendiente del proyecto en ese momento (no con un contador): si Fran ya lo
-  # resolvió, no sale. Nil si no queda nada.
-  def self.summary(project)
+  # El resumen al cerrar la ventana: solo lo que se aplazó dentro de ella
+  # (`deferred`, los avisos que no salieron sueltos), y de eso, lo que
+  # `Activity` aún tiene pendiente en ese momento: si Fran ya lo resolvió, no
+  # cuenta. Nil si no queda nada.
+  def self.summary(project, deferred)
+    ids = ->(kind) { deferred.select { it.kind == kind }.flat_map(&:ids).uniq }
     activity = Activity.new
     cards = activity.for_you.select { it.project == project }
-    questions = cards.count { it.question? && it.question.blocking? }
-    low_work = cards.any? { it.kind == :low_work }
-    testing = activity.qa_pending.count { it.project == project }
+    questions = cards.count { it.question? && it.question.id.in?(ids.(:question)) }
+    low_work = deferred.any? { it.kind == :low_work } && cards.any? { it.kind == :low_work }
+    testing = activity.qa_pending.count { it.project == project && it.story.id.in?(ids.(:testable)) }
 
     parts = []
     parts << (questions == 1 ? "1 pregunta" : "#{questions} preguntas") if questions.positive?
@@ -48,7 +50,7 @@ class Push::Notifier
       project.update_column(:ready_low_notified_at, nil) if project.ready_low_notified_at
     elsif project.ready_low_notified_at.nil? &&
           Project.where(id: project.id, ready_low_notified_at: nil).update_all(ready_low_notified_at: Time.current) == 1 && notify
-      send_or_defer(project, Push::Notice.new(title: low_work_title(project, summary.ready), body: "Abre Maker Tracker para definir las siguientes", path: "/"))
+      send_or_defer(project, Push::Notice.new(title: low_work_title(project, summary.ready), body: "Abre Maker Tracker para definir las siguientes", path: "/", kind: :low_work))
     end
   end
 
@@ -65,7 +67,7 @@ class Push::Notifier
     if Push.claim_window(project)
       Push.deliver(project, notice)
     else
-      Push::FlushJob.schedule(project, at: project.reload.last_pushed_at + Push::WINDOW)
+      Push::FlushJob.defer(project, notice, at: project.reload.last_pushed_at + Push::WINDOW)
     end
   end
 
@@ -105,7 +107,8 @@ class Push::Notifier
   def question_notice
     return unless event.action == "question.asked" && event.data["blocking"] && event.story
 
-    Push::Notice.new(title: "#{event.story.reference} · pregunta de #{event.actor.name}", body: event.data["title"].to_s, path: story_path(event.story))
+    Push::Notice.new(title: "#{event.story.reference} · pregunta de #{event.actor.name}", body: event.data["title"].to_s, path: story_path(event.story),
+      kind: :question, ids: [ event.data["question_id"] ])
   end
 
   # Una historia: «PG-47 · por probar» y abre la historia. Varias de un
@@ -114,8 +117,9 @@ class Push::Notifier
     stories = testable_stories
     case stories.size
     when 0 then nil
-    when 1 then Push::Notice.new(title: "#{stories.first.reference} · por probar", body: stories.first.title, path: story_path(stories.first))
-    else Push::Notice.new(title: "#{event.project.key} · #{stories.size} por probar", body: stories.map(&:reference).to_sentence(words_connector: ", ", two_words_connector: " y ", last_word_connector: " y "), path: "/")
+    when 1 then Push::Notice.new(title: "#{stories.first.reference} · por probar", body: stories.first.title, path: story_path(stories.first), kind: :testable, ids: stories.map(&:id))
+    else Push::Notice.new(title: "#{event.project.key} · #{stories.size} por probar", body: stories.map(&:reference).to_sentence(words_connector: ", ", two_words_connector: " y ", last_word_connector: " y "), path: "/",
+      kind: :testable, ids: stories.map(&:id))
     end
   end
 

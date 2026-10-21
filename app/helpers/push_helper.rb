@@ -9,6 +9,7 @@ module PushHelper
     on: { icon: "bell", text: "Avisos activados en este dispositivo", hint: "Preguntas, por probar y poco trabajo" },
     blocked: { icon: "bell-slash", text: "Bloqueados en este navegador", hint: "Se cambian en los ajustes del sitio" },
     unsupported: { icon: "bell", text: "Este navegador no puede recibir avisos", hint: "Usa Chrome, Edge, Firefox o Safari" },
+    insecure: { icon: "bell-slash", text: "Los avisos necesitan HTTPS", hint: "Abre Maker Tracker por su dirección https://" },
     install: { icon: "device-phone-mobile", text: "Instala Maker Tracker en la pantalla de inicio para recibir avisos", hint: "Compartir › Añadir a pantalla de inicio" }
   }.freeze
 

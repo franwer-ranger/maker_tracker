@@ -14,7 +14,14 @@ class Push::ReadyWorkJob < ApplicationJob
     human = !notify
     first = PENDING.put_if_absent(project.id, human).nil?
     PENDING[project.id] = true if human && !first
-    set(wait: DELAY).perform_later(project) if first
+    return unless first
+
+    begin
+      set(wait: DELAY).perform_later(project)
+    rescue
+      PENDING.delete(project.id) # si no se programa, el siguiente hecho lo vuelve a intentar
+      raise
+    end
   end
 
   discard_on ActiveJob::DeserializationError

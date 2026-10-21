@@ -14,8 +14,12 @@ module Push
   # Como mucho un aviso por proyecto en este tiempo; lo demás, un resumen al final.
   WINDOW = 10.minutes
 
-  # Qué dice un aviso y qué abre al pulsarlo (una ruta de la app).
-  Notice = Data.define(:title, :body, :path)
+  # Qué dice un aviso y qué abre al pulsarlo (una ruta de la app). `kind` e
+  # `ids` dicen de qué es (:question con su id, :testable con los ids de las
+  # historias, :low_work), para que el resumen solo cuente lo aplazado.
+  Notice = Data.define(:title, :body, :path, :kind, :ids) do
+    def initialize(title:, body:, path:, kind: nil, ids: []) = super
+  end
 
   def self.configured? = public_key.present? && ENV["VAPID_PRIVATE_KEY"].present? && ENV["VAPID_SUBJECT"].present?
 
@@ -26,10 +30,11 @@ module Push
   end
 
   # Lo que recibe el service worker. Todos los avisos de un proyecto comparten
-  # `tag`: uno nuevo sustituye al anterior en vez de apilarse.
+  # `tag`: uno nuevo sustituye al anterior en vez de apilarse (y,
+  # con `renotify`, vuelve a sonar).
   def self.payload(project, notice)
     { title: notice.title,
-      options: { body: notice.body, tag: "mt-#{project.key.downcase}", data: { path: notice.path },
+      options: { body: notice.body, tag: "mt-#{project.key.downcase}", renotify: true, data: { path: notice.path },
                  icon: "/icon-192.png", badge: "/badge-96.png" } }
   end
 
