@@ -12,7 +12,13 @@
           <%= link_to project_roadmap_path(project), class: "flex h-[52px] items-center gap-3 px-4 hover:bg-surface-sunken md:h-12 md:px-0 #{ComponentsHelper::FOCUS_RING}",
                 aria: { label: "#{project.name}: #{ready_work_counts(summary.ready, summary.defining_count)}" } do %>
             <span class="flex h-6 w-9 shrink-0 items-center justify-center rounded-sm bg-surface font-mono text-xs text-text"><%= project.key %></span>
-            <span class="min-w-0 grow truncate text-[15px] leading-5 md:text-sm"><%= project.name %></span>
+            <span class="flex min-w-0 grow items-center gap-2.5">
+              <span class="min-w-0 truncate text-[15px] leading-5 md:text-sm"><%= project.name %></span>
+              <%# En Actividad el modo es por proyecto (MT-38): sin borde de ventana, el punto en su fila. %>
+              <% if (working = agents_at_work(project)).any? %>
+                <%= agent_dot title: "#{working.map(&:actor_name).join(' y ')} trabajando ahora" %>
+              <% end %>
+            </span>
             <span class="w-8 shrink-0 text-right font-mono text-base leading-5 <%= summary.ready > ReadyWork::LOW ? 'text-text' : 'text-text-muted' %>"><%= summary.ready %></span>
             <span class="w-8 shrink-0 text-right font-mono text-control leading-5 text-text-muted"><%= summary.defining_count %></span>
           <% end %>

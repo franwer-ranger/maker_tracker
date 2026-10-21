@@ -1,4 +1,4 @@
-<%# Cabecera de proyecto del móvil (5.0 · Selector · Móvil, MT-45): clave + nombre + chevron; al pulsarla, la hoja con los proyectos. En escritorio no sale: el proyecto está en la barra lateral. Locals: project, action (opcional, a la derecha, p. ej. «Editar» en el Brief). %>
+<%# Cabecera de proyecto del móvil (5.0 · Selector · Móvil, MT-45): clave + nombre + chevron; al pulsarla, la hoja con los proyectos. En escritorio no sale: el proyecto está en la barra lateral. A la derecha, el agente trabajando (7.4 · Móvil, MT-38) y la acción de la pantalla. Locals: project, action (opcional, p. ej. «Editar» en el Brief). %>
 <div class="-mx-4 flex h-[52px] shrink-0 items-center justify-between self-stretch pl-2 pr-4 md:hidden">
   <%= ui_menu sheet: "Proyectos", summary: capture { %>
     <span class="flex h-11 items-center gap-2.5 px-2">
@@ -25,5 +25,9 @@
       <span class="font-mono text-xs text-text-muted">mt project create</span>
     <% end %>
   <% end %>
-  <%= local_assigns[:action] %>
+  <% if agents_at_work(project).any? %>
+    <span class="flex items-center gap-3"><%= render "agents/indicator", project: project, mobile: true %><%= local_assigns[:action] %></span>
+  <% else %>
+    <%= local_assigns[:action] %>
+  <% end %>
 </div>

@@ -1,4 +1,0 @@
-<%# Una escritura en directo: quién cambió qué. La UI que la enseñe es de MT-38. %>
-<li id="<%= dom_id(event) %>" data-actor="<%= event.actor.name %>" data-action="<%= event.action %>" data-story="<%= event.story&.reference %>">
-  <%= event.actor.name %> · <%= event.action %><%= " #{event.story.reference}" if event.story %>
-</li>

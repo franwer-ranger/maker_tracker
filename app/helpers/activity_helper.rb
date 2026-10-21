@@ -146,19 +146,21 @@ module ActivityHelper
   end
 
   # Las cuatro pestañas de la barra inferior del móvil (layouts/_tab_bar).
+  # `working`: un agente está tocando esa sección (MT-38; en escritorio, el punto de la barra lateral).
   def bottom_tabs(project)
+    sections = agent_sections(project)
     [
       { label: "Actividad", href: root_path, icon: "inbox", active: current_page?(root_path), count: activity_count },
-      { label: "Tablero", href: project_path(project), icon: "view-columns", active: current_page?(project_path(project)) },
+      { label: "Tablero", href: project_path(project), icon: "view-columns", active: current_page?(project_path(project)), working: sections.include?(:board) },
       { label: "Roadmap", href: project_roadmap_path(project), icon: "list-bullet",
-        active: current_page?(project_roadmap_path(project)) || controller_name == "stories" },
-      { label: "Brief", href: project_brief_path(project), icon: "document-text", active: controller_name == "briefs" }
+        active: current_page?(project_roadmap_path(project)) || controller_name == "stories", working: sections.include?(:roadmap) },
+      { label: "Brief", href: project_brief_path(project), icon: "document-text", active: controller_name == "briefs", working: sections.include?(:brief) }
     ]
   end
 
-  # Pestaña de la barra inferior del móvil (5.9 · Móvil): icono, etiqueta y, si hay, el contador.
-  def tab_item(label, href, icon:, active:, count: nil)
-    link_to href, class: class_names("flex w-20 shrink-0 flex-col items-center gap-1 rounded-md py-1.5 text-label leading-[14px] #{ComponentsHelper::FOCUS_RING}",
+  # Pestaña de la barra inferior del móvil (5.9 · Móvil): icono, etiqueta y, si hay, el contador o el punto de un agente.
+  def tab_item(label, href, icon:, active:, count: nil, working: false)
+    link_to href, class: class_names("relative flex w-20 shrink-0 flex-col items-center gap-1 rounded-md py-1.5 text-label leading-[14px] #{ComponentsHelper::FOCUS_RING}",
       active ? "font-medium text-text" : "text-text-muted"), aria: { current: ("page" if active) } do
       safe_join([
         tag.span(class: "relative flex") do
@@ -167,8 +169,9 @@ module ActivityHelper
             (tag.span(count, class: "absolute -right-2.5 -top-1.5 rounded-full bg-accent px-1.5 font-mono text-label leading-[14px] text-bg") if count)
           ].compact)
         end,
-        label
-      ])
+        label,
+        (agent_dot(class: "absolute left-[52px] top-1.5") if working)
+      ].compact)
     end
   end
 end

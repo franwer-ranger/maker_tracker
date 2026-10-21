@@ -1,0 +1,65 @@
+<%# Agente trabajando en la cabecera (7.4, MT-38): matriz de puntos + «Editando PG-51» (o «Leyendo») del agente más relevante; al pulsarlo, «Esta sesión» con lo que ha hecho. En escritorio, un menú de 340px; con `mobile: true` (cabecera de proyecto del móvil, 7.4b), una hoja inferior con quién es y, al pie, los demás agentes activos. Sin agentes activos no pinta nada. Locals: project, mobile. %>
+<% mobile = local_assigns[:mobile] %>
+<% entries = agents_at_work(project) %>
+<% if (entry = entries.first) %>
+  <% session = agent_session(project, entry) %>
+  <%= tag.details class: class_names("relative", mobile ? "md:hidden" : "max-md:hidden"), data: { controller: "menu", action: "toggle->menu#toggle" } do %>
+    <summary class="flex <%= mobile ? 'h-11' : 'h-8' %> cursor-pointer list-none items-center gap-2.5 rounded-md px-1 [&::-webkit-details-marker]:hidden <%= ComponentsHelper::FOCUS_RING %>"
+             aria-label="<%= entry.actor_name %>: <%= agent_doing(entry) %>">
+      <%= agent_dots %>
+      <span class="whitespace-nowrap text-control text-text"><%= agent_doing(entry) %></span>
+      <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
+    </summary>
+
+    <% if mobile %>
+      <div class="fixed inset-0 z-40 bg-black/60" data-action="click->menu#close" aria-hidden="true"></div>
+      <div class="fixed inset-x-0 bottom-0 z-50 flex max-h-[85svh] flex-col overflow-y-auto rounded-t-xl border-t border-strong bg-surface pb-[max(env(safe-area-inset-bottom),34px)] pt-2 shadow-[0_12px_32px_rgba(0,0,0,0.6)]">
+        <div class="flex justify-center pb-3 pt-1" aria-hidden="true"><span class="h-1 w-9 rounded-full bg-border-strong"></span></div>
+        <div class="flex items-center justify-between border-b border-strong px-4 pb-3">
+          <span class="flex items-center gap-2">
+            <%= agent_dot class: "animate-none" %>
+            <span class="font-mono text-control leading-4 text-text"><%= entry.actor_name %></span>
+            <span class="font-mono text-xs uppercase tracking-label text-text-muted">· Esta sesión</span>
+          </span>
+          <span class="font-mono text-xs text-text-muted">desde <%= l(entry.since.localtime, format: "%H:%M") %></span>
+        </div>
+        <ol class="flex flex-col">
+          <li class="flex min-h-[52px] items-center gap-3 px-4 shadow-[inset_2px_0_0_var(--color-accent)]">
+            <span class="w-11 shrink-0 font-mono text-xs text-accent">ahora</span>
+            <span class="grow basis-0 text-[15px] leading-5 text-text"><%= session.now %></span>
+          </li>
+          <% session.events.each do |event| %>
+            <li class="flex min-h-[52px] items-center gap-3 px-4">
+              <span class="w-11 shrink-0 font-mono text-xs text-text-muted"><%= l(event.occurred_at.localtime, format: "%H:%M") %></span>
+              <span class="grow basis-0 text-[15px] leading-5 text-text"><%= session_event_text(event) %></span>
+            </li>
+          <% end %>
+        </ol>
+        <div class="flex items-center justify-between gap-3 border-t border-strong px-4 pt-3 font-mono text-xs">
+          <span class="text-text-muted"><%= entries.drop(1).map { "#{it.actor_name} · #{writing?(it) ? 'escribiendo' : 'en'} #{agent_subject(it) || 'el proyecto'}" }.join(" · ") %></span>
+          <span class="text-right text-text-subtle">se apaga tras 60 s sin actividad</span>
+        </div>
+      </div>
+    <% else %>
+      <div class="absolute -right-12 top-full z-20 mt-2 flex w-[340px] flex-col overflow-clip rounded-xl border border-strong bg-surface shadow-[0_12px_32px_rgba(0,0,0,0.6)]">
+        <div class="flex items-center justify-between border-b border-strong px-3.5 py-3">
+          <%= section_label "Esta sesión" %>
+          <span class="font-mono text-xs text-text-subtle">desde <%= l(entry.since.localtime, format: "%H:%M") %></span>
+        </div>
+        <ol class="flex flex-col py-1.5">
+          <li class="flex h-8 shrink-0 items-center gap-2.5 px-3.5 shadow-[inset_2px_0_0_var(--color-accent)]">
+            <span class="w-10 shrink-0 font-mono text-xs text-accent">ahora</span>
+            <span class="truncate text-control leading-4 text-text"><%= session.now %></span>
+          </li>
+          <% session.events.each do |event| %>
+            <li class="flex h-8 shrink-0 items-center gap-2.5 px-3.5">
+              <span class="w-10 shrink-0 font-mono text-xs text-text-subtle"><%= l(event.occurred_at.localtime, format: "%H:%M") %></span>
+              <span class="truncate text-control leading-4 text-text-soft"><%= session_event_text(event) %></span>
+            </li>
+          <% end %>
+        </ol>
+        <div class="border-t border-strong px-3.5 py-2.5 font-mono text-xs text-text-muted">Se apaga solo tras 60 s sin actividad</div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

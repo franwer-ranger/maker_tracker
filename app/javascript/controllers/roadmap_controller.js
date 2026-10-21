@@ -120,6 +120,7 @@ export default class extends Controller {
     this.errorTarget.textContent = ""
     this.reasonTarget.value = ""
     this.pendingTarget.classList.replace("hidden", "flex")
+    this.element.dataset.liveHold = "" // no repintar en directo con un cambio sin guardar (live_controller)
     this.reasonTarget.focus()
   }
 }

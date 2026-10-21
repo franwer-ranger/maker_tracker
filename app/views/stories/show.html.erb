@@ -14,6 +14,10 @@
       <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_story_path(@project, @story), class: "mt-1 max-md:hidden" %>
     </div>
 
+    <% if (editing = agent_writing(@project, @story.reference)) %>
+      <div class="max-md:order-4"><%= render "agents/editing_notice", entry: editing %></div>
+    <% end %>
+
     <% if flash[:notice] %>
       <p class="font-mono text-control text-text-muted max-md:order-4" role="status"><%= flash[:notice] %></p>
     <% end %>

@@ -141,3 +141,42 @@
     content: "— ";
   }
 }
+
+/* Agentes trabajando (MT-38): solo CSS. La matriz de puntos (`agent_dots`) es
+   una ola de opacidad; el punto (`agent_dot`) late; lo que acaba de crear un
+   agente se resalta un momento (`agent-fresh`). Con prefers-reduced-motion,
+   todo quieto: la matriz se queda en el dibujo del mockup (--o). */
+@layer components {
+  .agent-dots > span {
+    opacity: var(--o, 1);
+    animation: agent-wave 1.6s ease-in-out infinite;
+  }
+  .agent-pulse {
+    animation: agent-pulse 1.6s ease-in-out infinite;
+  }
+  .agent-fresh {
+    animation: agent-fresh 2.4s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .agent-dots > span,
+    .agent-pulse,
+    .agent-fresh {
+      animation: none;
+    }
+  }
+}
+
+@keyframes agent-wave {
+  0%, 100% { opacity: 0.15; }
+  35% { opacity: 1; }
+  65% { opacity: 0.3; }
+}
+
+@keyframes agent-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@keyframes agent-fresh {
+  from { border-color: var(--color-accent); background-color: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface-raised)); }
+}

@@ -200,6 +200,33 @@ $ mt start 49 --as claude
     </div>
   </section>
 
+  <%# Agente trabajando (7.4, MT-38): matriz de puntos con la ola en CSS (quieta con prefers-reduced-motion), el punto de la navegación y lo que se pinta sobre el elemento. %>
+  <% claude = Presence::Entry.new(actor_id: 0, actor_name: "claude", project_id: nil, project_key: "PG", target: "PG-51", mode: :writing,
+                                  detail: "story.edited", seen_at: Time.current, since: Time.current, wrote_at: Time.current) %>
+  <section class="flex flex-col gap-[18px]">
+    <%= section_label "Agente trabajando · matriz de puntos · punto · editando" %>
+    <div class="flex flex-wrap items-start gap-16">
+      <div class="flex flex-col gap-5">
+        <span class="flex h-8 items-center gap-2.5 px-1">
+          <%= agent_dots %>
+          <span class="text-control text-text">Editando PG-51</span>
+          <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
+        </span>
+        <%= agent_editing_label claude %>
+        <span class="flex items-center gap-3 font-mono text-xs text-text-muted"><%= agent_dot %> agent_dot</span>
+      </div>
+      <nav class="flex w-[200px] flex-col gap-0.5">
+        <%= nav_item "Tablero", "#tablero", active: true, working: true %>
+        <%= nav_item "Roadmap", "#roadmap", active: false %>
+      </nav>
+      <div class="flex w-[188px] flex-col gap-2.5 rounded-lg border bg-surface-raised p-3 <%= BoardsHelper::AGENT_EDITING_BORDER %>">
+        <span class="flex items-center justify-between gap-2"><span class="font-mono text-xs text-text-muted">#51</span><%= agent_editing_label claude %></span>
+        <span class="text-sm text-text-soft">Métricas de engagement</span>
+      </div>
+      <div class="w-[420px]"><%= render "agents/editing_notice", entry: claude %></div>
+    </div>
+  </section>
+
   <%# Fila · Avisos (MT-47): la línea de avisos push en sus estados. Sin naranja. %>
   <section class="flex flex-col gap-[18px]">
     <%= section_label "Fila · Avisos · barra lateral y pie de la portada en el móvil" %>

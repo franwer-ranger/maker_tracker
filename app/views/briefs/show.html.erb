@@ -11,7 +11,13 @@
           Lo primero que lee cualquier agente que trabaje en <%= @project.name %><% if @last_edit %> · editado <%= ago_in_words(@last_edit) %><% end %>
         </p>
       </div>
-      <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_brief_path(@project), class: "max-md:hidden" %>
+      <div class="flex shrink-0 items-center gap-4">
+        <%# Un agente escribiendo el brief (MT-38). %>
+        <% if (editing = agent_writing(@project, "brief")) %>
+          <%= agent_editing_label editing %>
+        <% end %>
+        <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_brief_path(@project), class: "max-md:hidden" %>
+      </div>
     </header>
 
     <div data-controller="markdown">
