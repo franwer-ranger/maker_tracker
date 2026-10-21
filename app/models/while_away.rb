@@ -77,6 +77,7 @@ class WhileAway
       [
         closed.any? && "cerró #{stories_phrase(closed)}",
         started.any? && "empezó #{stories_phrase(started)}",
+        of.("project.deployed").any? && deployed_phrase(of.("project.deployed")),
         count_phrase(of.("question.asked"), "preguntó en", "hizo", "preguntas"),
         decisions_phrase(of.("decision.recorded")),
         count_phrase(of.("comment.added"), "comentó en", "escribió", "comentarios"),
@@ -84,6 +85,12 @@ class WhileAway
         other.any? && "movió #{stories_phrase(other)}",
         roadmap.any? && "tocó el roadmap o el brief"
       ].select(&:itself)
+    end
+
+    # "desplegó PG-30 y PG-32" (MT-46), o "desplegó 2 veces" si hay varias llamadas.
+    def deployed_phrase(events)
+      refs = events.flat_map { |event| Array(event.data["stories"]).map { "#{event.project.key}-#{it}" } }.uniq
+      refs.any? ? "desplegó #{refs.to_sentence(words_connector: ', ', two_words_connector: ' y ', last_word_connector: ' y ')}" : "desplegó"
     end
 
     # "PG-48" o "3 historias".

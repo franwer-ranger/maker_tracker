@@ -89,12 +89,12 @@ module Story::Operations
         data[:released] = true
       end
 
-      # Hecha deja QA pendiente (MT-32); salir de Hecha la quita.
+      # Hecha deja QA pendiente (MT-32) y sin desplegar (MT-46); salir de Hecha lo quita.
       if new_state == "done"
         data[:qa] = "pending"
-        update!(state: new_state, qa: "pending")
+        update!(state: new_state, qa: "pending", deployed_at: nil)
       else
-        update!(state: new_state, qa: nil)
+        update!(state: new_state, qa: nil, deployed_at: nil)
       end
       record_event!("story.state_changed", actor: actor, story: self, data: data, reason: reason)
     end

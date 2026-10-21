@@ -88,6 +88,32 @@ class Project < ApplicationRecord
     end
   end
 
+  # La QA espera al despliegue (MT-46, D-64): se activa sola con la primera
+  # llamada a `mt deployed`, sin columna ni configuración.
+  def deploys? = events.exists?(action: "project.deployed")
+
+  # Las historias Hechas con QA pendiente y sin desplegar: lo que `mt deployed`
+  # puede marcar, con los commits y el PR de su evento de Hecha.
+  # [[story, event]] (el evento puede faltar en historias antiguas).
+  def deploy_candidates
+    stories = self.stories.qa_pending.where(deployed_at: nil).includes(:milestone).order(:number).to_a
+    done = events.where(story_id: stories.map(&:id), action: "story.state_changed").order(:occurred_at, :id)
+      .select { it.data["to"] == "done" }.index_by(&:story_id) # el último gana
+    stories.map { [ it, done[it.id] ] }
+  end
+
+  # `mt deployed`: marca como desplegadas las historias `numbers` (solo las que
+  # esperan, así llamar dos veces es idempotente) y deja un evento del proyecto
+  # aunque no marque ninguna: con él se activa la espera. `warnings` son los
+  # avisos del CLI (las que dio por desplegadas sin nada que comprobar). Devuelve las marcadas.
+  def deploy!(sha:, numbers:, actor:, warnings: [])
+    transaction do
+      marked = stories.qa_pending.where(deployed_at: nil, number: numbers).order(:number).select { it.deployed!(sha: sha, actor: actor) }
+      record_event!("project.deployed", actor: actor, data: { sha: sha, stories: marked.map(&:number), warnings: warnings.presence }.compact)
+      marked
+    end
+  end
+
   # Dónde se prueba (MT-32): la URL de la primera línea bajo «## Dónde se prueba»
   # del brief. Nil si no hay sección o la línea no trae ninguna.
   def qa_url

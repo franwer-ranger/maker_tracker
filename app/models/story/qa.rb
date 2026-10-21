@@ -6,6 +6,11 @@
 # «Probada» la cierra (`qa.passed`); «Falla» pide una nota, crea una historia en
 # Definiendo en el mismo hito y deja el enlace en el evento (`qa.failed`). La
 # historia original no se reabre. Solo una persona prueba, como con las preguntas.
+#
+# La espera al despliegue (MT-46, D-62): en un proyecto que ya ha llamado a
+# `mt deployed` (Project#deploys?), la QA pendiente solo se puede probar cuando
+# la historia tiene `deployed_at`. Un proyecto que nunca despliega con mt sigue
+# como antes: Hecha es probable al momento.
 module Story::Qa
   extend ActiveSupport::Concern
 
@@ -29,11 +34,31 @@ module Story::Qa
 
   included do
     scope :qa_pending, -> { where(qa: "pending") }
+    # Lo que ya se puede probar: sin espera activa en su proyecto o ya desplegada.
+    scope :qa_testable, -> { qa_pending.where("stories.deployed_at IS NOT NULL OR NOT #{PROJECT_DEPLOYS_SQL}") }
+    # Hecha, con QA pendiente, en un proyecto con espera activa y aún sin desplegar.
+    scope :qa_undeployed, -> { qa_pending.where(deployed_at: nil).where(PROJECT_DEPLOYS_SQL) }
   end
+
+  # Project#deploys? como subconsulta: existe un evento `project.deployed`.
+  PROJECT_DEPLOYS_SQL = "EXISTS (SELECT 1 FROM events WHERE events.project_id = stories.project_id AND events.action = 'project.deployed')".freeze
 
   def qa_pending? = qa == "pending"
   def qa_passed? = qa == "passed"
   def qa_failed? = qa == "failed"
+
+  # Hecha, con la QA sin pasar, en un proyecto que despliega con mt y todavía sin desplegar.
+  def qa_awaiting_deploy? = qa_pending? && deployed_at.nil? && project.deploys?
+
+  # `mt deployed` la da por desplegada en `sha`. `false` si ya lo estaba o no espera QA.
+  def deployed!(sha:, actor:)
+    with_lock do
+      next false unless qa_pending? && deployed_at.nil?
+
+      update!(deployed_at: Time.current)
+      record_event!("story.deployed", actor: actor, story: self, data: { sha: sha })
+    end
+  end
 
   # Los criterios de aceptación del cuerpo, sin la viñeta ni la casilla.
   def criteria_list

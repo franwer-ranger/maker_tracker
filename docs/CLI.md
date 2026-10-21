@@ -406,6 +406,38 @@ PG-47 failed QA. PG-55 was created in M2 · Publicar sin fricción as defining, 
 
 `ok` la cierra (repetirlo no es un error: `PG-47 had already passed QA.`). `fail` **exige** `--note`, crea una historia en Definiendo en el mismo hito, con la nota y la referencia a la original en `## Contexto`, y la enlaza en el evento; la original no se reabre. Eventos `qa.passed` y `qa.failed` (con actor, fecha, la nota y, en el segundo, el número de la historia creada). **Solo una persona prueba**: un agente recibe `Error: only a person tests QA, and codex is an agent.` (`FORBIDDEN`); puede listar con `mt qa`. Una historia sin QA pendiente da `NOT_PENDING` (409). Endpoints: `GET /api/qa` y `POST /api/projects/:key/stories/:n/qa` (`result: ok|fail`, `note`).
 
+### La QA espera al despliegue (MT-46)
+
+Hecha es mergeada, no desplegada. Un proyecto cuyo script de despliegue llama a `mt deployed` **activa solo** la espera con la primera llamada (D-64: se deriva de que exista un evento `project.deployed`; sin configuración). Desde entonces `mt qa` y «Por probar» solo listan las historias con `deployed_at`; un proyecto que nunca llama a `mt deployed` sigue como arriba, Hecha sale al momento.
+
+```text
+$ mt deployed                       # sha por defecto: HEAD del repo donde corres mt
+deployed a1b2c3d: MT-30, MT-32 can be tested now · MT-35 still waiting
+Warning: MT-31 has no commits or PR to check: I take it as deployed.
+
+Next:
+  mt qa
+  mt deployed   (again, when MT-35 is deployed)
+```
+
+`mt deployed [<sha>] [--project PG]` lo ejecuta cualquier actor con token (no es QA). Lee de la API los candidatos (`GET /api/projects/:key/deployed`: Hechas con QA pendiente y sin desplegar, con `commits` y `pr` de su evento de Hecha), decide con git qué contiene el sha y envía `POST /api/projects/:key/deployed` con `{sha, stories: [números]}`. Si el sha no existe en local hace un `git fetch --quiet` y, si sigue sin existir, da error. Orden de la decisión (D-63):
+
+1. Tiene commits que existen en el repo local: desplegada si **todos** son ancestros del sha (`git merge-base --is-ancestor`); si alguno no lo es, sigue esperando, sin error.
+2. Ninguno existe en local (un squash) pero tiene PR: desplegada si el historial del sha trae `Merge pull request #N` o `(#N)` en un asunto.
+3. Nada que comprobar (sin commits ni PR): se da por desplegada en esta llamada y se avisa con un `Warning:`, que además queda en el evento `project.deployed` (`warnings`).
+
+Una historia con PR y sin rastro (ningún commit existe aquí y el PR no está en el historial) **espera**: es la opción conservadora (D-68, que aclara D-63). Solo se aceptan como commits los que cumplen `^[0-9a-f]{7,40}$`; cualquier otra cosa se trata como «no existe aquí».
+
+Llamarlo dos veces con el mismo sha, o con uno posterior, es idempotente. Siempre deja un evento `project.deployed` (aunque no marque ninguna), que es lo que activa la espera. Si el servidor no responde (se reinicia al desplegar), falla por conexión: llámalo cuando `/up` ya conteste (`bin/deploy` lo hace).
+
+Con la espera activa, `mt qa` lista solo lo desplegado y termina con una línea si hay más:
+
+```text
+1 done story is not deployed yet: mt qa --undeployed lists it.
+```
+
+`mt qa --undeployed` lista esas (mismo formato). `mt show` de una historia sin desplegar lleva `## QA · waiting for deploy` en vez de `## QA · pending`; `mt qa MT-30 ok|fail` sigue funcionando sobre ella. En el historial, `deployed (a1b2c3d)` (`story.deployed`); en la daily, una frase por llamada: `deployed a1b2c3d: MT-30, MT-32 can be tested now` (`project.deployed`).
+
 En `mt show`, una historia con QA lleva `## QA · pending` (con dónde probarla) o `## QA · passed|failed` antes de `## Questions`, y su historial dice `moved to done (…) · QA pending`.
 
 ## Coste (MT-34)

@@ -41,8 +41,30 @@ class Activity
   # QA pendiente de todos los proyectos (MT-32): no cuenta en «Te toca» ni en el
   # contador. Las que llevan más tiempo hechas, primero. Tres consultas en total
   # (historias con su proyecto, y sus eventos de Hecha con su actor), no una por proyecto.
-  def qa_pending
-    stories = Story.qa_pending.includes(:project, :milestone).to_a
+  # Solo lo que ya se puede probar (MT-46): en un proyecto con espera al despliegue,
+  # lo desplegado; las demás van en `qa_undeployed`.
+  def qa_pending = qa_cards(Story.qa_testable)
+
+  # Las Hechas sin desplegar de proyectos con espera activa (MT-46), con el mismo
+  # formato: es lo que lista `mt qa --undeployed`.
+  def qa_undeployed = qa_cards(Story.qa_undeployed)
+
+  def qa_undeployed_count = Story.qa_undeployed.count
+
+  # Historias En curso de todos los proyectos, la que lleva más tiempo primero.
+  def in_progress
+    Story.in_progress.includes(:project, :claimed_by).order(:claimed_at, :id).to_a
+  end
+
+  # Lo último que ha pasado, de todos los proyectos.
+  def recent_events(limit = RECENT)
+    Event.where.not(action: Changes::GROUPED).includes(:project, :story, :actor).recent_first.limit(limit).to_a
+  end
+
+  private
+
+  def qa_cards(scope)
+    stories = scope.includes(:project, :milestone).to_a
     return [] if stories.empty?
 
     done = Event.where(story_id: stories.map(&:id), action: "story.state_changed").includes(:actor).order(:occurred_at, :id)
@@ -53,18 +75,6 @@ class Activity
         commits: event&.commits || [], url: story.project.qa_url, criteria: story.criteria_list)
     end.sort_by { [ it.done_at, it.story.id ] }
   end
-
-  # Historias En curso de todos los proyectos, la que lleva más tiempo primero.
-  def in_progress
-    Story.in_progress.includes(:project, :claimed_by).order(:claimed_at, :id).to_a
-  end
-
-  # Lo último que ha pasado, de todos los proyectos.
-  def recent_events(limit = RECENT)
-    Event.includes(:project, :story, :actor).recent_first.limit(limit).to_a
-  end
-
-  private
 
   # Las abiertas, bloqueen o no (una que no bloquea también espera su respuesta).
   def question_cards
