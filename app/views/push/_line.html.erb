@@ -1,0 +1,33 @@
+<%# La línea de avisos (MT-47). Se pintan todos los estados ocultos y el controlador `push` enseña el de este dispositivo.
+    Permanente: el refresco con morph no debe volver a ocultarla. %>
+<% sidebar = variant == :sidebar %>
+<% controller = state.nil? %>
+<%= tag.div id: ("push-line-#{variant}" if controller), hidden: controller, class: class_names("border-t border-border", sidebar ? "px-2 pt-4" : "-mx-4", "-mb-10 md:hidden": !sidebar && controller),
+      data: (controller ? { controller: "push", push_key_value: Push.public_key, turbo_permanent: true } : {}) do %>
+  <% PushHelper::PUSH_STATES.each do |name, line| %>
+    <% next if state && state != name %>
+    <% hint = line[:hint] unless sidebar && name.in?(%i[idle on]) %>
+    <%# El `hidden` va en un envoltorio sin clases: con `flex` en el mismo elemento, la clase ganaría al atributo. %>
+    <%= tag.div hidden: controller, data: (controller ? { push_target: "state", state: name } : {}) do %>
+      <%= tag.div class: sidebar ? "flex items-start gap-2" : "flex min-h-[72px] items-center gap-3 p-4" do %>
+        <%= icon line[:icon], size: 16, class: class_names(name == :on ? "text-text" : "text-text-muted") %>
+        <div class="flex min-w-0 grow basis-0 flex-col <%= sidebar ? "gap-2.5" : "gap-0.5" %>">
+          <span class="<%= sidebar ? "text-control" : "text-sm leading-[18px]" %> text-text-muted"><%= line[:text] %></span>
+          <% if hint %>
+            <span class="text-control text-text-subtle"><%= hint %></span>
+          <% end %>
+          <% if sidebar && name == :idle %>
+            <%= ui_button "Activar", variant: :secondary, size: :sm, class: "self-start", data: { action: "push#subscribe" } %>
+          <% elsif sidebar && name == :on %>
+            <%= ui_button "Desactivar", variant: :ghost, size: :sm, class: "self-start !h-5 !px-0", data: { action: "push#unsubscribe" } %>
+          <% end %>
+        </div>
+        <% if !sidebar && name == :idle %>
+          <%= ui_button "Activar", variant: :secondary, data: { action: "push#subscribe" } %>
+        <% elsif !sidebar && name == :on %>
+          <%= ui_button "Desactivar", variant: :ghost, class: "!pl-4 !pr-1", data: { action: "push#unsubscribe" } %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

@@ -35,4 +35,25 @@ namespace :mt do
       puts format("%-16s %-6s último uso: %s", actor.name, actor.kind, used)
     end
   end
+
+  # Avisos push (MT-47). Las claves van en el entorno, no en credentials: la
+  # torre ya inyecta `.env` y un autoalojado no tiene que tocar `master.key`.
+  desc "Genera un par de claves VAPID para los avisos push y la línea para pegar en .env"
+  task :vapid, [ :subject ] => :environment do |_task, args|
+    key = WebPush.generate_key
+    subject = args[:subject].presence || "mailto:tu@correo"
+
+    puts <<~TEXT
+      Claves VAPID nuevas. Añádelas al .env de la instancia y reinicia la app
+      (con Docker: docker compose up -d):
+
+        VAPID_PUBLIC_KEY=#{key.public_key}
+        VAPID_PRIVATE_KEY=#{key.private_key}
+        VAPID_SUBJECT=#{subject}
+
+      VAPID_SUBJECT es un contacto (mailto:… o https://…) que ven Apple, Google y Mozilla.
+      Cambiar las claves invalida todas las suscripciones: hay que reactivar los
+      avisos en cada dispositivo.
+    TEXT
+  end
 end
