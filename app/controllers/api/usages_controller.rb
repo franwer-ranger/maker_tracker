@@ -20,7 +20,11 @@ class Api::UsagesController < Api::BaseController
         summary: "no story of #{Current.actor.name} in progress during this session; nothing reported.")
     end
 
-    event = target.report_usage!(actor: Current.actor, source: source, session_id: session_id, models: models, occurred_at: ended_at)
+    event = begin
+      target.report_usage!(actor: Current.actor, source: source, session_id: session_id, models: models, occurred_at: ended_at)
+    rescue ArgumentError => e
+      raise Api::Error.validation("#{e.message}.")
+    end
     total = target.usage_total
     data = { story: Formatting.story_data(target), reported: event.present?, total: total && { tokens: total.tokens, cost_usd: total.cost_usd.to_f, sessions: total.sessions } }
     unless event

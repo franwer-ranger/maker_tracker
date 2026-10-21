@@ -192,7 +192,21 @@ func runUsage(e *env) error {
 // runUsageHook lee el JSON del hook SessionEnd de stdin y hace una sola
 // llamada. Nunca falla ni imprime nada: sin transcript, JSON raro o sin red, sale.
 func runUsageHook(e *env) {
-	defer func() { _ = recover() }()
+	// Una fecha límite para toda la función (lectura del transcript incluida):
+	// si se agota, sale en silencio mientras el hook sigue dentro de su timeout.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		defer func() { _ = recover() }()
+		usageHookRun(e)
+	}()
+	select {
+	case <-done:
+	case <-time.After((hookUsageTimeout - 2) * time.Second):
+	}
+}
+
+func usageHookRun(e *env) {
 	var input struct {
 		TranscriptPath string `json:"transcript_path"`
 		Cwd            string `json:"cwd"`

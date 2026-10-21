@@ -52,7 +52,8 @@ module Story::Usage
   def report_usage!(actor:, source:, session_id:, models:, occurred_at: nil)
     total = self.class.normalize_usage(models)
     with_lock do
-      previous = project.events.where(action: ACTION).recent_first.find { it.data["source"] == source && it.data["session_id"] == session_id }
+      previous = project.events.where(action: ACTION, actor: actor)
+        .where("json_extract(data, '$.source') = ? AND json_extract(data, '$.session_id') = ?", source, session_id).recent_first.first
       before = (previous&.data&.dig("session_total", "models")).to_a.index_by { it["model"] }
       next if total.sum { it["tokens"] } <= before.values.sum { it["tokens"].to_i }
 
@@ -75,7 +76,11 @@ module Story::Usage
   class_methods do
     # Una fila por modelo con enteros >= 0 (y la misma sesión con un modelo repetido, sumada).
     def normalize_usage(models)
-      rows = Array(models).filter_map { it.respond_to?(:to_unsafe_h) ? it.to_unsafe_h : it.to_h if it.respond_to?(:to_h) }.map(&:stringify_keys)
+      rows = Array(models).map do
+        raise ArgumentError, "each model must be an object with model and its token counts" unless it.respond_to?(:to_unsafe_h) || it.is_a?(Hash)
+
+        (it.respond_to?(:to_unsafe_h) ? it.to_unsafe_h : it).stringify_keys
+      end
       rows.group_by { it["model"].to_s.strip }.reject { |name, _| name.empty? }.map do |name, group|
         row = TOKEN_FIELDS.to_h { |f| [ f.to_s, group.sum { [ it[f.to_s].to_i, 0 ].max } ] }
         row.merge("model" => name, "tokens" => row.values.sum)
