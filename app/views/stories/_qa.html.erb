@@ -1,6 +1,7 @@
 <%# QA pendiente (5.12): arriba de la historia, antes del cuerpo. Es una tarea tuya, no bloquea nada. Local: story. %>
 <% event = story_done_event(story) %>
 <% url = story.project.qa_url %>
+<% commits = event&.commits || [] %>
 <section id="qa" class="flex flex-col gap-3" aria-label="QA pendiente">
   <div class="flex items-baseline justify-between gap-4">
     <%= section_label "QA pendiente · te falta probarla" %>
@@ -10,7 +11,7 @@
     <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
       <span class="flex min-w-0 items-center gap-2 font-mono text-xs text-text-muted">
         <%= state_dot :done %>
-        <span><%= ["Hecha #{away_time(event&.occurred_at || story.updated_at)}", event&.actor&.name, (pluralize_es(Array(event&.data&.dig("commits")).size, "commit") if Array(event&.data&.dig("commits")).any?)].compact.join(" · ") %></span>
+        <span><%= ["Hecha #{away_time(event&.occurred_at || story.updated_at)}", event&.actor&.name, (pluralize_es(commits.size, "commit") if commits.any?)].compact.join(" · ") %></span>
       </span>
       <% if url %>
         <%= link_to url, target: "_blank", rel: "noopener", class: "flex items-center gap-1.5 rounded-sm text-control font-medium text-text #{ComponentsHelper::FOCUS_RING}" do %>
@@ -20,6 +21,9 @@
         <%= link_to "Sin «Dónde se prueba» en el brief", project_brief_path(story.project), class: "rounded-sm text-control text-text-muted underline decoration-border-strong underline-offset-[3px] hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
       <% end %>
     </div>
+    <% if commits.any? %>
+      <ul class="flex flex-col gap-1"><% commits.each do |commit| %><li><%= render "stories/commit", commit: commit, class: "text-xs leading-[18px]" %></li><% end %></ul>
+    <% end %>
     <p class="text-sm leading-5 text-text-soft">Prueba los criterios de aceptación de abajo. Si algo falla, la nota abre una historia nueva <%= story.milestone ? "en #{story.milestone.code}" : "en la bandeja de ideas" %>, enlazada a esta.</p>
     <%= render "qa/actions", story: story, compact: true %>
   </div>

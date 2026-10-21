@@ -293,10 +293,13 @@ seed_event(postgram, "question.asked", story: s50, actor: codex, at: q50.created
 # QA pendiente (5.9, 5.12): tres historias hechas hace poco que Fran aún no ha probado.
 # Las demás hechas son anteriores a la funcionalidad y no entran. Una que ya se probó
 # en desarrollo no vuelve a quedar pendiente.
-{ 47 => [ codex, 1.day.ago.change(hour: 18, min: 40), %w[4f3e2a1 9b1c7d0 c02e5f8] ], 43 => [ claude, today + 6.hours + 22.minutes, %w[a7d41e3 5e90b2c] ],
-  42 => [ codex, today + 3.hours + 5.minutes, %w[d1f8a64] ] }.each do |number, (actor, at, commits)|
+# Los commits llevan asunto (MT-44); el de PG-42 se queda como sha a secas, como los eventos de antes.
+{ 47 => [ codex, 1.day.ago.change(hour: 18, min: 40), [ { sha: "4f3e2a1", message: "Guarda el borrador cada pocos segundos" }, { sha: "9b1c7d0", message: "Recupera el borrador al volver a abrir el post" },
+                                                       { sha: "c02e5f8", message: "Avisa cuando el borrador no se pudo guardar" } ], "https://github.com/acme/postgram/pull/63" ],
+  43 => [ claude, today + 6.hours + 22.minutes, [ { sha: "a7d41e3", message: "Permite elegir varias imágenes en el selector" }, { sha: "5e90b2c", message: "Sube las imágenes en paralelo" } ], nil ],
+  42 => [ codex, today + 3.hours + 5.minutes, %w[d1f8a64], nil ] }.each do |number, (actor, at, commits, pr)|
   story = postgram.stories.find_by!(number: number)
-  seed_event(postgram, "story.state_changed", story: story, actor: actor, at: not_future(at), data: { from: "in_progress", to: "done", commits: commits, qa: "pending" })
+  seed_event(postgram, "story.state_changed", story: story, actor: actor, at: not_future(at), data: { from: "in_progress", to: "done", commits: commits, pr: pr, qa: "pending" }.compact)
   story.update_columns(qa: "pending") if story.qa.nil?
 end
 

@@ -105,7 +105,7 @@ PG-49  Plantillas de post reutilizables
 Project
   2026-10-21 09:12  fran    edited the brief
 PG-45  Programar publicaciones
-  2026-10-21 11:20  codex   moved to done (4f3e2a1, PR #63)
+  2026-10-21 11:20  codex   moved to done (4f3e2a1 · Guarda el borrador, PR #63)
 
 ## In progress
 
@@ -386,6 +386,7 @@ $ mt qa
 PG-47  Borradores automáticos          done 2026-10-20 18:40 by codex  https://testing.postgram.app
        1 Mientras escribes, el post se guarda solo cada pocos segundos.
        2 Si cierras la pestaña y vuelves, el borrador sigue ahí.
+       4f3e2a1 · Guarda el borrador cada pocos segundos
 PG-43  Subir varias imágenes a la vez  done 01:12 by claude            https://testing.postgram.app
        1 Puedo elegir varias imágenes en un solo selector.
 
@@ -434,7 +435,11 @@ Next:
 ```text
 $ mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63
 PG-49 done by claude, with 1 commit and PR #63.
+```
 
+`--commit` lee el asunto de cada commit con `git log -1 --format=%s <sha>` (en el repo donde corres `mt`) y lo envía junto al sha; si git falla (fuera del repo, sha desconocido) envía solo el sha, sin error. La API acepta `commits` como lista de shas o de `{sha, message}`. Donde se pintan (historia, «Qué cambió», QA, `mt show`, `mt daily`, `mt qa`) salen como `4f3e2a1 · asunto`; en la web el sha enlaza al commit si el evento trae un PR de GitHub. Los eventos viejos (solo shas) se siguen leyendo.
+
+```text
 Next:
   mt next
 ```

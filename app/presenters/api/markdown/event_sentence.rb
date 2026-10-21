@@ -45,10 +45,11 @@ class Api::Markdown::EventSentence
     end
   end
 
-  # Commits y PR al terminar: " (4f3e2a1, PR #63)".
+  # Commits y PR al terminar: " (4f3e2a1 · Subject; 9b1c7d0, PR #63)".
   def work
-    items = Array(@data["commits"]).map { it.to_s.first(7) }
+    items = [ @event.commits.map(&:label).join("; ").presence ]
     items << pr_label(@data["pr"]) if @data["pr"].present?
+    items.compact!
     " (#{items.join(', ')})" if items.any?
   end
 

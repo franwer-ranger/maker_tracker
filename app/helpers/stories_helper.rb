@@ -59,7 +59,9 @@ module StoriesHelper
 
   # «Qué cambió desde tu visita» (5.11): una línea por cosa nueva, no por evento.
   # Marca: ! un cambio de estado o de sitio, − algo que deja de esperar, + algo nuevo.
-  ChangeLine = Data.define(:mark, :text, :who, :at, :detail)
+  ChangeLine = Data.define(:mark, :text, :who, :at, :detail, :commits) do
+    def initialize(commits: [], **rest) = super
+  end
   CHANGE_MARKS = { "!" => "text-state-defining", "−" => "text-text-muted", "+" => "text-state-done" }.freeze
 
   def story_change_lines(events)
@@ -121,9 +123,9 @@ module StoriesHelper
   def state_change_lines(event)
     data = event.data
     lines = [ ChangeLine.new("!", "Estado: #{Story.human_state(data['from'])} → #{Story.human_state(data['to'])}", event.actor.name, event.occurred_at, nil) ]
-    commits = Array(data["commits"]).map { it.to_s.first(7) }
-    work = commits + [ (data["pr"].present? ? "PR #{data['pr'].to_s.delete_prefix('#')}" : nil) ].compact
-    lines << ChangeLine.new("+", pluralize_es(commits.size, "commit"), event.actor.name, event.occurred_at, work.join(", ")) if commits.any?
+    commits = event.commits
+    pr = ("PR #{data['pr'].to_s.delete_prefix('#')}" if data["pr"].present?)
+    lines << ChangeLine.new("+", pluralize_es(commits.size, "commit"), event.actor.name, event.occurred_at, pr, commits: commits) if commits.any?
     lines
   end
 

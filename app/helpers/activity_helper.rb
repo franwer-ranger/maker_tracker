@@ -122,7 +122,7 @@ module ActivityHelper
 
   # Desplegada: "Hecha ayer 18:40 · codex · QA pendiente" (en móvil, sin lo último).
   def qa_card_meta(card)
-    [ "Hecha #{away_time(card.done_at)}", card.done_by&.name, ("#{card.commits} #{'commit'.pluralize(card.commits)}" if card.commits.positive?), "QA pendiente" ].compact.join(" · ")
+    [ "Hecha #{away_time(card.done_at)}", card.done_by&.name, (pluralize_es(card.commits.size, "commit") if card.commits.any?), "QA pendiente" ].compact.join(" · ")
   end
 
   # Trabajo listo (MT-33) ----------------------------------------------------

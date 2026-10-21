@@ -23,6 +23,9 @@
         <%= link_to "Sin «Dónde se prueba» en el brief", project_brief_path(card.project), class: "rounded-sm text-control text-text-muted underline decoration-border-strong underline-offset-[3px] hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
       <% end %>
     </div>
+    <% if card.commits.any? %>
+      <ul class="flex flex-col gap-1 pt-1"><% card.commits.each do |commit| %><li><%= render "stories/commit", commit: commit, class: "text-xs leading-[18px]" %></li><% end %></ul>
+    <% end %>
     <% if card.criteria.any? %>
       <ol class="flex flex-col gap-1.5 pt-1 md:pt-0.5">
         <% card.criteria.each_with_index do |criterion, index| %>

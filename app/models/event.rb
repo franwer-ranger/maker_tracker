@@ -19,6 +19,27 @@ class Event < ApplicationRecord
 
   def readonly? = persisted? || super
 
+  # Un commit enlazado al terminar una historia (MT-44). `url` solo si se conoce
+  # el repo, que sale del PR de GitHub del mismo evento.
+  Commit = Data.define(:sha, :message, :url) do
+    def short = sha.first(7)
+
+    # "4f3e2a1 · Guarda el borrador"; sin asunto, solo el sha.
+    def label = [ short, message ].compact.join(" · ")
+  end
+
+  # La única forma de leer los commits de un evento. Los eventos viejos los
+  # guardan como lista de strings (solo el sha) y los nuevos como `{sha, message}`;
+  # se normaliza al leer, sin migrar. Siempre una lista (vacía si no hay).
+  def commits
+    repo = data["pr"].to_s[%r{\Ahttps?://[^/]+/[^/]+/[^/]+(?=/pull/\d+)}]
+    Array(data["commits"]).filter_map do |item|
+      sha, message = item.is_a?(Hash) ? item.values_at("sha", "message") : [ item, nil ]
+      sha = sha.to_s.strip
+      Commit.new(sha: sha, message: message.to_s.strip.presence, url: ("#{repo}/commit/#{sha}" if repo)) if sha.present?
+    end
+  end
+
   private
 
   def broadcast_write
