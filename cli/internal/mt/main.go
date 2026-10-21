@@ -183,8 +183,12 @@ func (e *env) render(envl *Envelope) error {
 
 // footerWriter: dónde va el pie. En una terminal, stdout (se ve como siempre).
 // Si stdout es un fichero o una tubería (mt brief > f.md), el pie va a stderr
-// para que no se cuele en el fichero que luego se vuelve a subir.
+// para que no se cuele en el fichero que luego se vuelve a subir. Con --hook
+// (SessionStart) siempre a stdout: Claude Code solo inyecta el stdout del hook.
 func (e *env) footerWriter() io.Writer {
+	if e.opts.has("hook") {
+		return e.stdout
+	}
 	if f, ok := e.stdout.(*os.File); ok {
 		if info, err := f.Stat(); err == nil && info.Mode()&os.ModeCharDevice == 0 {
 			return e.stderr
