@@ -1,6 +1,9 @@
 <%# Un evento del historial de la Historia, con su marca lateral. Locals: event, hidden_on_mobile. %>
 <li class="<%= class_names("flex flex-col gap-0.5 pl-3", event_marker_class(event), "max-md:hidden": local_assigns[:hidden_on_mobile]) %>">
   <span class="text-control leading-[18px] text-text max-md:text-sm max-md:leading-5"><%= event_sentence event %></span>
+  <% event.commits.each do |commit| %>
+    <%= render "stories/commit", commit: commit, class: "text-xs leading-[18px]" %>
+  <% end %>
   <% if event.reason.present? %>
     <span class="text-control leading-[18px] text-text-muted">«<%= event.reason %>»</span>
   <% end %>

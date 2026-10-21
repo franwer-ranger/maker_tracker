@@ -25,6 +25,6 @@
       </div>
     </div>
     <p class="text-control text-text-muted">Se guarda como <%= Current.actor.name %> y no se puede editar después: para cambiarla, se escribe otra que la sustituya.</p>
-    <%= ui_button "Registrar decisión", type: "submit", size: :sm, class: "self-end" %>
+    <%= ui_button "Registrar decisión", type: "submit", size: :sm, class: "self-end #{ComponentsHelper::TOUCH_TARGET}" %>
   <% end %>
 </details>

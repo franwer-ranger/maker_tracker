@@ -8,6 +8,6 @@
     <%= ui_field form, :title, label: "Título", surface: :bg, required: true, placeholder: "Analítica para makers", autofocus: true %>
     <%= ui_field form, :goal, label: "Objetivo", surface: :bg, placeholder: "Saber qué post funciona y por qué",
                               hint: "Qué tiene que ser verdad al terminarlo." %>
-    <%= ui_button "Crear hito", type: "submit", size: :sm, class: "self-end" %>
+    <%= ui_button "Crear hito", type: "submit", size: :sm, class: "self-end #{ComponentsHelper::TOUCH_TARGET}" %>
   <% end %>
 </details>

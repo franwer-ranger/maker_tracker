@@ -12,6 +12,9 @@
         <span class="<%= class_names("w-4 shrink-0 font-mono text-sm leading-5", StoriesHelper::CHANGE_MARKS.fetch(line.mark)) %>" aria-hidden="true"><%= line.mark %></span>
         <div class="flex min-w-0 grow basis-0 flex-col gap-1">
           <span class="text-sm leading-5 text-text"><%= line.text %></span>
+          <% line.commits.each do |commit| %>
+            <%= render "stories/commit", commit: commit, class: "text-xs leading-[18px]" %>
+          <% end %>
           <% if line.detail %>
             <span class="font-mono text-xs leading-[18px] text-text-muted"><%= line.detail %></span>
           <% end %>

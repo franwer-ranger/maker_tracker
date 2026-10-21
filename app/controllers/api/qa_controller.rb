@@ -3,12 +3,17 @@
 class Api::QaController < Api::BaseController
   Formatting = Api::Markdown::Formatting
 
-  # `mt qa [--project PG]`: lo pendiente de todos los proyectos, lo más antiguo primero.
+  # `mt qa [--undeployed] [--project PG]`: lo pendiente de todos los proyectos, lo más antiguo
+  # primero. En un proyecto que despliega con `mt deployed` (MT-46) solo sale lo
+  # desplegado; lo demás se cuenta al final y `--undeployed` lo lista.
   def index
-    cards = Activity.new.qa_pending
-    cards = cards.select { it.project.key == params[:project].to_s.upcase } if params[:project].present?
-    summary = "#{cards.size} #{cards.one? ? 'story' : 'stories'} waiting for QA."
-    render_ok({ stories: cards.map { qa_data(it) }, markdown: list_markdown(summary, cards) },
+    activity = Activity.new
+    undeployed = params[:undeployed].to_s == "true"
+    cards = filter(undeployed ? activity.qa_undeployed : activity.qa_pending)
+    waiting = undeployed ? [] : filter(activity.qa_undeployed)
+    noun = undeployed ? "done and not deployed yet" : "waiting for QA"
+    summary = "#{cards.size} #{cards.one? ? 'story' : 'stories'} #{noun}."
+    render_ok({ stories: cards.map { qa_data(it) }, undeployed: waiting.size, markdown: list_markdown(summary, cards, waiting.size) },
       summary: summary, breadcrumbs: cards.first(3).map { "mt show #{it.story.reference}" })
   end
 
@@ -28,6 +33,10 @@ class Api::QaController < Api::BaseController
   end
 
   private
+
+  def filter(cards)
+    params[:project].present? ? cards.select { it.project.key == params[:project].to_s.upcase } : cards
+  end
 
   def pass
     changed = story.qa_pass!(actor: Current.actor, note: params[:note])
@@ -61,18 +70,19 @@ class Api::QaController < Api::BaseController
 
   def qa_data(card)
     { reference: card.story.reference, title: card.story.title, project: card.project.key, done_at: card.done_at.iso8601,
-      done_by: card.done_by&.name, commits: card.commits, url: card.url, criteria: card.criteria }.compact
+      done_by: card.done_by&.name, commits: card.commits.map { { sha: it.sha, message: it.message }.compact }, url: card.url, criteria: card.criteria }.compact
   end
 
   # PG-47  Borradores automáticos  done 2026-10-20 18:40 by codex  https://testing.postgram.app
   #        1 Mientras escribes, el post se guarda solo…
-  def list_markdown(summary, cards)
-    return "#{summary}\n" if cards.empty?
+  def list_markdown(summary, cards, undeployed = 0)
+    tail = undeployed.positive? ? "\n#{undeployed} done #{undeployed == 1 ? 'story is' : 'stories are'} not deployed yet: mt qa --undeployed lists #{undeployed == 1 ? 'it' : 'them'}.\n" : ""
+    return "#{summary}\n#{tail}" if cards.empty?
 
     rows = cards.map { [ it.story.reference, it.story.title, "done #{Formatting.datetime(it.done_at)}#{" by #{it.done_by.name}" if it.done_by}", it.url || "no \"Dónde se prueba\" line in the brief" ] }
     items = Formatting.table(rows, min: [ 0, Formatting::TITLE_WIDTH ]).zip(cards).map do |line, card|
-      [ line, *card.criteria.each_with_index.map { |text, i| "#{' ' * 7}#{i + 1} #{text}" } ].join("\n")
+      [ line, *card.criteria.each_with_index.map { |text, i| "#{' ' * 7}#{i + 1} #{text}" }, *card.commits.map { "#{' ' * 7}#{it.label}" } ].join("\n")
     end
-    "#{summary}\n\n#{items.join("\n")}\n"
+    "#{summary}\n\n#{items.join("\n")}\n#{tail}"
   end
 end

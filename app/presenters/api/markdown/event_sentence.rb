@@ -33,6 +33,9 @@ class Api::Markdown::EventSentence
     when "question.answered" then "answered #{@data['asked_by']}: #{@data['option'] ? "#{@data['option']} " : ''}#{@data['answer']}#{", recorded as D-#{@data['decision']}" if @data['decision']}"
     when "qa.passed" then "passed QA#{": #{@data['note']}" if @data['note']}"
     when "qa.failed" then "failed QA: #{@data['note']} (created #{@event.project.key}-#{@data['story']})"
+    when "story.deployed" then "deployed (#{@data['sha'].to_s.first(7)})"
+    when "project.deployed" then deployed_sentence
+    when "usage.reported" then usage_sentence
     when "decision.recorded" then "recorded D-#{@data['number']}"
     when "project.created" then "created the project"
     when "brief.edited" then "edited the brief"
@@ -45,10 +48,24 @@ class Api::Markdown::EventSentence
     end
   end
 
-  # Commits y PR al terminar: " (4f3e2a1, PR #63)".
+  # Una sola frase por llamada a `mt deployed` (MT-46): "deployed a1b2c3d: MT-30, MT-32 can be tested now".
+  def deployed_sentence
+    refs = Array(@data["stories"]).map { "#{@event.project.key}-#{it}" }
+    "deployed #{@data['sha'].to_s.first(7)}#{": #{refs.join(', ')} can be tested now" if refs.any?}"
+  end
+
+  # "reported ~1.20 $ and 310k tokens (session 4f3a, estimated)"; sin precio, "+ 8k tokens without a price".
+  def usage_sentence
+    unpriced = Array(@data["unpriced_models"])
+    extra = unpriced.sum { |model| Array(@data["models"]).sum { it["model"] == model ? it["tokens"].to_i : 0 } }
+    "reported ~#{dollars(@data['cost_usd'])} and #{tokens_short(@data['tokens'])} tokens#{" (#{tokens_short(extra)} without a price: #{unpriced.join(', ')})" if unpriced.any?} (#{@data['source']} session #{@data['session_id'].to_s.first(8)}, estimated)"
+  end
+
+  # Commits y PR al terminar: " (4f3e2a1 · Subject; 9b1c7d0, PR #63)".
   def work
-    items = Array(@data["commits"]).map { it.to_s.first(7) }
+    items = [ @event.commits.map(&:label).join("; ").presence ]
     items << pr_label(@data["pr"]) if @data["pr"].present?
+    items.compact!
     " (#{items.join(', ')})" if items.any?
   end
 

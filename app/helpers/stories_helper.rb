@@ -18,8 +18,11 @@ module StoriesHelper
     when "story.reordered" then "Cambia de posición en su hito"
     when "story.moved" then "Pasa a #{milestone_name(data.dig('to', 'milestone_id'))}"
     when "comment.added" then "#{event.actor.name} comenta"
+    when "usage.reported" then usage_event_sentence(data)
     when "qa.passed" then "#{event.actor.name} da la QA por probada#{": «#{data['note']}»" if data['note']}"
     when "qa.failed" then "#{event.actor.name} falla la QA: #{project_story_ref(event, data['story'])}"
+    when "story.deployed" then "Desplegada · #{data['sha'].to_s.first(7)}"
+    when "project.deployed" then deployed_sentence(event)
     when "decision.recorded" then "Se decide D-#{data['number']}"
     when "brief.edited" then "#{event.actor.name} edita el brief"
     when "milestone.created" then "#{event.actor.name} crea el hito #{data['title']}"
@@ -29,6 +32,37 @@ module StoriesHelper
     when "milestone.reordered" then "#{event.actor.name} reordena #{milestone_event_ref(event)}"
     else event.action
     end
+  end
+
+  # «torre desplegó MT-30 y MT-32»: una sola frase por llamada a `mt deployed` (MT-46).
+  def deployed_sentence(event)
+    refs = Array(event.data["stories"]).map { "#{event.project.key}-#{it}" }
+    "#{event.actor.name} desplegó #{refs.any? ? y_sentence(refs) : event.data['sha'].to_s.first(7)}"
+  end
+
+  # «Coste estimado: ~1,20 $ · 310 k tokens»; los de un modelo sin precio, aparte.
+  def usage_event_sentence(data)
+    unpriced = Array(data["unpriced_models"])
+    extra = unpriced.sum { |model| Array(data["models"]).sum { it["model"] == model ? it["tokens"].to_i : 0 } }
+    "Coste estimado: ~#{dollars_es(data['cost_usd'])} · #{tokens_es(data['tokens'])} tokens#{" (#{tokens_es(extra)} sin precio)" if unpriced.any?}"
+  end
+
+  # 12,4 -> «12,40 $».
+  def dollars_es(amount) = "#{number_with_precision(amount.to_f, precision: 2, delimiter: '.', separator: ',')} $"
+
+  # 3.100.000 -> «3,1 M»; 310.000 -> «310 k»; 1.200 -> «1.200».
+  def tokens_es(count)
+    count = count.to_i
+    return "#{number_with_precision(count / 1_000_000.0, precision: 1, separator: ',', strip_insignificant_zeros: true)} M" if count >= 1_000_000
+    return "#{(count / 1000.0).round} k" if count >= 10_000
+
+    number_with_delimiter(count, delimiter: ".")
+  end
+
+  # «~12,40 $ · 3,1 M tokens · 4 sesiones», con «+ 8 k tokens sin precio» si hay.
+  def usage_summary(total)
+    base = "~#{dollars_es(total.cost_usd)} · #{tokens_es(total.tokens)} tokens · #{total.sessions} #{total.sessions == 1 ? 'sesión' : 'sesiones'}"
+    total.unpriced? ? "#{base} + #{tokens_es(total.unpriced_tokens)} sin precio" : base
   end
 
   # "M2", o "un hito borrado" si ya no existe.
@@ -59,24 +93,26 @@ module StoriesHelper
 
   # «Qué cambió desde tu visita» (5.11): una línea por cosa nueva, no por evento.
   # Marca: ! un cambio de estado o de sitio, − algo que deja de esperar, + algo nuevo.
-  ChangeLine = Data.define(:mark, :text, :who, :at, :detail)
+  ChangeLine = Data.define(:mark, :text, :who, :at, :detail, :commits)
   CHANGE_MARKS = { "!" => "text-state-defining", "−" => "text-text-muted", "+" => "text-state-done" }.freeze
+
+  def change_line(mark, text, who, at, detail, commits: []) = ChangeLine.new(mark, text, who, at, detail, commits)
 
   def story_change_lines(events)
     lines = without_round_trips(events).group_by { it.action == "comment.added" ? [ it.action, it.actor_id ] : it.id }.flat_map do |_, group|
       event = group.last
       case event.action
       when "comment.added"
-        [ ChangeLine.new("+", "#{pluralize_es(group.size, 'comentario')} de #{event.actor.name}", event.actor.name, event.occurred_at, nil) ]
+        [ change_line("+", "#{pluralize_es(group.size, 'comentario')} de #{event.actor.name}", event.actor.name, event.occurred_at, nil) ]
       when "story.state_changed" then state_change_lines(event)
       when "decision.recorded"
         title = decision_title(event)
-        [ ChangeLine.new("+", [ "D-#{event.data['number']}", title ].compact.join(" · "), event.actor.name, event.occurred_at, nil) ]
-      when "question.answered" then [ ChangeLine.new("−", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+        [ change_line("+", [ "D-#{event.data['number']}", title ].compact.join(" · "), event.actor.name, event.occurred_at, nil) ]
+      when "question.answered" then [ change_line("−", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
       when "story.claimed", "story.released", "story.reordered", "story.moved"
-        [ ChangeLine.new("!", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+        [ change_line("!", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
       when "story.edited" then [ edit_line(event) ]
-      else [ ChangeLine.new("+", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+      else [ change_line("+", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
       end
     end
     lines.sort_by.with_index { |line, index| [ { "!" => 0, "−" => 1, "+" => 2 }.fetch(line.mark), index ] }
@@ -98,7 +134,7 @@ module StoriesHelper
     else
       event_sentence(event)
     end
-    ChangeLine.new("+", text, event.actor.name, event.occurred_at, nil)
+    change_line("+", text, event.actor.name, event.occurred_at, nil)
   end
 
   # Quita las idas y vueltas del mismo actor (Lista → En curso y En curso → Lista), que no cambian nada.
@@ -120,10 +156,10 @@ module StoriesHelper
   # "Estado: Lista → En curso" y, si trae trabajo, sus commits en otra línea.
   def state_change_lines(event)
     data = event.data
-    lines = [ ChangeLine.new("!", "Estado: #{Story.human_state(data['from'])} → #{Story.human_state(data['to'])}", event.actor.name, event.occurred_at, nil) ]
-    commits = Array(data["commits"]).map { it.to_s.first(7) }
-    work = commits + [ (data["pr"].present? ? "PR #{data['pr'].to_s.delete_prefix('#')}" : nil) ].compact
-    lines << ChangeLine.new("+", pluralize_es(commits.size, "commit"), event.actor.name, event.occurred_at, work.join(", ")) if commits.any?
+    lines = [ change_line("!", "Estado: #{Story.human_state(data['from'])} → #{Story.human_state(data['to'])}", event.actor.name, event.occurred_at, nil) ]
+    commits = event.commits
+    pr = ("PR #{data['pr'].to_s[%r{/pull/(\d+)}, 1] ? "##{data['pr'].to_s[%r{/pull/(\d+)}, 1]}" : data['pr'].to_s.delete_prefix('#')}" if data["pr"].present?)
+    lines << change_line("+", pluralize_es(commits.size, "commit"), event.actor.name, event.occurred_at, pr, commits: commits) if commits.any?
     lines
   end
 
@@ -180,6 +216,9 @@ module StoriesHelper
     case story.qa
     when "pending"
       url = story.project.qa_url
+      if story.qa_awaiting_deploy? # MT-46: se puede dar por probada, pero aún no está donde se prueba
+        return tag.span(class: "flex items-center gap-2") { safe_join([ dot.call(false), tag.span("Esperando al despliegue", class: "text-control text-text-muted") ]) }
+      end
       tag.span(class: "flex items-center gap-2") do
         safe_join([ dot.call(false), tag.span("Pendiente", class: "text-control text-text"),
           (tag.span("en #{URI.parse(url).host}", class: "font-mono text-xs text-text-muted max-md:hidden") if url) ].compact)

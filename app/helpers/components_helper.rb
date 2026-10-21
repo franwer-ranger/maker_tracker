@@ -8,8 +8,10 @@ module ComponentsHelper
   FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]".freeze
   ACCENT_FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-accent)]".freeze
   HALO = "shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]".freeze
-  # Zona táctil de 44px para un control que se ve más pequeño (p. ej. «Editar», de 32): solo en el móvil.
-  TOUCH_TARGET = "relative max-md:after:absolute max-md:after:-inset-y-1.5 max-md:after:inset-x-0 max-md:after:content-['']".freeze
+  # Zona táctil de 44px de alto, centrada, para un control que se ve más pequeño
+  # (p. ej. «Editar», de 32, o un enlace de una línea): solo en el móvil.
+  TOUCH_TARGET = "relative max-md:after:absolute max-md:after:inset-x-0 max-md:after:top-1/2 max-md:after:h-11 " \
+                 "max-md:after:-translate-y-1/2 max-md:after:content-['']".freeze
 
   BUTTON_BASE = "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md font-medium " \
                 "transition-colors duration-150 ease-brand".freeze

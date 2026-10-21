@@ -102,8 +102,21 @@ func runSkillInstall(e *env) error {
 	if e.cfg.URL == "" {
 		next = []string{"mt setup <url> <token>"}
 	}
-	printFooter(e.stdout, nil, next)
+	printFooter(e.footerWriter(), nil, next)
 	return nil
+}
+
+// hook es un hook que mt init --claude deja en .claude/settings.json: el evento
+// donde va, la marca por la que se reconoce (si ya hay uno que la lleva, no se
+// duplica), su comando y el timeout en segundos (0: el de Claude Code).
+type hook struct {
+	event, marker, command string
+	timeout                int
+}
+
+var claudeHooks = []hook{
+	{event: "SessionStart", marker: "mt context", command: HookCommand},
+	{event: "SessionEnd", marker: "mt usage", command: HookUsageCommand, timeout: hookUsageTimeout},
 }
 
 // installClaude deja el hook en .claude/settings.json del repo y, de cada
@@ -125,21 +138,23 @@ func installClaude(e *env, dir string) ([]string, error) {
 	}
 
 	settingsPath := filepath.Join(dir, ".claude", "settings.json")
-	added, err := addSessionStartHook(settingsPath)
-	if err != nil {
-		return nil, err
-	}
-	if added {
-		fmt.Fprintf(e.stdout, "%s: SessionStart hook with mt context\n", settingsPath)
-	} else {
-		fmt.Fprintf(e.stdout, "%s: the hook was already there\n", settingsPath)
+	for _, h := range claudeHooks {
+		added, err := addHook(settingsPath, h)
+		if err != nil {
+			return nil, err
+		}
+		if added {
+			fmt.Fprintf(e.stdout, "%s: %s hook with %s\n", settingsPath, h.event, h.marker)
+		} else {
+			fmt.Fprintf(e.stdout, "%s: the %s hook was already there\n", settingsPath, h.event)
+		}
 	}
 	return warnings, nil
 }
 
-// addSessionStartHook añade el hook sin tocar el resto de settings.json. Si
-// ya hay un hook que ejecuta mt context, no hace nada.
-func addSessionStartHook(path string) (bool, error) {
+// addHook añade el hook sin tocar el resto de settings.json. Si ya hay uno en
+// ese evento cuyo comando lleva la marca, no hace nada.
+func addHook(path string, h hook) (bool, error) {
 	settings := map[string]any{}
 	data, err := os.ReadFile(path)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
@@ -155,20 +170,22 @@ func addSessionStartHook(path string) (bool, error) {
 	if hooks == nil {
 		hooks = map[string]any{}
 	}
-	groups, _ := hooks["SessionStart"].([]any)
+	groups, _ := hooks[h.event].([]any)
 	for _, group := range groups {
 		entries, _ := group.(map[string]any)["hooks"].([]any)
 		for _, entry := range entries {
-			if command, _ := entry.(map[string]any)["command"].(string); strings.Contains(command, "mt context") {
+			if command, _ := entry.(map[string]any)["command"].(string); strings.Contains(command, h.marker) {
 				return false, nil
 			}
 		}
 	}
 
-	groups = append(groups, map[string]any{
-		"hooks": []any{map[string]any{"type": "command", "command": HookCommand}},
-	})
-	hooks["SessionStart"] = groups
+	entry := map[string]any{"type": "command", "command": h.command}
+	if h.timeout > 0 {
+		entry["timeout"] = h.timeout
+	}
+	groups = append(groups, map[string]any{"hooks": []any{entry}})
+	hooks[h.event] = groups
 	settings["hooks"] = hooks
 
 	var out bytes.Buffer

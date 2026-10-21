@@ -25,6 +25,9 @@ Rails.application.routes.draw do
       get "roadmap", to: "roadmaps#show"
       post "daily", to: "dailies#create"
       post "daily/ideas", to: "dailies#idea"
+      get "deployed", to: "deploys#index"
+      post "deployed", to: "deploys#create"
+      post "usage", to: "usages#create"
       resources :stories, param: :number, only: %i[index show create update] do
         member do
           post :start, to: "story_work#start"

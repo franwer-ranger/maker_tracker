@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -144,7 +145,7 @@ func init() {
 		example:     "mt setup https://tower.your-tailnet.ts.net mt_…", run: runSetup})
 	def(&command{name: "init", group: setupGroup, usage: "mt init <KEY> [--claude]", minArgs: 1, maxArgs: 1,
 		summary:     "Creates .mt with the project in the current directory (the root of the repo)",
-		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart hook (mt context) to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skills (maker-tracker and daily) to .claude/skills/.",
+		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart (mt context) and SessionEnd (mt usage, the cost of the session) hooks to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skills (maker-tracker and daily) to .claude/skills/.",
 		example:     "mt init PG --claude", run: runInit}, "claude! adds the Claude Code hook (and the skill, if it is not installed globally) to the repo")
 	def(&command{name: "project create", group: setupGroup, usage: "mt project create \"Name\" --key <KEY>", minArgs: 1, maxArgs: 1,
 		summary:     "Creates a project, with the brief template",
@@ -178,6 +179,11 @@ func init() {
 			}
 			return err
 		}}, "hook! hook mode: never fails")
+	def(&command{name: "usage", group: workGroup, usage: "mt usage <transcript.jsonl> [--story 49] | mt usage --hook", maxArgs: 1,
+		summary:     "Reports the tokens and the estimated cost of a Claude Code session to the story it worked on",
+		description: "Reads the transcript (and its subagents), adds up the tokens per model and the server prices them. The story is the last one you started that was in progress during the session, unless you pass --story. The hook (SessionEnd, from mt init --claude) runs it with --hook, which never fails or prints anything. By hand it recovers a session whose hook did not fire; it is idempotent: reporting the same session again only adds what is new.",
+		example:     "mt usage ~/.claude/projects/-Users-me-code-app/0b447df5.jsonl",
+		run:         runUsage}, "hook! hook mode (reads the SessionEnd JSON from stdin): never fails or prints", "story the story number, instead of the one the server picks")
 	def(&command{name: "next", group: readGroup, usage: "mt next", maxArgs: 0,
 		summary: "The next ready, unblocked story, whole and with why", example: "mt next",
 		run: func(e *env) error { return e.projectCall("GET", "/next", nil, nil) }})
@@ -225,13 +231,17 @@ func init() {
 		run: func(e *env) error {
 			return e.call("GET", "/api/questions", map[string]string{"project": e.opts.get("project")}, nil)
 		}})
-	def(&command{name: "qa", group: workGroup, usage: "mt qa [<story> ok|fail] [--note \"…\"] [--project PG]", maxArgs: 2,
+	def(&command{name: "qa", group: workGroup, usage: "mt qa [--undeployed] [<story> ok|fail] [--note \"…\"] [--project PG]", maxArgs: 2,
 		summary:     "What is done and not tested yet (no arguments), or passes/fails a story's QA",
-		description: "Without arguments it lists, across all the projects (or one with --project), the stories done and still waiting for the person to test them, with their criteria and where to test (the \"Dónde se prueba\" line of the brief). Only a person passes or fails: ok closes it; fail needs --note and creates a story in defining in the same milestone, linked to this one. It never blocks or reopens the story.",
+		description: "Without arguments it lists, across all the projects (or one with --project), the stories done and still waiting for the person to test them, with their criteria and where to test (the \"Dónde se prueba\" line of the brief). In a project that calls mt deployed, only what is already deployed is listed; the rest is counted at the end and --undeployed lists it. Only a person passes or fails: ok closes it; fail needs --note and creates a story in defining in the same milestone, linked to this one. It never blocks or reopens the story.",
 		example:     "mt qa PG-49 fail --note \"The variable is not replaced in the preview\"",
 		run: func(e *env) error {
 			if e.arg(0) == "" {
-				return e.call("GET", "/api/qa", map[string]string{"project": e.opts.get("project")}, nil)
+				q := map[string]string{"project": e.opts.get("project")}
+				if e.opts.has("undeployed") {
+					q["undeployed"] = "true"
+				}
+				return e.call("GET", "/api/qa", q, nil)
 			}
 			result := e.arg(1)
 			if result != "ok" && result != "fail" {
@@ -239,7 +249,7 @@ func init() {
 			}
 			body := optional(map[string]any{"result": result}, e, "note")
 			return e.storyCall("POST", e.arg(0), "/qa", body)
-		}}, "note what you saw (required with fail)")
+		}}, "note what you saw (required with fail)", "undeployed! lists the done stories still waiting for a deploy")
 	def(&command{name: "decisions", group: readGroup, usage: "mt decisions", maxArgs: 0,
 		summary: "All decisions, newest first", example: "mt decisions",
 		run: func(e *env) error { return e.projectCall("GET", "/decisions", nil, nil) }})
@@ -250,7 +260,7 @@ func init() {
 	def(&command{name: "done", group: workGroup, usage: "mt done <story> [--commit sha]… [--pr url]", minArgs: 1, maxArgs: 1,
 		summary: "Moves it to done, linking its commits or PR", example: "mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63",
 		run: func(e *env) error {
-			body := map[string]any{"commits": e.opts.all("commit")}
+			body := map[string]any{"commits": commitsWithSubject(e.opts.all("commit"))}
 			return e.storyCall("POST", e.arg(0), "/done", optional(body, e, "pr"))
 		}}, "commit* a commit sha (can be repeated)", "pr the PR url")
 	def(&command{name: "release", group: workGroup, usage: "mt release <story> --reason \"…\"", minArgs: 1, maxArgs: 1,
@@ -484,7 +494,7 @@ func runSetup(e *env) error {
 	if !allSkillsCurrent() {
 		next = append([]string{"mt skill install"}, next...)
 	}
-	printFooter(e.stdout, warnings, next)
+	printFooter(e.footerWriter(), warnings, next)
 	return nil
 }
 
@@ -537,6 +547,22 @@ func runInit(e *env) error {
 		}
 		warnings = append(warnings, skillWarnings...)
 	}
-	printFooter(e.stdout, warnings, []string{"mt context", "mt next"})
+	printFooter(e.footerWriter(), warnings, []string{"mt context", "mt next"})
 	return nil
+}
+
+// commitsWithSubject envía cada sha con su asunto, leído con git en el repo
+// donde corre mt (MT-44). Si git falla (fuera del repo, sha desconocido, sin
+// git) o el asunto está vacío, envía solo el sha: nunca es un error.
+func commitsWithSubject(shas []string) []any {
+	commits := make([]any, 0, len(shas))
+	for _, sha := range shas {
+		out, err := exec.Command("git", "log", "-1", "--format=%s", sha, "--").Output()
+		if subject := strings.TrimSpace(string(out)); err == nil && subject != "" {
+			commits = append(commits, map[string]string{"sha": sha, "message": subject})
+		} else {
+			commits = append(commits, sha)
+		}
+	}
+	return commits
 }

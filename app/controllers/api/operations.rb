@@ -37,7 +37,7 @@ module Api::Operations
     # Trabajar (#017). Todo queda a nombre del actor del token, con su evento.
     { method: "POST", path: "/api/projects/:key/stories/:number/start", params: {}, command: "mt start PG-49",
       description: "Claims the story and moves it to in_progress. CLAIMED_BY_OTHER if someone else has it; warnings if it was not ready, is blocked or has no criteria" },
-    { method: "POST", path: "/api/projects/:key/stories/:number/done", params: { commits: "list of shas (optional)", pr: "PR url (optional)" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/done", params: { commits: "list of shas, or of {sha, message} (optional)", pr: "PR url (optional)" },
       command: "mt done PG-49 [--commit sha]… [--pr url]", description: "Moves the story to done with its commits and PR in the event" },
     { method: "POST", path: "/api/projects/:key/stories/:number/release", params: { reason: "why you release it (required for agents)" },
       command: "mt release PG-49 --reason \"…\"", description: "Moves it back to ready and unclaims it" },
@@ -58,11 +58,24 @@ module Api::Operations
       description: "Open questions of all the projects (or one), the one waiting the longest first, with their options" },
 
     # QA pendiente (MT-32): lo hecho que la persona aún no ha probado. Solo una persona prueba.
-    { method: "GET", path: "/api/qa", params: { project: "a project key (optional)" }, command: "mt qa [--project PG]",
-      description: "Stories done and not yet tested by the person, in all the projects (or one): the oldest first, with their acceptance criteria and where to test them (the \"Dónde se prueba\" line of the brief)" },
+    { method: "GET", path: "/api/qa", params: { project: "a project key (optional)", undeployed: "true to list the done stories still waiting for a deploy" }, command: "mt qa [--undeployed] [--project PG]",
+      description: "Stories done and ready to be tested by the person, in all the projects (or one): the oldest first, with their acceptance criteria and where to test them (the \"Dónde se prueba\" line of the brief). In a project that deploys with mt deployed, only what is deployed; the rest is counted at the end" },
+    # La QA espera al despliegue (MT-46): el CLI decide con git, la API no necesita el repo.
+    { method: "GET", path: "/api/projects/:key/deployed", command: "mt deployed [<sha>]",
+      description: "The candidates of a deploy: stories done, with QA pending and not deployed yet, with the commits and the PR of their done event. active says if the project already waits for deploys" },
+    { method: "POST", path: "/api/projects/:key/deployed", params: { sha: "the deployed commit", stories: "list of story numbers the sha contains" },
+      command: "mt deployed [<sha>]",
+      description: "Marks those stories as deployed (they appear in mt qa) and records the deploy. The first call turns on the wait for deploys in the project; calling again with the same or a later sha is idempotent. Any actor can call it" },
     { method: "POST", path: "/api/projects/:key/stories/:number/qa", params: { result: "ok | fail", note: "markdown; required with fail, optional with ok" },
       command: "mt qa PG-49 ok [--note \"…\"] | mt qa PG-49 fail --note \"…\"",
       description: "Passes the QA of a story, or fails it: fail creates a story in defining in the same milestone and links it in the event. FORBIDDEN for agents; NOT_PENDING if the story does not wait for QA" },
+
+    # Coste por historia (MT-34): una estimación que reporta el hook SessionEnd de Claude Code (o wflow).
+    { method: "POST", path: "/api/projects/:key/usage", command: "mt usage <transcript.jsonl> [--story 49] | mt usage --hook",
+      params: { source: "claude-code | wflow…", session_id: "", started_at: "ISO 8601, first instant of the session", ended_at: "ISO 8601, last instant",
+                models: "list of { model, input, output, cache_read, cache_write_5m, cache_write_1h }: the ACCUMULATED totals of the session",
+                story: "number (optional); skips the resolution" },
+      description: "Reports the tokens a session used. The server prices them (config/model_prices.yml), picks the story (the last one this actor started that was in progress during the session; none, nothing is reported) and records usage.reported with only what is new since the last report of the same source + session_id. A model without a price keeps its tokens and is listed in unpriced_models" },
 
     # Definir producto (#018). Nada se borra; cada cambio deja su evento.
     { method: "POST", path: "/api/projects/:key/stories", command: "mt create \"Title\" [--milestone M2] [--state …] [--number 14] [--file f.md]",

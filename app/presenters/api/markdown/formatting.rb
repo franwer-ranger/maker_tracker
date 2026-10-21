@@ -34,6 +34,23 @@ module Api::Markdown::Formatting
   # En la prosa, en minúscula y con espacios: "in progress".
   def state_words(state) = state.to_s.tr("_", " ")
 
+  # Coste estimado (MT-34): "12.40 $", "3.1M tokens", "840k tokens".
+  def dollars(amount) = format("%.2f $", amount.to_f)
+
+  def tokens_short(count)
+    count = count.to_i
+    return "#{(count / 1_000_000.0).round(1)}M" if count >= 1_000_000
+    return "#{(count / 1000.0).round}k" if count >= 10_000
+
+    count.to_s
+  end
+
+  # "~12.40 $ · 3.1M tokens · 4 sessions" (+ " + 8k tokens without a price").
+  def usage_line(total)
+    parts = [ "~#{dollars(total.cost_usd)}", "#{tokens_short(total.tokens)} tokens", plural(total.sessions, "session") ]
+    "#{parts.join(' · ')}#{" + #{tokens_short(total.unpriced_tokens)} tokens without a price" if total.unpriced?}"
+  end
+
   def milestone_label(milestone) = milestone ? "#{milestone.code} · #{milestone.title}" : "the inbox"
 
   def date(time) = time.localtime.strftime("%Y-%m-%d")

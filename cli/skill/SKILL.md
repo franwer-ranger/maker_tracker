@@ -13,7 +13,7 @@ In a repo that is already in Maker Tracker (it has `.mt`), the session starts wi
 
 ## Reading the output
 
-- Every command ends with **`Next:`**: the commands that make sense to run afterwards. Use them instead of guessing.
+- Every command ends with **`Next:`**: the commands that make sense to run afterwards. Use them instead of guessing. When stdout is redirected to a file (`mt brief > f.md`), `Warning:` and `Next:` go to stderr, so the file stays clean to edit and upload again (with `--hook` they always go to stdout). Your Bash tool receives both stdout and stderr, so this only matters when you redirect to a file.
 - **`Warning:`** lines don't block, but read them: a story without context, blocked, without criteria, without commits… If a warning changes what you are going to do, say so.
 - Errors go to stderr in two lines, `Error: …` and `Hint: …`. Follow the hint before trying something else. Exit code 1, or 2 if the command itself is wrong.
 - References are always complete (`PG-49`, `D-14`, `M2`) and dates absolute (`2026-10-15 22:40`, or just the time if it is today), so you can copy them into a commit and compare them with `git log`.
@@ -24,7 +24,7 @@ In a repo that is already in Maker Tracker (it has `.mt`), the session starts wi
 1. **"What's next?"** → `mt next`. It gives you the first ready, unblocked story in the roadmap, whole, with why it is that one. Don't pick another one on your own unless asked.
 2. `mt start PG-49`: claims it in your name and moves it to in progress. If someone else has it (`CLAIMED_BY_OTHER`), take another one.
 3. Read the whole story (`mt show PG-49`): context, acceptance criteria, out of scope, notes and the mockup if it has one. Build it in this repo, meeting every criterion.
-4. `mt done PG-49 --commit <sha> [--commit <sha>…] [--pr <url>]`: closes it, linking the code. Without commits or PR nobody will know where it is.
+4. `mt done PG-49 --commit <sha> [--commit <sha>…] [--pr <url>]`: closes it, linking the code (mt reads each commit subject with git, so run it inside the repo). Without commits or PR nobody will know where it is.
 
 A story is done whole or not closed. If something is left out when you finish, say it in a comment before `mt done`.
 
@@ -42,6 +42,10 @@ A story is done whole or not closed. If something is left out when you finish, s
 ## QA pending
 
 When your story is done it is not tested yet: it stays with **QA pending** until the person tries it where it is deployed. It is derived, not a state: it blocks nothing and `mt next` ignores it, so carry on. `mt qa` lists what is waiting in every project, with the criteria and where to test it. Only a person passes (`mt qa PG-49 ok`) or fails it (`mt qa PG-49 fail --note "…"`, which creates a new story in defining linked to the original); `mt qa` with ok/fail is refused to agents (`FORBIDDEN`). If it failed, the new story arrives through `mt next` like any other.
+
+In a project whose deploy script calls `mt deployed` (MT-46), done is not enough: a story shows up in `mt qa` only once it is deployed, and `mt qa` says how many are still waiting (`mt qa --undeployed` lists them). Nothing changes for you: keep passing real commits and the PR to `mt done`, because `mt deployed` uses them to know what a deploy contains. If your project deploys by hand, add `mt deployed` (from the root of the repo, once the app answers) at the end of its deploy script.
+
+The cost of a story is an estimate that you do not report by hand: the `SessionEnd` hook that `mt init --claude` leaves runs `mt usage --hook`, which sends the tokens of the session to the last story you started in it (`usage.reported`; `mt show` prints `cost_usd` and `tokens` in the frontmatter). If a session did not fire the hook, recover it with `mt usage <transcript.jsonl>`: it is idempotent. A session that touches several stories counts for the last one you started.
 
 Where each project is tested is one line under `## Dónde se prueba` in its brief (`Testing: https://…`, or production). Read it with `mt context`. If the brief has no such line, ask the person where it is tested; add it to the brief only if the person agrees (the brief is theirs).
 
@@ -85,7 +89,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 4. **With the OK**, write it:
    ```
    mt project create "Postgram" --key PG
-   mt init PG --claude                 # at the root of the repo: .mt and the SessionStart hook
+   mt init PG --claude                 # at the root of the repo: .mt and the SessionStart and SessionEnd hooks
    mt brief --file brief.md
    mt milestone create "Publicar sin fricción" --goal "…"   # one per milestone, in order
    mt decide "PDFs con Prawn" --why "…"                     # one per decision, oldest first
@@ -96,8 +100,8 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 ## Commands
 
 - Set up: `mt setup` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea`
+- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa [--undeployed]`
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

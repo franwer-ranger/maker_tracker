@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_21_231000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_22_120000) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -59,6 +59,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_231000) do
     t.datetime "occurred_at", null: false
     t.datetime "created_at", null: false
     t.index ["actor_id"], name: "index_events_on_actor_id"
+    t.index ["project_id", "action"], name: "index_events_on_project_id_and_action"
     t.index ["project_id", "occurred_at"], name: "index_events_on_project_id_and_occurred_at"
     t.index ["project_id"], name: "index_events_on_project_id"
     t.index ["story_id", "occurred_at"], name: "index_events_on_story_id_and_occurred_at"
@@ -129,6 +130,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_21_231000) do
     t.datetime "updated_at", null: false
     t.integer "version", default: 1, null: false
     t.string "qa"
+    t.datetime "deployed_at"
     t.index ["claimed_by_id"], name: "index_stories_on_claimed_by_id"
     t.index ["milestone_id"], name: "index_stories_on_milestone_id"
     t.index ["project_id", "milestone_id", "position"], name: "index_stories_on_project_id_and_milestone_id_and_position", unique: true
