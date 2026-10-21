@@ -1,14 +1,17 @@
 <% content_for :title, "Brief · #{@project.name}" %>
-<div class="flex items-start gap-16 px-12 py-10">
-  <article class="flex min-w-0 grow basis-0 flex-col gap-9">
+<%# En el móvil (5.5 · Móvil): cabecera de proyecto con «Editar», el brief a todo el ancho y, debajo, separadas por un borde, las decisiones. %>
+<div class="flex items-start gap-16 px-12 py-10 max-md:flex-col max-md:gap-0 max-md:px-4 max-md:pb-10 max-md:pt-0">
+  <%= render "shared/project_header", project: @project,
+        action: ui_button("Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_brief_path(@project), class: ComponentsHelper::TOUCH_TARGET) %>
+  <article class="flex min-w-0 grow basis-0 flex-col gap-9 max-md:w-full max-md:gap-6 max-md:pb-8 max-md:pt-3">
     <header class="flex items-end justify-between gap-6">
-      <div class="flex flex-col gap-2.5">
-        <h1 class="font-display text-display tracking-[-0.02em]">Brief</h1>
+      <div class="flex flex-col gap-2.5 max-md:gap-2">
+        <h1 class="font-display text-display tracking-[-0.02em] max-md:text-display-sm max-md:tracking-[-0.015em]">Brief</h1>
         <p class="text-sm text-text-muted">
           Lo primero que lee cualquier agente que trabaje en <%= @project.name %><% if @last_edit %> · editado <%= ago_in_words(@last_edit) %><% end %>
         </p>
       </div>
-      <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_brief_path(@project) %>
+      <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_brief_path(@project), class: "max-md:hidden" %>
     </header>
 
     <div data-controller="markdown">

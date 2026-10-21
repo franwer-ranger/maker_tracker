@@ -1,10 +1,10 @@
 <details class="group relative">
-  <summary class="inline-flex h-control-sm cursor-pointer list-none items-center gap-1.5 rounded-md border border-strong bg-bg px-3 text-control font-medium text-text transition-colors duration-150 ease-brand hover:bg-surface <%= ComponentsHelper::FOCUS_RING %> [&::-webkit-details-marker]:hidden">
+  <summary class="inline-flex h-control-sm max-md:h-9 cursor-pointer list-none items-center gap-1.5 rounded-md border border-strong bg-bg px-3 text-control font-medium text-text transition-colors duration-150 ease-brand hover:bg-surface <%= ComponentsHelper::FOCUS_RING %> <%= ComponentsHelper::TOUCH_TARGET %> [&::-webkit-details-marker]:hidden">
     <%= icon "plus", size: 16 %>
     Decisión
   </summary>
   <%= form_with model: Decision.new, url: project_decisions_path(@project),
-        class: "absolute right-0 top-full z-20 mt-1 flex w-96 flex-col gap-4 rounded-lg border border-strong bg-surface p-4 shadow-[0_12px_32px_rgba(0,0,0,0.6)]" do |form| %>
+        class: "absolute right-0 top-full z-20 mt-1 flex w-96 max-w-[calc(100vw-32px)] flex-col gap-4 rounded-lg border border-strong bg-surface p-4 shadow-[0_12px_32px_rgba(0,0,0,0.6)]" do |form| %>
     <%= ui_field form, :title, label: "Decisión", surface: :bg, required: true, autofocus: true, placeholder: "PDFs con Prawn, sin servicios externos" %>
     <div class="flex flex-col gap-2">
       <%= form.label :body, "Por qué", class: "text-sm font-medium leading-[18px] text-text" %>
@@ -25,6 +25,6 @@
       </div>
     </div>
     <p class="text-control text-text-muted">Se guarda como <%= Current.actor.name %> y no se puede editar después: para cambiarla, se escribe otra que la sustituya.</p>
-    <%= ui_button "Registrar decisión", type: "submit", size: :sm, class: "self-end" %>
+    <%= ui_button "Registrar decisión", type: "submit", size: :sm, class: "self-end #{ComponentsHelper::TOUCH_TARGET}" %>
   <% end %>
 </details>

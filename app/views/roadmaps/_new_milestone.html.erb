@@ -1,13 +1,13 @@
 <details class="group relative shrink-0">
-  <summary class="inline-flex h-control-sm cursor-pointer list-none items-center gap-1.5 rounded-md border border-strong bg-bg px-3 text-control font-medium text-text transition-colors duration-150 ease-brand hover:bg-surface <%= ComponentsHelper::FOCUS_RING %> [&::-webkit-details-marker]:hidden">
+  <summary class="inline-flex h-control-sm cursor-pointer list-none items-center gap-1.5 rounded-md border border-strong bg-bg px-3 text-control font-medium text-text transition-colors duration-150 ease-brand hover:bg-surface <%= ComponentsHelper::FOCUS_RING %> <%= ComponentsHelper::TOUCH_TARGET %> [&::-webkit-details-marker]:hidden">
     <%= icon "plus", size: 16 %>
     Nuevo hito
   </summary>
   <%= form_with model: Milestone.new, url: project_milestones_path(@project),
-        class: "absolute right-0 top-full z-20 mt-1 flex w-96 flex-col gap-4 rounded-lg border border-strong bg-surface p-4 shadow-[0_12px_32px_rgba(0,0,0,0.6)]" do |form| %>
+        class: "absolute right-0 top-full z-20 mt-1 flex w-96 max-w-[calc(100vw-32px)] flex-col max-md:left-0 max-md:right-auto gap-4 rounded-lg border border-strong bg-surface p-4 shadow-[0_12px_32px_rgba(0,0,0,0.6)]" do |form| %>
     <%= ui_field form, :title, label: "Título", surface: :bg, required: true, placeholder: "Analítica para makers", autofocus: true %>
     <%= ui_field form, :goal, label: "Objetivo", surface: :bg, placeholder: "Saber qué post funciona y por qué",
                               hint: "Qué tiene que ser verdad al terminarlo." %>
-    <%= ui_button "Crear hito", type: "submit", size: :sm, class: "self-end" %>
+    <%= ui_button "Crear hito", type: "submit", size: :sm, class: "self-end #{ComponentsHelper::TOUCH_TARGET}" %>
   <% end %>
 </details>

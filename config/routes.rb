@@ -11,7 +11,10 @@ Rails.application.routes.draw do
   post "push_subscriptions", to: "push_subscriptions#create"
   delete "push_subscriptions", to: "push_subscriptions#destroy"
 
-  get "design" => "design#show" if Rails.env.development?
+  if Rails.env.development?
+    get "design" => "design#show"
+    get "design/movil" => "design#mobile" # las piezas del móvil, dentro de un iframe de 390px
+  end
 
   # API para agentes (mt, MCP). Proyectos por su clave: /api/projects/PG/stories/49.
   # GET /api describe todas las operaciones (Api::Operations).

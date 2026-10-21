@@ -8,6 +8,10 @@ module ComponentsHelper
   FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]".freeze
   ACCENT_FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-accent)]".freeze
   HALO = "shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]".freeze
+  # Zona táctil de 44px de alto, centrada, para un control que se ve más pequeño
+  # (p. ej. «Editar», de 32, o un enlace de una línea): solo en el móvil.
+  TOUCH_TARGET = "relative max-md:after:absolute max-md:after:inset-x-0 max-md:after:top-1/2 max-md:after:h-11 " \
+                 "max-md:after:-translate-y-1/2 max-md:after:content-['']".freeze
 
   BUTTON_BASE = "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-md font-medium " \
                 "transition-colors duration-150 ease-brand".freeze
@@ -141,19 +145,42 @@ module ComponentsHelper
   # Menú desplegable (5.2 · Selector de hito): un <details> que se cierra al
   # pulsar fuera o con Escape. El bloque `summary` es el disparador.
   #   ui_menu(summary: ..., align: :left) { menu_item(...) }
-  def ui_menu(summary:, align: :left, width: "w-80", **attrs, &block)
+  # Con `sheet: "Hito"`, por debajo de md es una hoja inferior (5.2 · Móvil):
+  # pegada abajo, con asa, título y velo negro al 60 %. En escritorio, el menú de siempre.
+  def ui_menu(summary:, align: :left, width: "w-80", sheet: nil, **attrs, &block)
+    panel = class_names(
+      "absolute top-full z-20 mt-1 flex flex-col rounded-lg border border-strong bg-surface p-1 shadow-[0_12px_32px_rgba(0,0,0,0.6)]",
+      width, align == :right ? "right-0" : "left-0",
+      SHEET => sheet
+    )
     tag.details class: class_names("relative", attrs.delete(:class)), data: { controller: "menu", action: "toggle->menu#toggle" }, **attrs do
       safe_join([
         tag.summary(summary, class: "list-none [&::-webkit-details-marker]:hidden cursor-pointer rounded-md #{FOCUS_RING}"),
-        tag.div(capture(&block), class: class_names(
-          "absolute top-full z-20 mt-1 flex flex-col rounded-lg border border-strong bg-surface p-1 shadow-[0_12px_32px_rgba(0,0,0,0.6)]",
-          width, align == :right ? "right-0" : "left-0"
-        ))
-      ])
+        (tag.div(class: "fixed inset-0 z-40 bg-black/60 md:hidden", data: { action: "click->menu#close" }, aria: { hidden: true }) if sheet),
+        tag.div(class: panel) do
+          safe_join([
+            (sheet_header(sheet) if sheet),
+            capture(&block)
+          ].compact)
+        end
+      ].compact)
     end
   end
 
-  def menu_separator = tag.div(class: "h-px shrink-0 bg-border")
+  # La hoja inferior del móvil: fondo surface, borde border-strong arriba, radio 12 y la sombra del menú.
+  SHEET = "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:z-50 max-md:mt-0 max-md:max-h-[85svh] max-md:w-auto " \
+          "max-md:overflow-y-auto max-md:rounded-none max-md:rounded-t-xl max-md:border-0 max-md:border-t max-md:px-2 max-md:pt-2 " \
+          "max-md:pb-[max(env(safe-area-inset-bottom),34px)]".freeze
+
+  # Asa y título de la hoja (solo en el móvil).
+  def sheet_header(title)
+    safe_join([
+      tag.div(tag.span(class: "h-1 w-9 rounded-full bg-border-strong"), class: "flex justify-center pb-3 pt-1 md:hidden", aria: { hidden: true }),
+      section_label(title, class: "px-2 pb-2 md:hidden")
+    ])
+  end
+
+  def menu_separator = tag.div(class: "h-px shrink-0 bg-border max-md:my-1 max-md:bg-border-strong")
 
   # Label de una historia: mono text-label (11px) sobre surface, radio 4.
   def ui_label(text)
@@ -161,13 +188,14 @@ module ComponentsHelper
   end
 
   # Opción de un menú: código en mono o icono (w-6), texto y metadato a la derecha.
+  # En la hoja inferior del móvil, filas de 52px con el texto a 15px.
   def menu_item(label, href, code: nil, icon: nil, meta: nil, meta_class: "text-text-muted", active: false, muted: false)
     link_to href, class: class_names(
-      "flex h-nav shrink-0 items-center gap-2.5 rounded-md px-2.5 text-control",
+      "flex h-nav shrink-0 items-center gap-2.5 rounded-md px-2.5 text-control max-md:h-[52px] max-md:gap-3 max-md:rounded-lg max-md:px-3 max-md:text-[15px] max-md:leading-5",
       "hover:bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] #{FOCUS_RING}",
-      "bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] font-medium text-text": active,
-      "text-text-subtle": muted && !active,
-      "text-text-soft": !muted && !active
+      "bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] font-medium text-text max-md:bg-border-strong": active,
+      "text-text-subtle max-md:text-text-muted": muted && !active,
+      "text-text-soft max-md:text-text": !muted && !active
     ), aria: { current: ("page" if active) } do
       safe_join([
         (tag.span(code, class: class_names("w-6 shrink-0 font-mono text-xs", muted ? "text-text-subtle" : "text-text-muted")) if code),

@@ -1,0 +1,48 @@
+<%# Piezas del móvil (03 · Componentes → Fila · Móvil, MT-45), a 390px dentro de un iframe de /design. %>
+<% if @project.nil? %>
+  <p class="p-4 text-sm text-text-muted">Hace falta un proyecto: bin/rails db:seed.</p>
+<% else %>
+  <div class="flex flex-col gap-4 px-4 pb-40">
+    <%= render "shared/project_header", project: @project %>
+
+    <%# Selector de hito · Móvil, abierto como hoja (?hoja=1) o cerrado. %>
+    <%= ui_menu sheet: "Hito", class: "group self-start", open: @sheet, summary: capture { %>
+      <span class="flex h-11 items-center gap-1.5">
+        <span class="font-mono text-xs uppercase tracking-label text-text-muted"><%= @milestone ? board_heading_label(:milestone, @milestone, short: true) : "Bandeja de ideas" %></span>
+        <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
+      </span>
+    <% } do %>
+      <% @project.milestones.each do |milestone| %>
+        <% done, total = milestone.progress %>
+        <%= menu_item milestone.title, "#", code: milestone.code, meta: milestone.closed? ? "cerrado" : "#{done}/#{total}",
+                      meta_class: milestone.closed? ? "text-state-done" : "text-text-muted", muted: milestone.closed?, active: milestone == @milestone %>
+      <% end %>
+      <%= menu_separator %>
+      <%= menu_item "Bandeja de ideas", "#", icon: "inbox", meta: @project.ideas.count %>
+    <% end %>
+
+    <%# Pestañas de estado · Móvil (la activa, Lista). %>
+    <div class="-mx-4 flex gap-1 overflow-x-auto border-b border-border pb-3 pl-3 pr-4 [scrollbar-width:none]" role="tablist">
+      <% Story::STATE_NAMES.each do |state, name| %>
+        <button type="button" role="tab" aria-selected="<%= state == "ready" %>"
+                class="<%= "group flex h-11 shrink-0 items-center gap-2 rounded-full px-3 aria-selected:bg-surface aria-selected:px-3.5 aria-selected:shadow-[inset_0_0_0_1px_var(--color-border-strong)] #{ComponentsHelper::FOCUS_RING}" %>">
+          <%= state_dot state, halo: false %>
+          <span class="text-sm text-text-muted group-aria-selected:font-medium group-aria-selected:text-text"><%= name %></span>
+          <span class="font-mono text-xs text-text-subtle group-aria-selected:text-text-muted"><%= @milestone&.stories&.where(state: state)&.count.to_i %></span>
+        </button>
+      <% end %>
+    </div>
+
+    <%# Fila de historia · Móvil. %>
+    <ol class="-mx-4 flex flex-col pl-4">
+      <% (@milestone ? @milestone.stories.ordered.includes(:claimed_by, :questions).first(4) : []).each do |story| %>
+        <%= render "roadmaps/story", story: story %>
+      <% end %>
+    </ol>
+
+    <%# Barra fija de guardar (en un formulario que no va a ninguna parte). %>
+    <form action="#">
+      <%= render "components/save_bar", cancel_path: "#" %>
+    </form>
+  </div>
+<% end %>

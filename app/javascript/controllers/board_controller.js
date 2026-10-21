@@ -4,12 +4,34 @@ import Sortable from "sortablejs"
 // Tablero: arrastrar entre columnas cambia el estado (Story#move_to!) y
 // arrastrar dentro de una columna reordena en el hito (Story#reorder!).
 // Si el servidor lo rechaza, la tarjeta vuelve a su sitio y se ve el error.
+// En el móvil (< 768px) no se arrastra: hay una pestaña por estado y solo se
+// ven las tarjetas de la elegida, que se recuerda mientras dure la sesión.
+const mobile = window.matchMedia("(max-width: 767px)")
+
 export default class extends Controller {
-  static targets = ["column", "error"]
-  static values = { sortable: Boolean, stateUrl: String, positionUrl: String }
+  static targets = ["column", "error", "tab", "panel"]
+  static values = { sortable: Boolean, stateUrl: String, positionUrl: String, tabKey: String }
+
+  connect() {
+    const remembered = this.#storage("get")
+    if (remembered && this.tabTargets.some((tab) => tab.dataset.state === remembered)) this.#show(remembered)
+
+    this.toggleDragging = () => this.columnTargets.forEach((column) => column.sortable?.option("disabled", mobile.matches))
+    mobile.addEventListener("change", this.toggleDragging)
+  }
+
+  disconnect() {
+    mobile.removeEventListener("change", this.toggleDragging)
+  }
+
+  select({ currentTarget }) {
+    this.#show(currentTarget.dataset.state)
+    this.#storage("set", currentTarget.dataset.state)
+  }
 
   columnTargetConnected(column) {
     column.sortable = Sortable.create(column, {
+      disabled: mobile.matches,
       group: "board",
       sort: this.sortableValue,
       animation: 150,
@@ -44,6 +66,20 @@ export default class extends Controller {
       from.insertBefore(item, from.children[oldIndex] || null)
       const { error } = await response.json().catch(() => ({}))
       this.errorTarget.textContent = error || "No se ha podido mover la historia."
+    }
+  }
+
+  #show(state) {
+    this.tabTargets.forEach((tab) => tab.setAttribute("aria-selected", tab.dataset.state === state))
+    this.panelTargets.forEach((panel) => panel.classList.toggle("max-md:hidden", panel.dataset.state !== state))
+  }
+
+  // sessionStorage puede fallar (navegación privada): entonces no se recuerda.
+  #storage(action, value) {
+    try {
+      return action === "get" ? sessionStorage.getItem(this.tabKeyValue) : sessionStorage.setItem(this.tabKeyValue, value)
+    } catch {
+      return null
     }
   }
 

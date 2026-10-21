@@ -1,11 +1,13 @@
 <% content_for :title, "Editar brief · #{@project.name}" %>
-<div class="flex items-start gap-16 px-12 py-10">
-  <%= form_with model: @project, url: project_brief_path(@project), method: :patch, class: "flex min-w-0 grow basis-0 flex-col gap-5", id: "brief-form" do |form| %>
+<%# En el móvil, apilado: el editor, la barra fija de guardar (sin barra inferior) y, debajo, las decisiones. %>
+<% content_for :hide_tab_bar, "1" %>
+<div class="<%= class_names("flex items-start gap-16 px-12 py-10 max-md:flex-col max-md:gap-8 max-md:px-4 max-md:pt-6", @conflict ? "max-md:pb-12" : "max-md:pb-[148px]") %>">
+  <%= form_with model: @project, url: project_brief_path(@project), method: :patch, class: "flex min-w-0 grow basis-0 flex-col gap-5 max-md:w-full", id: "brief-form" do |form| %>
     <%# Versión con la que se abrió (MT-37): si el brief cambia mientras editas, se avisa y se enseña qué cambió. %>
     <%= hidden_field_tag :version, @form_version || @project.brief_version, id: nil %>
     <%= hidden_field_tag :base_brief, (@base_brief || @project.brief).to_s.strip, id: nil %>
     <header class="flex flex-col gap-2.5">
-      <h1 class="font-display text-display tracking-[-0.02em]">Brief</h1>
+      <h1 class="font-display text-display tracking-[-0.02em] max-md:text-display-sm max-md:tracking-[-0.015em]">Brief</h1>
       <p class="text-sm text-text-muted">Visión, principios, fuera de alcance y glosario. Lo primero que lee cualquier agente.</p>
     </header>
 
@@ -17,11 +19,7 @@
     <% if @conflict %>
       <%= render "shared/edit_conflict", conflict: @conflict, form_id: "brief-form", discard_path: edit_project_brief_path(@project) %>
     <% else %>
-      <div class="flex items-center justify-end gap-2">
-        <span class="grow font-mono text-xs text-text-subtle">Se guarda como <%= Current.actor.name %> · queda en el historial</span>
-        <%= ui_button "Cancelar", variant: :ghost, href: project_brief_path(@project) %>
-        <%= ui_button "Guardar", type: "submit" %>
-      </div>
+      <%= render "components/save_bar", cancel_path: project_brief_path(@project) %>
     <% end %>
   <% end %>
 

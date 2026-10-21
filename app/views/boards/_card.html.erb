@@ -9,7 +9,7 @@
       <span class="font-mono text-xs text-text-muted">#<%= story.number %></span>
       <%= story_card_meta story, @context %>
     </span>
-    <span class="<%= story.done? ? "text-text-muted" : "text-text-soft" %> text-sm"><%= story.title %></span>
+    <span class="<%= story.done? ? "text-text-muted" : "text-text-soft" %> text-sm max-md:text-base max-md:leading-[22px]"><%= story.title %></span>
     <% if @filter == :all && story.milestone %>
       <span class="font-mono text-xs text-text-subtle"><%= story.milestone.code %></span>
     <% end %>

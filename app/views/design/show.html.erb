@@ -178,6 +178,15 @@
     </div>
   </section>
 
+  <%# Fila · Móvil (MT-45): cada iframe mide 390px, así que sus piezas se ven como en el móvil. %>
+  <section class="flex flex-col gap-[18px]">
+    <%= section_label "Móvil · cabecera de proyecto · selector de hito · pestañas de estado · filas · barra fija de guardar · hoja" %>
+    <div class="flex flex-wrap items-start gap-16">
+      <iframe src="<%= design_movil_path %>" title="Piezas del móvil" class="h-[720px] w-[390px] rounded-xl border border-border"></iframe>
+      <iframe src="<%= design_movil_path(hoja: 1) %>" title="Hoja inferior del móvil" class="h-[720px] w-[390px] rounded-xl border border-border"></iframe>
+    </div>
+  </section>
+
   <section class="flex flex-col gap-[18px]">
     <%= section_label "Terminal · lo que lee el agente" %>
     <div class="max-w-[540px]">

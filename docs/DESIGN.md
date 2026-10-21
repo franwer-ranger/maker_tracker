@@ -11,7 +11,7 @@ Archivo de Paper **Maker Tracker** (`01M50CA4S5CN4Z8ERVW36XWDHF`, https://app.pa
 | **Landing** | `Landing · Ship happens`, la landing que construimos (repo aparte) |
 | **Sistema** | `01 · Tipografía`, `02 · Color y forma`, `03 · Componentes` |
 | **App** | Pantallas de la app: `5.9 Actividad` (y `5.9b` vacía, cada una también « · Móvil»), `5.0 Proyectos`, `5.1 Tablero · M2`, `5.2 Tablero · Selector de hito`, `5.3 Roadmap`, `5.4 Historia · Lista (#49)`, `5.6 Historia · Editando (#49)` y `5.5 Brief`, con los datos de las seeds (Postgram). Debajo, los artboards `Pendiente · …` (Actividad, Stats, vista del agente, ejecución): son diseños antiguos que solo sirven de referencia hasta rehacerlos con el sistema |
-| **Propuesta · Móvil** | `Móvil · Tablero` y `Móvil · Historia` (390px): propuesta de responsive, aún sin decidir ni construir. Barra superior en vez de lateral, pestañas de estado deslizables y navegación abajo |
+| **Propuesta · Móvil** | Sustituida por los artboards « · Móvil» de cada pantalla (MT-45) |
 | v1 · … | Histórico. No se usa |
 
 **Una sola versión**: en Paper solo vive el diseño vigente. Lo que se rehace se sustituye y lo antiguo se borra, sin páginas por versión.
@@ -108,6 +108,18 @@ Piezas de las pantallas de la app (en `App` y, como referencia, en `03 · Compon
 - **Acción discreta**: lo que se hace poco y no debe competir (cerrar o reabrir un hito) es un botón fantasma pequeño, al pie de su bloque, separado por un borde.
 - **Cuerpo de una historia**: el markdown tal cual, sección por sección. Cada `##` se pinta como etiqueta de sección y las secciones vacías no se muestran. No se destaca ninguna sección.
 - **Editar una historia**: el título pasa a input, el cuerpo al editor (Escribir / Vista previa) y las propiedades de la columna (mockup, labels, "Bloqueada por") a campos que se guardan con el mismo botón. El estado no se cambia mientras se edita.
+
+Piezas del móvil (< 768px, MT-45; en `03 · Componentes` → "Fila · Móvil" y, a 390px, en `/design`). Una sola vista por pantalla con clases `max-md:` / `md:`: el escritorio no cambia. Margen lateral de 16px y zonas táctiles de al menos 44px (un botón que se ve de 32, como «Editar», extiende su zona con `TOUCH_TARGET`):
+
+- **Barra inferior** (`layouts/_tab_bar`, pestañas en `bottom_tabs`): Actividad (con el contador) · Tablero · Roadmap · Brief, en Actividad, Tablero, Roadmap, Brief e Historia; la de la sección, resaltada. No sale mientras se edita.
+- **Cabecera de proyecto** (`shared/_project_header`, Tablero, Roadmap y Brief): clave en mono sobre `surface` (28px) + nombre (15px, 600) + chevron, 52px de alto; a la derecha, la acción de la pantalla («Editar» en el Brief). Abre la hoja de proyectos: clave, nombre, hito en curso y «2 en curso» con punto naranja o «sin actividad · 2 d», en filas de 60px, y «Nuevo proyecto» con `mt project create`.
+- **Hoja inferior** (`ui_menu sheet: "Hito"`): el mismo menú que en escritorio, pegado abajo, con fondo `surface`, borde `border-strong` arriba, radio 12 arriba, la sombra del menú, asa, título en mono y velo negro al 60 %. Opciones de 52px a 15px; la activa sobre `border-strong`. La usan el selector de proyecto y el de hito.
+- **Selector de hito · Móvil**: la línea en mono sobre el titular del Tablero («M2 · EN CURSO · 4/12 ⌄», 44px) abre la hoja.
+- **Pestañas de estado** (Tablero): una fila deslizable en horizontal (lo único que se desliza) con punto, estado y número; la activa sobre `surface` con borde `border-strong` (píldora de 44px). Debajo, solo las tarjetas de ese estado, a todo el ancho. Abre la primera con historias empezando por Lista (luego En curso, Definiendo, Idea, Hecha) y recuerda la última elegida durante la sesión.
+- **Fila de historia · Móvil** (Roadmap): punto de estado (16) · `#n` (36) · título en hasta dos líneas (15px) · metadato, de al menos 52px. Los hitos, a sangre y separados por bordes: plegados en filas de 56px con chevron; el abierto, sobre `surface-sunken` con su objetivo. Sin asas: en el móvil no se reordena.
+- **Historia · Móvil**: «‹ M2 / PG-49» y «Editar» arriba; título 26px; el estado como píldora (un `<select>` nativo encima) con su ayuda; propiedades en una caja `surface-raised` de radio 12 con la etiqueta en 104px (las vacías no salen); el cuerpo a 15/24; el historial al final, con los 2 últimos y «Ver los N anteriores».
+- **Barra fija de guardar** (`components/_save_bar`): «Cancelar» (secundario) y «Guardar» (primario) a medias, de 44px, y «Se guarda como fran · queda en el historial» debajo. En escritorio es la fila de siempre bajo el editor. Al editar, el título es un campo que crece y las propiedades, campos apilados (etiqueta encima, input de 44px).
+- **Conflicto al guardar · Móvil**: el aviso va arriba, antes del título; quién y cuándo, debajo de cada cambio; y las tres acciones apiladas a todo el ancho: traer (primario), ver las dos versiones (secundario) y descartar (fantasma).
 
 Regla: si una pantalla necesita una pieza nueva, primero se añade al sistema en Paper y aquí.
 

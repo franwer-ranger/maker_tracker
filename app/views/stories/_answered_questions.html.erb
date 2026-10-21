@@ -4,7 +4,7 @@
   <section id="preguntas" class="flex flex-col gap-3.5">
     <%= section_label "Preguntas · #{questions.size} #{questions.one? ? "respondida" : "respondidas"}" %>
     <% questions.each do |question| %>
-      <article class="flex flex-col gap-2.5 rounded-xl border border-border px-6 py-5">
+      <article class="flex flex-col gap-2.5 rounded-xl border border-border px-6 py-5 max-md:p-4">
         <div class="flex items-center justify-between gap-3">
           <span class="font-mono text-xs text-text-muted"><%= question.actor.name %> preguntó · <%= relative_day(question.created_at, time_of_day: true) %></span>
           <%= question_reversibility question %>

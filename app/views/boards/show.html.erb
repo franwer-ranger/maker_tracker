@@ -1,13 +1,18 @@
 <% content_for :title, "Tablero · #{@project.name}" %>
-<div class="flex h-full flex-col gap-8 px-12 py-10"
+<% tab = board_default_tab(@columns) %>
+<%# En el móvil (5.1 · Móvil) no caben las cinco columnas: una fila de pestañas de estado y, debajo, solo las tarjetas de la elegida. %>
+<div class="flex h-full flex-col gap-8 px-12 py-10 max-md:h-auto max-md:gap-0 max-md:px-4 max-md:pb-10 max-md:pt-0"
      data-controller="board"
      data-board-sortable-value="<%= @filter != :all %>"
      data-board-state-url-value="<%= project_story_state_path(@project, "__number__") %>"
-     data-board-position-url-value="<%= project_story_position_path(@project, "__number__") %>">
-  <header class="flex items-end justify-between gap-8">
-    <div class="flex flex-col gap-2.5">
-      <%= section_label board_heading_label(@filter, @milestone) %>
-      <h1 class="font-display text-display-sm tracking-[-0.01em]">
+     data-board-position-url-value="<%= project_story_position_path(@project, "__number__") %>"
+     data-board-tab-key-value="tablero:<%= @project.slug %>">
+  <%= render "shared/project_header", project: @project %>
+  <header class="flex items-end justify-between gap-8 max-md:flex-col max-md:items-stretch max-md:gap-0 max-md:pb-4">
+    <div class="flex flex-col gap-2.5 max-md:gap-1.5">
+      <%= section_label board_heading_label(@filter, @milestone), class: "max-md:hidden" %>
+      <%= render "boards/milestone_menu", mobile: true %>
+      <h1 class="font-display text-display-sm tracking-[-0.01em] max-md:text-[44px] max-md:leading-12 max-md:tracking-[-0.015em]">
         <%= { milestone: @milestone&.title, ideas: "Bandeja de ideas", all: "Todos los hitos" }.fetch(@filter) %>
       </h1>
       <% if @filter == :milestone && @milestone.goal.present? %>
@@ -16,32 +21,47 @@
         <p class="text-sm text-text-muted">Solo se puede cambiar de columna; el orden se decide en cada hito.</p>
       <% end %>
     </div>
-    <div class="flex shrink-0 items-center gap-6">
+    <div class="flex shrink-0 items-center gap-6 max-md:pt-2">
       <%= render "shared/ready_work", project: @project %>
       <%= render "boards/milestone_menu" %>
     </div>
   </header>
 
-  <p class="-my-4 text-control text-accent empty:hidden" data-board-target="error" role="alert" aria-live="polite"><%= flash[:alert] %></p>
+  <p class="-my-4 text-control text-accent empty:hidden max-md:my-0 max-md:pb-3" data-board-target="error" role="alert" aria-live="polite"><%= flash[:alert] %></p>
 
-  <div class="flex min-h-0 grow gap-3">
+  <div class="-mx-4 flex gap-1 overflow-x-auto border-b border-border pb-3 pl-3 pr-4 [scrollbar-width:none] md:hidden [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="Estados">
     <% @columns.each do |state, stories| %>
-      <section class="flex min-w-0 basis-0 grow flex-col gap-2 rounded-xl border border-border bg-surface-sunken p-3" aria-label="<%= Story.human_state(state) %>">
-        <header class="flex h-7 shrink-0 items-center gap-2 px-1">
+      <button type="button" role="tab" aria-selected="<%= state == tab %>" data-board-target="tab" data-state="<%= state %>" data-action="board#select"
+              class="<%= "group flex h-11 shrink-0 items-center gap-2 rounded-full px-3 aria-selected:bg-surface aria-selected:px-3.5 aria-selected:shadow-[inset_0_0_0_1px_var(--color-border-strong)] #{ComponentsHelper::FOCUS_RING}" %>">
+        <%= state_dot state, halo: false %>
+        <span class="text-sm text-text-muted group-aria-selected:font-medium group-aria-selected:text-text"><%= Story.human_state(state) %></span>
+        <span class="font-mono text-xs text-text-subtle group-aria-selected:text-text-muted"><%= board_column_count(state, stories, @hidden_done) %></span>
+      </button>
+    <% end %>
+  </div>
+
+  <div class="flex min-h-0 grow gap-3 max-md:flex-col max-md:pt-4">
+    <% @columns.each do |state, stories| %>
+      <section class="<%= class_names("flex min-w-0 basis-0 grow flex-col gap-2 rounded-xl border border-border bg-surface-sunken p-3 max-md:basis-auto max-md:rounded-none max-md:border-0 max-md:bg-transparent max-md:p-0", "max-md:hidden": state != tab) %>"
+               aria-label="<%= Story.human_state(state) %>" data-board-target="panel" data-state="<%= state %>">
+        <header class="flex h-7 shrink-0 items-center gap-2 px-1 max-md:hidden">
           <%= state_dot state, halo: false %>
           <h2 class="text-control font-medium text-text"><%= Story.human_state(state) %></h2>
-          <span class="font-mono text-xs text-text-subtle"><%= state == "done" && @hidden_done.to_i.positive? ? stories.size + @hidden_done : stories.size %></span>
+          <span class="font-mono text-xs text-text-subtle"><%= board_column_count(state, stories, @hidden_done) %></span>
         </header>
 
-        <ol class="flex min-h-12 flex-col gap-2 overflow-y-auto" data-board-target="column" data-state="<%= state %>">
+        <ol class="flex min-h-12 flex-col gap-2 overflow-y-auto max-md:min-h-0 max-md:overflow-visible" data-board-target="column" data-state="<%= state %>">
           <% stories.each do |story| %>
             <%= render "boards/card", story: story %>
           <% end %>
         </ol>
+        <% if stories.none? %>
+          <p class="py-6 text-center text-sm text-text-muted md:hidden">Nada en <%= Story.human_state(state) %>.</p>
+        <% end %>
 
         <% if state == "done" && @hidden_done.to_i.positive? %>
           <%= link_to "ver todas (#{stories.size + @hidden_done})", project_path(@project, hito: "todos", hechas: "todas"),
-                      class: "px-2 text-control text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING} rounded-md" %>
+                      class: "px-2 text-control text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING} rounded-md max-md:flex max-md:h-11 max-md:items-center" %>
         <% end %>
 
         <% if state == "idea" && @filter != :all %>

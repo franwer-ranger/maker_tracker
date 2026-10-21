@@ -1,0 +1,9 @@
+<%# Guardar una edición (5.6, MT-45). En escritorio, una fila bajo el editor: quién guarda, «Cancelar» (fantasma) y «Guardar». En el móvil, una barra fija abajo con «Cancelar» (secundario) y «Guardar» a medias y la línea debajo; la pantalla deja hueco y oculta la barra inferior. Local: cancel_path. %>
+<div class="flex items-center justify-end gap-2 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-30 max-md:flex-col-reverse max-md:items-stretch max-md:border-t max-md:border-border max-md:bg-bg max-md:px-4 max-md:pb-[max(env(safe-area-inset-bottom),30px)] max-md:pt-3">
+  <span class="grow font-mono text-xs text-text-subtle max-md:text-center">Se guarda como <%= Current.actor.name %> · queda en el historial</span>
+  <div class="flex gap-2">
+    <%= ui_button "Cancelar", variant: :ghost, href: cancel_path,
+          class: "max-md:h-11 max-md:grow max-md:basis-0 max-md:border max-md:border-strong max-md:text-[15px] max-md:leading-5 max-md:text-text" %>
+    <%= ui_button "Guardar", type: "submit", class: "max-md:h-11 max-md:grow max-md:basis-0 max-md:text-[15px] max-md:leading-5" %>
+  </div>
+</div>

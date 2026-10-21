@@ -1,5 +1,6 @@
 <%# Columna de decisiones (5.5): la más reciente sobre surface; las sustituidas, atenuadas. %>
-<aside class="flex w-[392px] shrink-0 flex-col gap-3 pt-2">
+<%# En el móvil, debajo del brief, a todo el ancho y separada por un borde. %>
+<aside class="flex w-[392px] shrink-0 flex-col gap-3 pt-2 max-md:-mx-4 max-md:w-auto max-md:self-stretch max-md:border-t max-md:border-border max-md:px-4 max-md:pt-6">
   <div class="flex items-center justify-between pb-1">
     <%= section_label "Decisiones · #{@project.last_decision_number}" %>
     <%= render "briefs/new_decision" %>
@@ -24,7 +25,7 @@
           <span class="text-text"><%= decision.reference %></span>
           <span class="text-text-muted"><%= decision.actor.name %> · <%= relative_day(decision.created_at) %></span>
         </div>
-        <h3 class="text-base font-medium leading-5 text-text"><%= decision.title %></h3>
+        <h3 class="text-base font-medium leading-5 text-text max-md:text-[15px]"><%= decision.title %></h3>
         <% if decision.body.present? || decision.story || decision.supersedes %>
           <p class="text-control leading-5 text-text-muted">
             <% if decision.body.present? %>Por qué: <%= decision.body %><% end %>

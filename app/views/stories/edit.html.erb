@@ -1,30 +1,29 @@
 <% content_for :title, "Editar #{@story.reference}" %>
+<%# Mientras se edita no se ve la barra inferior del móvil (5.6 · Móvil): abajo va la barra fija de guardar. %>
+<% content_for :hide_tab_bar, "1" %>
 <%= form_with model: @story, url: project_story_path(@project, @story), method: :patch, id: "story-form",
-      class: "flex items-start gap-16 px-12 py-10" do |form| %>
+      class: "flex flex-col gap-3 px-4 #{@conflict ? 'pb-12' : 'pb-[148px]'} md:flex-row md:items-start md:gap-16 md:px-12 md:py-10" do |form| %>
   <%# Versión y valores con los que se abrió: si la historia cambia mientras editas, el servidor lo detecta y enseña qué cambió (MT-37). %>
   <%= hidden_field_tag :version, @form_version || @story.version, id: nil %>
   <% (@base || { "title" => @story.title, "body" => @story.body, "mockup" => @story.mockup, "labels" => @story.labels.join(", "), "blocked_by" => @story.blocked_by.join(", ") }).each do |field, value| %>
     <%= hidden_field_tag "base_#{field}", value, id: nil %>
   <% end %>
-  <div class="flex min-w-0 grow basis-0 flex-col gap-5">
-    <%= render "stories/breadcrumb", story: @story %>
+  <%# En el móvil la columna lateral se deshace y sus propiedades van debajo del editor (ver stories/_aside); el aviso de conflicto, arriba del todo. %>
+  <div class="flex min-w-0 grow basis-0 flex-col gap-5 max-md:contents">
+    <div class="max-md:order-1 max-md:-mx-4 max-md:flex max-md:h-[52px] max-md:items-center max-md:pl-2"><%= render "stories/breadcrumb", story: @story %></div>
 
-    <%= form.text_field :title, required: true, "aria-label": "Título",
-          class: "h-[52px] w-full rounded-md border border-strong bg-surface-sunken px-3.5 text-2xl font-semibold leading-[30px] tracking-[-0.01em] text-text focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+    <%= form.text_area :title, required: true, rows: 1, "aria-label": "Título", data: { controller: "textline", action: "keydown.enter->textline#submit input->textline#resize" },
+          class: "block w-full resize-none overflow-hidden rounded-md border border-strong bg-surface-sunken px-3.5 py-[10px] text-2xl md:pb-[9px] md:pt-[11px] font-semibold leading-[30px] tracking-[-0.01em] text-text [field-sizing:content] focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)] max-md:order-4 max-md:text-xl max-md:leading-7" %>
 
-    <%= render "components/markdown_editor", form: form, attribute: :body, label: "Cuerpo en markdown" %>
+    <div class="max-md:order-4"><%= render "components/markdown_editor", form: form, attribute: :body, label: "Cuerpo en markdown" %></div>
 
     <% if @notice %>
-      <p class="text-control leading-[18px] text-state-defining" role="status"><%= @notice %> Revisa y guarda.</p>
+      <p class="text-control leading-[18px] text-state-defining max-md:order-4" role="status"><%= @notice %> Revisa y guarda.</p>
     <% end %>
     <% if @conflict %>
-      <%= render "shared/edit_conflict", conflict: @conflict, form_id: "story-form", discard_path: edit_project_story_path(@project, @story) %>
+      <div class="max-md:order-2 max-md:mt-2"><%= render "shared/edit_conflict", conflict: @conflict, form_id: "story-form", discard_path: edit_project_story_path(@project, @story) %></div>
     <% else %>
-      <div class="flex items-center justify-end gap-2">
-        <span class="grow font-mono text-xs text-text-subtle">Se guarda como <%= Current.actor.name %> · queda en el historial</span>
-        <%= ui_button "Cancelar", variant: :ghost, href: project_story_path(@project, @story) %>
-        <%= ui_button "Guardar", type: "submit" %>
-      </div>
+      <%= render "components/save_bar", cancel_path: project_story_path(@project, @story) %>
     <% end %>
   </div>
 

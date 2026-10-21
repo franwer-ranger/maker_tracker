@@ -4,11 +4,11 @@
 <section id="preguntas-abiertas" class="flex flex-col gap-3" aria-label="Preguntas abiertas">
   <div class="flex items-baseline justify-between gap-4">
     <div class="font-mono text-xs uppercase tracking-label <%= blocking ? "text-accent" : "text-text-muted" %>"><%= open_questions_label(questions) %></div>
-    <span class="font-mono text-xs text-text-subtle">mt show <%= story.reference %></span>
+    <span class="font-mono text-xs text-text-subtle max-md:hidden">mt show <%= story.reference %></span>
   </div>
   <% questions.each do |question| %>
-    <article id="pregunta-<%= question.id %>" class="overflow-clip rounded-xl border border-border">
-      <div class="flex flex-col gap-1.5 px-6 pb-6 pt-5 <%= question.blocking? ? "shadow-[inset_2px_0_0_var(--color-accent)]" : "shadow-[inset_2px_0_0_var(--color-border-strong)]" %>">
+    <article id="pregunta-<%= question.id %>" class="overflow-clip rounded-xl border border-border max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
+      <div class="flex flex-col gap-1.5 px-6 pb-6 pt-5 max-md:px-4 max-md:pb-5 max-md:pt-4 <%= question.blocking? ? "shadow-[inset_2px_0_0_var(--color-accent)]" : "shadow-[inset_2px_0_0_var(--color-border-strong)]" %>">
         <div class="flex items-center justify-between gap-3">
           <span class="flex items-center gap-2 font-mono text-xs <%= question.blocking? ? "text-accent" : "text-text-muted" %>">
             <%= actor_dot question.actor %>
