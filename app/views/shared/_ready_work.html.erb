@@ -1,0 +1,10 @@
+<%# «Trabajo listo» en la cabecera de un proyecto (5.1, 5.3, MT-33): cuántas historias Listas y desbloqueadas les quedan a los agentes y cuántas hay en Definiendo, en todos los hitos abiertos. Local: project. %>
+<% summary = ready_work_for(project) %>
+<div id="trabajo-listo" class="flex h-8 shrink-0 items-center gap-1.5 pr-1" aria-label="Trabajo listo: <%= ready_work_counts(summary.ready, summary.defining_count) %>">
+  <span class="pr-1 font-mono text-xs uppercase tracking-label text-text-muted">Trabajo listo</span>
+  <span class="font-mono text-base leading-5 text-text"><%= summary.ready %></span>
+  <span class="text-control text-text"><%= ready_label(summary.ready) %></span>
+  <span class="font-mono text-xs text-text-subtle">·</span>
+  <span class="font-mono text-control text-text-muted"><%= summary.defining_count %></span>
+  <span class="text-control text-text-muted">en Definiendo</span>
+</div>

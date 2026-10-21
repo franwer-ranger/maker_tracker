@@ -13,11 +13,15 @@ Rails.application.routes.draw do
   # GET /api describe todas las operaciones (Api::Operations).
   namespace :api, defaults: { format: :json } do
     get "/", to: "root#show"
+    get "questions", to: "questions#index"
+    get "qa", to: "qa#index"
     resources :projects, param: :key, only: %i[index create]
     scope "projects/:project_key", as: :project do
       get "context", to: "contexts#show"
       get "next", to: "next_stories#show"
       get "roadmap", to: "roadmaps#show"
+      post "daily", to: "dailies#create"
+      post "daily/ideas", to: "dailies#idea"
       resources :stories, param: :number, only: %i[index show create update] do
         member do
           post :start, to: "story_work#start"
@@ -25,11 +29,14 @@ Rails.application.routes.draw do
           post :release, to: "story_work#release"
           post :move
           post :reorder
+          post :answer, to: "questions#answer"
+          post :qa, to: "qa#create"
         end
         resources :comments, only: :create
+        resources :questions, only: :create
       end
       resources :decisions, only: %i[index create]
-      resources :milestones, param: :code, only: %i[create update] do
+      resources :milestones, param: :code, only: %i[create show update] do
         member do
           post :reorder
           post :close
@@ -41,8 +48,8 @@ Rails.application.routes.draw do
     match "*path", to: "base#route_not_found", via: :all
   end
 
-  # "/" redirige al proyecto si solo hay uno; "/p" lista siempre los proyectos.
-  root "projects#index"
+  # "/" es Actividad, con todos los proyectos (MT-30); "/p" los lista.
+  root "activity#show"
   resources :projects, path: "p", only: %i[index create]
 
   # Todo lo de un proyecto cuelga de su slug: /p/postgram, /p/postgram/roadmap…
@@ -59,9 +66,13 @@ Rails.application.routes.draw do
     resources :decisions, only: :create
     resources :stories, param: :number, only: %i[show create edit update] do
       resources :comments, only: :create
+      resources :questions, only: [] do
+        resource :answer, only: :create, module: :questions
+      end
       scope module: :stories do
         resource :state, only: :update
         resource :position, only: :update
+        resource :qa, only: :create, controller: "qa"
       end
     end
   end

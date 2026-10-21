@@ -144,7 +144,7 @@ func init() {
 		example:     "mt setup https://tower.your-tailnet.ts.net mt_…", run: runSetup})
 	def(&command{name: "init", group: setupGroup, usage: "mt init <KEY> [--claude]", minArgs: 1, maxArgs: 1,
 		summary:     "Creates .mt with the project in the current directory (the root of the repo)",
-		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart hook (mt context) to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skill to .claude/skills/.",
+		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart hook (mt context) to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skills (maker-tracker and daily) to .claude/skills/.",
 		example:     "mt init PG --claude", run: runInit}, "claude! adds the Claude Code hook (and the skill, if it is not installed globally) to the repo")
 	def(&command{name: "project create", group: setupGroup, usage: "mt project create \"Name\" --key <KEY>", minArgs: 1, maxArgs: 1,
 		summary:     "Creates a project, with the brief template",
@@ -157,7 +157,7 @@ func init() {
 			return e.call("POST", "/api/projects", nil, map[string]any{"name": e.arg(0), "key": strings.ToUpper(e.opts.get("key"))})
 		}}, "key 2 to 5 letters, like PG")
 	def(&command{name: "skill install", group: setupGroup, usage: "mt skill install", maxArgs: 0,
-		summary:     "Installs (or updates) the Maker Tracker skill for Claude Code in ~/.claude/skills/",
+		summary:     "Installs (or updates) the Maker Tracker skills (maker-tracker and daily) for Claude Code in ~/.claude/skills/",
 		description: "With the skill installed globally, an agent knows Maker Tracker in any folder, also in a repo that is not in Maker Tracker yet. Uses $CLAUDE_CONFIG_DIR if it is set.",
 		example:     "mt skill install", run: runSkillInstall})
 	def(&command{name: "projects", group: setupGroup, usage: "mt projects", maxArgs: 0,
@@ -181,6 +181,20 @@ func init() {
 	def(&command{name: "next", group: readGroup, usage: "mt next", maxArgs: 0,
 		summary: "The next ready, unblocked story, whole and with why", example: "mt next",
 		run: func(e *env) error { return e.projectCall("GET", "/next", nil, nil) }})
+	def(&command{name: "daily", group: readGroup, usage: "mt daily [--since date]", maxArgs: 0,
+		summary:     "The project's daily: what happened, in progress, blocked, waiting for the human and what is next",
+		description: "Counts from your last daily in this project (another actor's daily does not move yours), or from --since (2026-10-15 or \"2026-10-15 22:40\"). Without a previous daily it shows the last 7 days. Running it records your daily, so the next one starts here. It works in a project with no history yet.",
+		example:     "mt daily",
+		run: func(e *env) error {
+			return e.projectCall("POST", "/daily", nil, optional(map[string]any{}, e, "since"))
+		}}, "since count from this date, not from your last daily")
+	def(&command{name: "daily idea", group: workGroup, usage: "mt daily idea \"…\" [--why \"…\"]", minArgs: 1, maxArgs: 1,
+		summary:     "Proposes an evolutionary as an idea in the inbox (up to 3 per daily)",
+		description: "For what the daily suggests: it goes to the inbox as an idea, never to the roadmap, and needs you to have run mt daily first. Whoever defines the product decides what happens next.",
+		example:     "mt daily idea \"Exportar el calendario a iCal\" --why \"Hay un TODO en calendar.rb y los makers lo usan en Google Calendar\"",
+		run: func(e *env) error {
+			return e.projectCall("POST", "/daily/ideas", nil, optional(map[string]any{"title": e.arg(0)}, e, "why"))
+		}}, "why the context of the idea (markdown)")
 	def(&command{name: "roadmap", group: readGroup, usage: "mt roadmap [--closed]", maxArgs: 0,
 		summary: "The roadmap: milestones in order with their stories, and the inbox", example: "mt roadmap --closed",
 		run: func(e *env) error {
@@ -204,6 +218,28 @@ func init() {
 			}
 			return e.projectCall("GET", "/stories", q, nil)
 		}}, "state idea | defining | ready | in_progress | done", "milestone M2, its title or inbox", "label a label", "mine! only yours")
+	def(&command{name: "questions", group: readGroup, usage: "mt questions [--project PG]", maxArgs: 0,
+		summary:     "Open questions of all the projects, with how long they have been waiting",
+		description: "Across all the projects, not only the one in .mt, unless you pass --project.",
+		example:     "mt questions",
+		run: func(e *env) error {
+			return e.call("GET", "/api/questions", map[string]string{"project": e.opts.get("project")}, nil)
+		}})
+	def(&command{name: "qa", group: workGroup, usage: "mt qa [<story> ok|fail] [--note \"…\"] [--project PG]", maxArgs: 2,
+		summary:     "What is done and not tested yet (no arguments), or passes/fails a story's QA",
+		description: "Without arguments it lists, across all the projects (or one with --project), the stories done and still waiting for the person to test them, with their criteria and where to test (the \"Dónde se prueba\" line of the brief). Only a person passes or fails: ok closes it; fail needs --note and creates a story in defining in the same milestone, linked to this one. It never blocks or reopens the story.",
+		example:     "mt qa PG-49 fail --note \"The variable is not replaced in the preview\"",
+		run: func(e *env) error {
+			if e.arg(0) == "" {
+				return e.call("GET", "/api/qa", map[string]string{"project": e.opts.get("project")}, nil)
+			}
+			result := e.arg(1)
+			if result != "ok" && result != "fail" {
+				return usageHint("mt qa PG-49 ok [--note \"…\"] or mt qa PG-49 fail --note \"what fails\".", "say ok or fail after the story.")
+			}
+			body := optional(map[string]any{"result": result}, e, "note")
+			return e.storyCall("POST", e.arg(0), "/qa", body)
+		}}, "note what you saw (required with fail)")
 	def(&command{name: "decisions", group: readGroup, usage: "mt decisions", maxArgs: 0,
 		summary: "All decisions, newest first", example: "mt decisions",
 		run: func(e *env) error { return e.projectCall("GET", "/decisions", nil, nil) }})
@@ -234,6 +270,48 @@ func init() {
 			}
 			return e.storyCall("POST", e.arg(0), "/comments", map[string]any{"body": body})
 		}})
+	def(&command{name: "ask", group: workGroup, usage: "mt ask <story> \"…\" --option \"…\" --option \"…\" [--recommend n] [--context \"…\"] [--reversible] [--no-bloqueante]", minArgs: 2, maxArgs: 2,
+		summary:     "Asks a question with its options and your recommendation, instead of a comment",
+		description: "It blocks by default: if the story was yours it lets it go, and nobody picks it up until the question is answered. With --no-bloqueante it does not block: you carry on with the recommended option (--recommend is then required) unless it is answered otherwise. Without --reversible the question does not say whether it can be undone.",
+		example:     "mt ask PG-49 \"What if a variable has no value?\" --option \"Drop it\" --option \"Warn first\" --recommend 2 --reversible",
+		run: func(e *env) error {
+			body := map[string]any{"title": e.arg(1), "options": e.opts.all("option")}
+			if e.opts.has("recommend") {
+				n, err := strconv.Atoi(e.opts.get("recommend"))
+				if err != nil {
+					return usageErrorf("--recommend must be a number.")
+				}
+				body["recommended"] = n
+			}
+			if e.opts.has("reversible") {
+				body["reversible"] = true
+			}
+			if e.opts.has("no-bloqueante") {
+				body["blocking"] = false
+			}
+			return e.storyCall("POST", e.arg(0), "/questions", optional(body, e, "context"))
+		}}, "option* an option (repeat it, at least 2)", "recommend the number of the recommended option (from 1)", "context why you ask (markdown)",
+		"reversible! the decision can be undone", "no-bloqueante! it does not block: you carry on with the recommended option")
+	def(&command{name: "answer", group: workGroup, usage: "mt answer <story> <option> [--note \"…\"] [--question id] [--decide]", minArgs: 1, maxArgs: 2,
+		summary:     "Answers an open question with the number of an option (or with free text)",
+		description: "If the story has several open questions, choose one with --question (the id from mt show, Q12 or 12). With --text \"…\" and no option you answer with your own words. With --decide it is also recorded as a decision (D-n).",
+		example:     "mt answer PG-49 2 --note \"The warning names the variable\" --decide",
+		run: func(e *env) error {
+			body := optional(map[string]any{}, e, "note", "question", "text")
+			if e.opts.has("text") && e.arg(1) == "" {
+				delete(body, "note")
+			} else {
+				n, err := strconv.Atoi(e.arg(1))
+				if err != nil {
+					return usageHint("mt answer PG-49 2 (the number of the option, from 1) or mt answer PG-49 --text \"…\".", "the option must be a number.")
+				}
+				body["option"] = n
+			}
+			if e.opts.has("decide") {
+				body["decide"] = true
+			}
+			return e.storyCall("POST", e.arg(0), "/answer", body)
+		}}, "note why (markdown)", "text your own answer, if none of the options fits", "question the question's id, if there are several open (Q12 or 12)", "decide! also record it as a decision")
 	def(&command{name: "decide", group: workGroup, usage: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", minArgs: 1, maxArgs: 1,
 		summary: "Records a decision and its why", example: "mt decide \"Templates as JSON\" --why \"No need for another table\" --story PG-49",
 		run: func(e *env) error {
@@ -321,10 +399,27 @@ func init() {
 		run: func(e *env) error {
 			return e.projectCall("POST", "/milestones", nil, optional(map[string]any{"title": e.arg(0)}, e, "goal"))
 		}}, "goal the milestone's goal (markdown)")
-	def(&command{name: "milestone edit", group: defineGroup, usage: "mt milestone edit <milestone> [--title …] [--goal …]", minArgs: 1, maxArgs: 1,
-		summary: "Edits a milestone's title or goal (M2 or its title)", example: "mt milestone edit M2 --goal \"Schedule a week in 10 minutes\"",
-		run: func(e *env) error { return milestone(e, "", optional(map[string]any{}, e, "title", "goal")) }},
-		"title new title", "goal new goal (markdown)")
+	def(&command{name: "milestone show", group: readGroup, usage: "mt milestone show <milestone>", minArgs: 1, maxArgs: 1,
+		summary: "A milestone with its version, the one to send when editing it", example: "mt milestone show M2",
+		run: func(e *env) error {
+			return e.projectCall("GET", "/milestones/"+url.PathEscape(e.arg(0)), nil, nil)
+		}})
+	def(&command{name: "milestone edit", group: defineGroup, usage: "mt milestone edit <milestone> [--title …] [--goal …] [--version n]", minArgs: 1, maxArgs: 1,
+		summary:     "Edits a milestone's title or goal (M2 or its title)",
+		description: "With --version (the one mt milestone show prints) it fails with CONFLICT if someone changed the milestone since, and saves nothing.",
+		example:     "mt milestone edit M2 --goal \"Schedule a week in 10 minutes\" --version 3",
+		run: func(e *env) error {
+			body := optional(map[string]any{}, e, "title", "goal")
+			if e.opts.has("version") {
+				n, err := strconv.Atoi(e.opts.get("version"))
+				if err != nil {
+					return usageErrorf("--version must be a number.")
+				}
+				body["version"] = n
+			}
+			return milestone(e, "", body)
+		}},
+		"title new title", "goal new goal (markdown)", "version the version you read (mt milestone show)")
 	def(&command{name: "milestone reorder", group: defineGroup, usage: "mt milestone reorder <milestone> --position n --reason \"…\"", minArgs: 1, maxArgs: 1,
 		summary: "Changes a milestone's position (and with it, its code)", example: "mt milestone reorder M4 --position 3 --reason \"Teams before analytics\"",
 		run: func(e *env) error {
@@ -386,7 +481,7 @@ func runSetup(e *env) error {
 		warnings = append(warnings, "MT_URL or MT_TOKEN are set and take precedence over this file.")
 	}
 	next := []string{"mt init <KEY> --claude   (at the root of the project's repo)"}
-	if installed, _ := globalSkillState(); installed != skillCurrent {
+	if !allSkillsCurrent() {
 		next = append([]string{"mt skill install"}, next...)
 	}
 	printFooter(e.stdout, warnings, next)
@@ -436,13 +531,11 @@ func runInit(e *env) error {
 	fmt.Fprintf(e.stdout, "%s: project: %s\n", path, key)
 
 	if e.opts.has("claude") {
-		warning, err := installClaude(e, dir)
+		skillWarnings, err := installClaude(e, dir)
 		if err != nil {
 			return err
 		}
-		if warning != "" {
-			warnings = append(warnings, warning)
-		}
+		warnings = append(warnings, skillWarnings...)
 	}
 	printFooter(e.stdout, warnings, []string{"mt context", "mt next"})
 	return nil

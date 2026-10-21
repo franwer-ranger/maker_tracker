@@ -1,0 +1,24 @@
+<%# «Trabajo listo» (5.9, MT-33): por proyecto, cuántas historias Listas y desbloqueadas les quedan a los agentes y cuántas hay en Definiendo detrás. Local: summaries (`ReadyWork::Summary`). %>
+<% if summaries.any? %>
+  <section id="trabajo-listo" class="flex flex-col" aria-label="Trabajo listo">
+    <div class="flex justify-between gap-4 pb-3">
+      <span class="font-mono text-xs uppercase tracking-label text-text-muted">Trabajo listo</span>
+      <span class="font-mono text-xs text-text-subtle"><span class="hidden md:inline">Listas · en Definiendo</span><span class="md:hidden">Listas · Definiendo</span></span>
+    </div>
+    <ul class="-mx-4 flex flex-col border-y border-border md:mx-0">
+      <% summaries.each do |summary| %>
+        <% project = summary.project %>
+        <li class="border-t border-border first:border-t-0">
+          <%= link_to project_roadmap_path(project), class: "flex h-[52px] items-center gap-3 px-4 hover:bg-surface-sunken md:h-12 md:px-0 #{ComponentsHelper::FOCUS_RING}",
+                aria: { label: "#{project.name}: #{ready_work_counts(summary.ready, summary.defining_count)}" } do %>
+            <span class="flex h-6 w-9 shrink-0 items-center justify-center rounded-sm bg-surface font-mono text-xs text-text"><%= project.key %></span>
+            <span class="min-w-0 grow truncate text-[15px] leading-5 md:text-sm"><%= project.name %></span>
+            <span class="w-8 shrink-0 text-right font-mono text-base leading-5 <%= summary.ready > ReadyWork::LOW ? 'text-text' : 'text-text-muted' %>"><%= summary.ready %></span>
+            <span class="w-8 shrink-0 text-right font-mono text-control leading-5 text-text-muted"><%= summary.defining_count %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+    <p class="pt-2.5 font-mono text-xs text-text-subtle">Con <%= ReadyWork::LOW %> o menos, avisa en Te toca.</p>
+  </section>
+<% end %>

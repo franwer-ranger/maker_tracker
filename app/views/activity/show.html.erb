@@ -1,0 +1,40 @@
+<% content_for :title, "Actividad" %>
+<div class="flex flex-col gap-10 px-4 pb-10 pt-8 md:px-12 md:pb-16 md:pt-10 lg:gap-12">
+  <% if @cards.any? %>
+    <header class="flex flex-col gap-1.5 md:gap-2">
+      <h1 class="text-[26px] font-semibold leading-8 tracking-[-0.01em] md:text-3xl md:leading-[38px]">Actividad</h1>
+      <p class="text-sm text-text-muted md:text-[15px] md:leading-6"><%= activity_summary(@cards) %></p>
+    </header>
+  <% end %>
+
+  <% if flash[:notice] %>
+    <p class="font-mono text-control text-text-muted" role="status"><%= flash[:notice] %></p>
+  <% end %>
+  <% if flash[:alert] %>
+    <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
+  <% end %>
+
+  <%# Dos columnas que empiezan a la misma altura: «Te toca» (o el vacío) y «En marcha». %>
+  <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-16">
+    <div class="flex min-w-0 grow basis-0 flex-col gap-10 lg:gap-12">
+      <%# Un bloque por apartado. MT-31 (Mientras no mirabas, ya está), MT-32 (QA pendiente, dentro de «Te toca», al final) y MT-33 (trabajo listo, a la derecha, bajo «En marcha») añaden aquí su partial. %>
+      <% if @cards.any? %>
+        <%= render "activity/for_you", cards: @cards, qa: @qa %>
+      <% else %>
+        <%= render "activity/empty", recent: @recent %>
+        <% if @qa.any? %>
+          <section class="-mx-4 border-y border-border md:mx-0 md:overflow-clip md:rounded-xl md:border-x" aria-label="Por probar">
+            <%= render "activity/qa_group", qa: @qa %>
+          </section>
+        <% end %>
+      <% end %>
+      <%= render "activity/while_away", away: @away %>
+    </div>
+
+    <%# La columna derecha: «En marcha» y, debajo, «Trabajo listo» (MT-33). %>
+    <div class="flex flex-col gap-8 lg:w-[340px] lg:shrink-0">
+      <%= render "activity/in_progress", stories: @in_progress %>
+      <%= render "activity/ready_work", summaries: @ready_work %>
+    </div>
+  </div>
+</div>

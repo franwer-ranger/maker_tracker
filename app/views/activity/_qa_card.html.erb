@@ -1,0 +1,41 @@
+<%# Una historia hecha por probar: plegada, su título y cuándo se hizo; desplegada, sus criterios, dónde probarla y «Probada» / «Falla…». Locals: card (Activity::QaCard), open. %>
+<% story = card.story %>
+<%= tag.details id: "por-probar-#{story.id}", open: open, class: "group/card" do %>
+  <summary class="flex min-h-14 cursor-pointer list-none items-center gap-4 px-4 py-2 md:pl-5 md:pr-6 [&::-webkit-details-marker]:hidden <%= ComponentsHelper::FOCUS_RING %>">
+    <span class="hidden w-14 shrink-0 font-mono text-control leading-5 text-text-muted md:block"><%= story.reference %></span>
+    <span class="min-w-0 grow basis-0 text-sm leading-5 text-text group-open/card:text-[17px] group-open/card:font-medium group-open/card:leading-6 md:group-open/card:text-base">
+      <span class="font-mono text-control text-text md:hidden"><%= story.reference %> </span><%= story.title %>
+    </span>
+    <span class="shrink-0 font-mono text-xs text-text-muted max-md:hidden group-open/card:hidden"><%= qa_collapsed_meta(card) %></span>
+    <%= icon "chevron-right", size: 16, class: "shrink-0 text-text-muted group-open/card:rotate-90" %>
+  </summary>
+  <div class="flex flex-col gap-2 pb-5 pl-4 pr-4 pt-1 md:gap-1.5 md:pb-6 md:pl-[100px] md:pr-6">
+    <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+      <span class="flex min-w-0 items-center gap-2 font-mono text-xs text-text-muted">
+        <%= state_dot :done %>
+        <span><%= qa_card_meta(card) %></span>
+      </span>
+      <% if card.url %>
+        <%= link_to card.url, target: "_blank", rel: "noopener", class: "flex items-center gap-1.5 rounded-sm text-control font-medium text-text max-md:hidden #{ComponentsHelper::FOCUS_RING}" do %>
+          <%= card.host %><%= icon "arrow-top-right-on-square", size: 16 %>
+        <% end %>
+      <% else %>
+        <%= link_to "Sin «Dónde se prueba» en el brief", project_brief_path(card.project), class: "rounded-sm text-control text-text-muted underline decoration-border-strong underline-offset-[3px] hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
+      <% end %>
+    </div>
+    <% if card.criteria.any? %>
+      <ol class="flex flex-col gap-1.5 pt-1 md:pt-0.5">
+        <% card.criteria.each_with_index do |criterion, index| %>
+          <li class="flex gap-2.5"><span class="w-4 shrink-0 font-mono text-xs leading-5 text-text-subtle"><%= index + 1 %></span><span class="text-sm leading-5 text-text-soft"><%= criterion %></span></li>
+        <% end %>
+      </ol>
+    <% end %>
+    <% if card.url %>
+      <div class="pt-2 md:hidden">
+        <%= ui_button "Abrir #{card.host}", variant: :secondary, icon_trailing: "arrow-top-right-on-square", href: card.url, target: "_blank", rel: "noopener", class: "w-full max-md:h-11" %>
+      </div>
+    <% end %>
+    <%= render "qa/actions", story: story %>
+    <p class="pt-1 text-control text-text-subtle"><%= link_to "Abrir #{story.reference}", project_story_path(card.project, story), class: "rounded-sm underline decoration-border-strong underline-offset-[3px] hover:text-text #{ComponentsHelper::FOCUS_RING}" %> · no bloquea nada</p>
+  </div>
+<% end %>

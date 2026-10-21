@@ -1,0 +1,46 @@
+<%# Las opciones de una pregunta como botones (se contesta sin salir de la pantalla), con su comando `mt answer`, y la respuesta con texto libre. Locals: question, story, decide (muestra «Registrar también como decisión»), other_label. %>
+<% many = story.open_questions_asked.size > 1 %>
+<%= form_with url: project_story_question_answer_path(story.project, story, question), class: "flex flex-col gap-2.5 pt-2 md:pt-3" do %>
+  <%# Enter en un campo envía el primer botón: este, deshabilitado, evita que responda con la opción 1. %>
+  <button type="submit" disabled hidden tabindex="-1" aria-hidden="true"></button>
+  <ol class="flex flex-col gap-2.5 md:gap-2">
+    <% question.options.each_with_index do |text, index| %>
+      <% number = index + 1 %>
+      <% recommended = number == question.recommended %>
+      <li class="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
+        <button type="submit" name="option" value="<%= number %>" class="<%= class_names(
+          "flex min-h-11 w-full shrink-0 items-center gap-2.5 rounded-md px-3.5 py-2 text-left transition-colors duration-150 ease-brand md:min-h-control md:w-72 md:gap-2 md:px-4",
+          "bg-accent text-bg hover:bg-accent-hover #{ComponentsHelper::ACCENT_FOCUS_RING}": recommended,
+          "border border-strong text-text hover:bg-surface #{ComponentsHelper::FOCUS_RING}": !recommended) %>">
+          <span class="font-mono text-xs <%= recommended ? "text-bg" : "text-text-muted" %>"><%= number %></span>
+          <span class="grow text-[15px] font-medium leading-5 md:text-sm md:leading-[18px]"><%= text %></span>
+          <% if recommended %><span class="font-mono text-label text-bg md:hidden">recomendada</span><% end %>
+        </button>
+        <span class="flex gap-1.5 font-mono text-xs text-text-muted">
+          mt answer <%= story.reference %> <%= number %><%= " --question #{question.id}" if many %>
+          <% if recommended %><span class="hidden text-text md:inline">· recomendada</span><% end %>
+        </span>
+      </li>
+    <% end %>
+  </ol>
+
+  <details class="group">
+    <summary class="flex min-h-11 cursor-pointer list-none items-center rounded-md text-[15px] leading-5 text-text-muted hover:text-text md:min-h-control-sm md:text-sm md:leading-[18px] [&::-webkit-details-marker]:hidden <%= ComponentsHelper::FOCUS_RING %>"><%= other_label %></summary>
+    <div class="flex flex-col gap-2 pb-1 pt-2">
+      <%= text_area_tag :note, nil, rows: 3, "aria-label": other_label.delete_suffix("…"), placeholder: "Escribe tu respuesta…",
+            class: "w-full rounded-md border border-strong bg-surface-sunken px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+      <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <p class="text-control text-text-muted">Con una opción pulsada, el texto va como su nota. Sin ella, es tu respuesta.</p>
+        <%= ui_button "Responder con este texto", variant: :secondary, size: :sm, type: "submit", name: "free", value: "1", class: "max-md:h-11 max-md:w-full" %>
+      </div>
+    </div>
+  </details>
+
+  <% if decide %>
+    <label class="flex min-h-control-sm cursor-pointer items-center gap-2.5 text-control text-text-muted">
+      <%= check_box_tag :decide, "1", false, class: "size-4 shrink-0 cursor-pointer appearance-none rounded-sm border border-strong bg-surface-sunken checked:border-text checked:bg-text #{ComponentsHelper::FOCUS_RING}" %>
+      <span>Registrar también como decisión</span>
+      <span class="font-mono text-text-subtle">--decide</span>
+    </label>
+  <% end %>
+<% end %>

@@ -8,14 +8,25 @@
       <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_story_path(@project, @story), class: "mt-1" %>
     </div>
 
+    <% if flash[:notice] %>
+      <p class="font-mono text-control text-text-muted" role="status"><%= flash[:notice] %></p>
+    <% end %>
     <% if flash[:alert] %>
       <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
     <% end %>
+
+    <%= render "stories/qa", story: @story if @story.qa_pending? %>
+
+    <%= render "stories/since_visit", since: @since, events: @changes if @changes&.any? %>
+
+    <%= render "stories/open_questions", story: @story if @story.open_questions_asked.any? %>
 
     <div data-controller="markdown">
       <textarea hidden data-markdown-target="source"><%= @story.body %></textarea>
       <div class="markdown" data-markdown-target="output"></div>
     </div>
+
+    <%= render "stories/answered_questions", story: @story %>
 
     <section id="comentarios" class="flex flex-col gap-3.5 border-t border-border pt-6">
       <%= section_label "Comentarios · #{@story.comments.size}" %>

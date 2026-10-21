@@ -5,6 +5,7 @@ module Story::Operations
   extend ActiveSupport::Concern
 
   include Eventable
+  include Versioned
 
   EDITABLE_FIELDS = %w[title body mockup labels blocked_by].freeze
 
@@ -25,21 +26,44 @@ module Story::Operations
   # Sus eventos, del más reciente al más antiguo.
   def history = events.recent_first
 
-  # Título, cuerpo y propiedades. El evento guarda qué campos cambiaron, no su contenido.
-  def edit!(attributes, actor:)
+  # Título, cuerpo y propiedades. El evento guarda qué campos cambiaron, no su
+  # contenido. Con `version:` (la que leyó quien edita) falla con
+  # Versioned::Conflict si la historia ya cambió, sin guardar nada.
+  def edit!(attributes, actor:, version: nil)
     attributes = attributes.to_h.stringify_keys
     unknown = attributes.keys - EDITABLE_FIELDS
     raise ArgumentError, "No se puede editar con edit!: #{unknown.join(', ')}" if unknown.any?
 
     transaction do
+      lock!
       before = EDITABLE_FIELDS.index_with { public_send(it) }
       assign_attributes(attributes)
       fields = EDITABLE_FIELDS.reject { public_send(it) == before[it] }
       next false if fields.empty?
 
+      check_version!(version)
+
+      bump_version
       save!
-      record_event!("story.edited", actor: actor, story: self, data: { fields: fields })
+      data = { fields: fields }
+      data[:criteria] = criteria_change(before["body"]) if fields.include?("body") && criteria?
+      record_event!("story.edited", actor: actor, story: self, data: data)
     end
+  end
+
+  # Qué criterios se marcaron o desmarcaron al editar el cuerpo: `checked` y
+  # `unchecked` son los que cambiaron; `done` y `total`, cómo queda (MT-31).
+  def criteria_change(old_body)
+    before = Story.criteria_counts(old_body)
+    now = Story.criteria_counts(body)
+    delta = now[:done] - before[:done]
+    { checked: [ delta, 0 ].max, unchecked: [ -delta, 0 ].max, done: now[:done], total: now[:total] }
+  end
+
+  # Quién editó el contenido por última vez y cuándo.
+  def last_editor
+    event = events.where(action: "story.edited").recent_first.includes(:actor).first
+    [ event&.actor, event&.occurred_at ]
   end
 
   # Pasar a En curso la reclama para el actor (si es de otro, falla). Volver
@@ -65,7 +89,13 @@ module Story::Operations
         data[:released] = true
       end
 
-      update!(state: new_state)
+      # Hecha deja QA pendiente (MT-32); salir de Hecha la quita.
+      if new_state == "done"
+        data[:qa] = "pending"
+        update!(state: new_state, qa: "pending")
+      else
+        update!(state: new_state, qa: nil)
+      end
       record_event!("story.state_changed", actor: actor, story: self, data: data, reason: reason)
     end
   end
@@ -113,6 +143,34 @@ module Story::Operations
       comments.create!(body: body, actor: actor).tap do
         record_event!("comment.added", actor: actor, story: self)
       end
+    end
+  end
+
+  # Pregunta con sus opciones y la recomendación (`mt ask`). Si bloquea y la
+  # historia era del que pregunta, la suelta antes: vuelve a Lista y ya no la
+  # coge nadie hasta que se conteste. Una no bloqueante no la suelta.
+  def ask!(attributes, actor:)
+    transaction do
+      question = questions.build(attributes.to_h.symbolize_keys.merge(actor: actor))
+      question.validate!
+      move_to!(:ready, actor: actor) if question.blocking? && in_progress? && claimed_by == actor
+      question.save!
+      record_event!("question.asked", actor: actor, story: self,
+        data: { question_id: question.id, title: question.title, blocking: question.blocking?, recommended: question.recommended }.compact)
+      question
+    end
+  end
+
+  # Responde con el número de una opción o, sin ella, con un texto libre en
+  # `note` (MT-30). Con `decide`, queda además como decisión
+  # de la historia (D-n). Devuelve la pregunta.
+  def answer_question!(question, option: nil, note: nil, actor:, decide: false)
+    question.with_lock do
+      question.answer!(option: option, note: note, actor: actor)
+      decision = project.record_decision!({ title: "#{question.title} → #{question.answer_text.truncate(80)}", body: question.answer_note.to_s, story: self }, actor: actor) if decide
+      record_event!("question.answered", actor: actor, story: self,
+        data: { question_id: question.id, option: question.answer, answer: question.answer_text, asked_by: question.actor.name, decision: decision&.number }.compact)
+      question
     end
   end
 end

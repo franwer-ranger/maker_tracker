@@ -1,0 +1,23 @@
+<%# Una historia en Definiendo que espera a Fran: tiene preguntas abiertas en el cuerpo o lleva días sin cambios. Su espera cuenta desde su último cambio. Local: card. %>
+<% story = card.story %>
+<article id="te-toca-historia-<%= story.id %>" class="flex gap-4 py-5 pl-4 pr-4 shadow-[inset_2px_0_0_var(--color-accent)] md:pl-5 md:pr-6">
+  <%= link_to story.reference, project_story_path(card.project, story), class: "hidden w-14 shrink-0 font-mono text-control leading-5 text-text-muted hover:text-text md:block #{ComponentsHelper::FOCUS_RING}" %>
+  <div class="flex min-w-0 grow basis-0 flex-col gap-2 md:flex-row md:items-start md:gap-4">
+    <div class="flex min-w-0 grow basis-0 flex-col gap-2 md:gap-1.5">
+      <div class="flex items-center gap-2 font-mono text-xs">
+        <%= link_to story.reference, project_story_path(card.project, story), class: "shrink-0 whitespace-nowrap text-control text-text md:hidden #{ComponentsHelper::FOCUS_RING}" %>
+        <%= state_dot :defining %>
+        <span class="text-accent"><%= definition_meta(card) %></span>
+      </div>
+      <h2 class="text-[17px] font-medium leading-6 md:text-base"><%= story.title %></h2>
+      <% if card.reason == :questions %>
+        <p class="text-sm text-text-muted">«<%= open_questions_excerpt(story) %>»</p>
+      <% else %>
+        <p class="text-sm text-text-muted">Sin cambios desde <%= relative_day(card.since, time_of_day: true) %>. Ábrela para definirla, pasarla a Lista o dejarla.</p>
+      <% end %>
+    </div>
+    <div class="pt-2 md:shrink-0 md:pt-0">
+      <%= ui_button "Abrir historia", variant: :secondary, href: project_story_path(card.project, story), class: "w-full max-md:h-11 md:h-control-sm md:w-auto md:px-3 md:text-control md:leading-4" %>
+    </div>
+  </div>
+</article>

@@ -1,5 +1,5 @@
 # El onboarding de un agente (`mt context`, docs/CLI.md): brief entero, las
-# decisiones vigentes más recientes, hito actual y lo que está en curso.
+# decisiones vigentes más recientes, hito actual, trabajo listo y lo que está en curso.
 class Api::Markdown::Context
   include Api::Markdown::Formatting
 
@@ -18,9 +18,11 @@ class Api::Markdown::Context
       .sort_by { [ it.milestone ? 0 : 1, it.milestone&.position.to_i, it.position ] }
   end
 
+  def ready_work = @ready_work ||= ReadyWork.for(@project)
+
   def to_s
     [ "# #{@project.name} · #{@project.key}", edited_line, brief, decisions_section,
-      milestone_section, in_progress_section ].join("\n\n") + "\n"
+      milestone_section, ready_work_section, in_progress_section, questions_section ].compact.join("\n\n") + "\n"
   end
 
   private
@@ -75,6 +77,9 @@ class Api::Markdown::Context
     parts.join(" · ")
   end
 
+  # Cuánto les queda a los agentes, de todo el proyecto y no solo del hito actual.
+  def ready_work_section = "## Ready work\n\n#{ready_work_line(ready_work)}"
+
   def in_progress_section
     return "## In progress\n\nNothing in progress." if in_progress.empty?
 
@@ -82,5 +87,17 @@ class Api::Markdown::Context
       [ story.reference, story.title, story.claimed_by&.name || "nobody", ("since #{datetime(story.claimed_at)}" if story.claimed_at) ]
     end
     "## In progress\n\n#{table(rows, min: [ 0, TITLE_MIN ]).join("\n")}"
+  end
+
+  # Las preguntas abiertas del proyecto: un agente tiene que saber que hay
+  # historias esperando a una respuesta. Sin ninguna, no hay sección.
+  #   PG-50  Q12  codex  40 min  blocking
+  def questions_section
+    questions = @project.questions.open.includes(:actor, story: :project).oldest_first.to_a
+    return if questions.empty?
+
+    rows = questions.map { [ it.story.reference, it.reference, it.actor.name, waiting(it.created_at), (it.blocking? ? "blocking" : "non-blocking") ] }
+    lines = table(rows).zip(questions).map { |line, question| "#{line}\n#{' ' * 7}#{question.title}" }
+    "## Open questions\n\n#{lines.join("\n")}"
   end
 end

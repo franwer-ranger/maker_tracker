@@ -5,6 +5,7 @@ class Api::ContextsController < Api::BaseController
     milestone = project.current_milestone
     render_ok({ project: { key: project.key, name: project.name },
                 current_milestone: milestone && { code: milestone.code, title: milestone.title },
+                ready_work: Api::Markdown::Formatting.ready_work_data(context.ready_work),
                 decisions: context.decisions.map(&:reference),
                 in_progress: context.in_progress.map { { reference: it.reference, title: it.title, claimed_by: it.claimed_by&.name } },
                 markdown: context.to_s },

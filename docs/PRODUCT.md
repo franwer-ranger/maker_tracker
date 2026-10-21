@@ -28,6 +28,7 @@ La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de pri
 - **Cada cosa que pide tu atención trae sus opciones**: qué ha pasado, qué leer y qué puedes hacer. Cada opción es también un comando, así que una persona y un agente ven lo mismo.
 - **Ligero**: pocas entidades, pocas pantallas y cero configuración. Ante la duda, quitar. Sin campos ni flujos que no use nadie.
 - **El contexto vive con el proyecto**: la visión, las decisiones y los principios de cada proyecto se guardan en Maker Tracker y los agentes los cargan antes de recomendar nada.
+- **La autonomía de los agentes se escribe en el brief** (D-48): la sección `## Autonomía` de cada proyecto dice qué pueden decidir solos. Lo que permite lo hacen, y queda registrado; lo demás lo preguntan en la historia. Los cambios de producto de un agente no pasan a ser propuestas, y no hay un motor de reglas: es texto que `mt context` carga en cada sesión.
 - **Las historias se escriben para ser ejecutadas**: qué, por qué y criterios de aceptación, con enlaces a mockups de Paper.
 - **Dogfooding**: Maker Tracker se construye usando Maker Tracker.
 
@@ -53,7 +54,6 @@ La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de pri
 
 - Colaboración: tras cerrar el MVP, el tablero podrá ser colaborativo (varias personas). Cómo, se piensa entonces; hasta ahí, un único actor humano.
 - ¿Cómo se migra el backlog actual de Notion?
-- ¿Los cambios de producto que hace un agente (reordenar el roadmap, tocar el brief, marcar una historia como Lista) deberían pasar a ser **propuestas** que apruebo desde "Necesita tu atención"? En M2 se aplican directamente y quedan registrados (D-25); se revisa en M3 con la pantalla Actividad delante.
 
 ## Decisiones
 

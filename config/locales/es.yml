@@ -19,6 +19,9 @@ es:
       missing_stories: "incluye historias que no existen en el proyecto (%{numbers})"
       key_format: "tiene que tener de 2 a 5 letras"
       name_format: "solo admite minúsculas, números, - y _"
+      too_few: "necesita al menos 2 opciones"
+      not_an_option: "tiene que ser el número de una de las %{count} opciones"
+      required_when_non_blocking: "es obligatoria si la pregunta no bloquea: es la que sigue el agente"
   activerecord:
     errors:
       messages:
@@ -63,3 +66,9 @@ es:
       actor:
         name: "El nombre"
         kind: "El tipo"
+      question:
+        title: "El título"
+        options: "Las opciones"
+        recommended: "La recomendada"
+        answer: "La respuesta"
+        answer_note: "El texto de la respuesta"

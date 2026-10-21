@@ -26,6 +26,14 @@ module Api::Operations
     { method: "GET", path: "/api/projects/:key/decisions", params: {}, command: "mt decisions",
       description: "All decisions, newest first, marking the superseded ones" },
 
+    # La daily (MT-42). Es un POST porque deja constancia de la daily del actor.
+    { method: "POST", path: "/api/projects/:key/daily", params: { since: "a date like 2026-10-15 or 2026-10-15 22:40; without it, since the actor's last daily (or the last 7 days if none)" },
+      command: "mt daily [--since date]",
+      description: "The project's daily for the token's actor: what happened since their last daily, in progress, blocked, waiting for the human and what is next. Records the daily, so the next one starts here; another actor's is not moved" },
+    { method: "POST", path: "/api/projects/:key/daily/ideas", params: { title: "the evolutionary idea", why: "markdown for the Contexto section (optional)" },
+      command: "mt daily idea \"…\" [--why \"…\"]",
+      description: "Proposes an evolutionary as an idea in the inbox, never in the roadmap. At most 3 per daily; VALIDATION_FAILED if the actor has not done their daily or has reached the limit" },
+
     # Trabajar (#017). Todo queda a nombre del actor del token, con su evento.
     { method: "POST", path: "/api/projects/:key/stories/:number/start", params: {}, command: "mt start PG-49",
       description: "Claims the story and moves it to in_progress. CLAIMED_BY_OTHER if someone else has it; warnings if it was not ready, is blocked or has no criteria" },
@@ -38,6 +46,24 @@ module Api::Operations
     { method: "POST", path: "/api/projects/:key/decisions", params: { title: "the decision", body: "the why (markdown)", story: "PG-49 (optional)", supersedes: "D-9 (optional)" },
       command: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", description: "Records a decision. Returns its reference (D-15)" },
 
+    # Preguntas con opciones (MT-29). Bloquean por defecto la historia hasta que se contestan.
+    { method: "POST", path: "/api/projects/:key/stories/:number/questions", command: "mt ask PG-49 \"…\" --option \"…\" --option \"…\" [--recommend 2] [--context \"…\"] [--reversible] [--no-bloqueante]",
+      params: { title: "the question", context: "markdown (optional)", options: "list of at least 2 texts", recommended: "number of the recommended option (required if it does not block)",
+                reversible: "true if the decision can be undone; without it, not stated", blocking: "false to let the agent carry on with the recommended option (default true)" },
+      description: "Asks a question in the story in the actor's name. A blocking one releases the story if it was the actor's, and the story is blocked by the person who answers until it is answered" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/answer", command: "mt answer PG-49 2 [--note \"…\"] [--question 12] [--decide] | mt answer PG-49 --text \"…\"",
+      params: { option: "number of the chosen option (optional if you answer with text)", text: "your own answer, when no option fits; use it instead of option", note: "markdown (optional, goes with the option)", question: "id of the question (Q12 or 12); needed if the story has several open", decide: "true to also record it as a decision" },
+      description: "Answers an open question. The story is available again when no blocking questions are left. ALREADY_ANSWERED if it was answered" },
+    { method: "GET", path: "/api/questions", params: { project: "a project key (optional)" }, command: "mt questions [--project PG]",
+      description: "Open questions of all the projects (or one), the one waiting the longest first, with their options" },
+
+    # QA pendiente (MT-32): lo hecho que la persona aún no ha probado. Solo una persona prueba.
+    { method: "GET", path: "/api/qa", params: { project: "a project key (optional)" }, command: "mt qa [--project PG]",
+      description: "Stories done and not yet tested by the person, in all the projects (or one): the oldest first, with their acceptance criteria and where to test them (the \"Dónde se prueba\" line of the brief)" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/qa", params: { result: "ok | fail", note: "markdown; required with fail, optional with ok" },
+      command: "mt qa PG-49 ok [--note \"…\"] | mt qa PG-49 fail --note \"…\"",
+      description: "Passes the QA of a story, or fails it: fail creates a story in defining in the same milestone and links it in the event. FORBIDDEN for agents; NOT_PENDING if the story does not wait for QA" },
+
     # Definir producto (#018). Nada se borra; cada cambio deja su evento.
     { method: "POST", path: "/api/projects/:key/stories", command: "mt create \"Title\" [--milestone M2] [--state …] [--number 14] [--file f.md]",
       params: { markdown: "the story in the mt show format (or the separate fields)", title: "", milestone: "M2, its title or inbox", state: "idea | defining | ready",
@@ -45,8 +71,8 @@ module Api::Operations
                 number: "keeps this number if it is free (to migrate a backlog); without it, the next one" },
       description: "Creates a story. Without state it is an idea, and without milestone it goes to the inbox" },
     { method: "PATCH", path: "/api/projects/:key/stories/:number", command: "mt edit PG-49 --file f.md",
-      params: { markdown: "the story in the mt show format", title: "", body: "", mockup: "", labels: "", blocked_by: "" },
-      description: "Edits title, body and properties; number is ignored. Changing state or milestone is an error: use move or reorder" },
+      params: { markdown: "the story in the mt show format", version: "the version you read (the version: line of mt show); optional", title: "", body: "", mockup: "", labels: "", blocked_by: "" },
+      description: "Edits title, body and properties; number is ignored. CONFLICT (409, nothing saved) if the version is not the current one. Changing state or milestone is an error: use move or reorder" },
     { method: "POST", path: "/api/projects/:key/stories/:number/move", params: { state: "idea | defining | ready | in_progress | done" },
       command: "mt move PG-49 ready", description: "Changes the state. Moving to ready without meeting the rule gives warnings" },
     { method: "POST", path: "/api/projects/:key/stories/:number/reorder", command: "mt reorder PG-49 --position 1 [--milestone M3] --reason \"…\"",
@@ -54,13 +80,16 @@ module Api::Operations
       description: "Reorders the story in its milestone or moves it to another" },
     { method: "POST", path: "/api/projects/:key/milestones", params: { title: "", goal: "markdown" },
       command: "mt milestone create \"Title\" [--goal \"…\"]", description: "Creates a milestone at the end of the roadmap" },
-    { method: "PATCH", path: "/api/projects/:key/milestones/:code", params: { title: "", goal: "markdown" },
-      command: "mt milestone edit M2 [--title …] [--goal …]", description: "Edits a milestone's title or goal" },
+    { method: "GET", path: "/api/projects/:key/milestones/:code", params: {}, command: "mt milestone show M2",
+      description: "A milestone with its version (the one to send when editing it)" },
+    { method: "PATCH", path: "/api/projects/:key/milestones/:code", params: { title: "", goal: "markdown", version: "the version you read; optional" },
+      command: "mt milestone edit M2 [--title …] [--goal …] [--version n]", description: "Edits a milestone's title or goal. CONFLICT (409, nothing saved) if the version is not the current one" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/reorder", params: { position: "from 1", reason: "required for agents" },
       command: "mt milestone reorder M3 --position 2 --reason \"…\"", description: "Changes a milestone's position (and with it, its code)" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/close", params: {}, command: "mt milestone close M2", description: "Closes a milestone" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/reopen", params: {}, command: "mt milestone reopen M2", description: "Reopens a milestone" },
-    { method: "GET", path: "/api/projects/:key/brief", params: {}, command: "mt brief", description: "The brief as markdown" },
-    { method: "PUT", path: "/api/projects/:key/brief", params: { markdown: "the whole brief" }, command: "mt brief --file f.md", description: "Replaces the brief" }
+    { method: "GET", path: "/api/projects/:key/brief", params: {}, command: "mt brief", description: "The brief as markdown, with its version in a frontmatter" },
+    { method: "PUT", path: "/api/projects/:key/brief", params: { markdown: "the whole brief; a leading version: frontmatter is checked", version: "optional, instead of the frontmatter" },
+      command: "mt brief --file f.md", description: "Replaces the brief. CONFLICT (409, nothing saved) if the version is not the current one" }
   ].freeze
 end

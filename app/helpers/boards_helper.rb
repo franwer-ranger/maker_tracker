@@ -12,6 +12,10 @@ module BoardsHelper
       tag.span class: "flex items-center gap-1 font-mono text-xs text-text-muted", title: "Bloqueada" do
         safe_join([ icon("lock-closed", size: 14), "tras #{pending.map { "##{it}" }.join(', ')}" ])
       end
+    elsif story.blocking_questions.any?
+      tag.span class: "flex items-center gap-1 font-mono text-xs text-text-muted", title: "Bloqueada por una pregunta abierta" do
+        safe_join([ icon("lock-closed", size: 14), "pregunta" ])
+      end
     elsif story.missing_criteria?
       tag.span "faltan criterios", class: "font-mono text-xs text-state-defining"
     elsif story.mockup.present?

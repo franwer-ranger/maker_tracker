@@ -1,0 +1,13 @@
+<%# «Por probar» (5.9): lo hecho que Fran aún no ha probado, al final de «Te toca» y sin contar en su contador. La primera, desplegada. Local: qa (Activity::QaCard). %>
+<%= tag.details id: "por-probar", open: true, class: "group/qa bg-surface-sunken", aria: { label: "Por probar" } do %>
+  <summary class="flex min-h-[52px] cursor-pointer list-none items-center gap-4 px-4 py-2 md:pl-5 md:pr-6 [&::-webkit-details-marker]:hidden <%= ComponentsHelper::FOCUS_RING %>">
+    <span class="flex w-4 shrink-0 items-center md:w-14"><%= icon "chevron-down", size: 16, class: "text-text-muted -rotate-90 group-open/qa:rotate-0" %></span>
+    <span class="min-w-0 grow basis-0 text-[15px] font-medium leading-[22px] text-text">Por probar · <%= qa.size %></span>
+    <span class="shrink-0 font-mono text-xs text-text-muted"><span class="max-md:hidden">hechas, </span>sin prisa<span class="max-md:hidden"> · mt qa</span></span>
+  </summary>
+  <div class="flex flex-col divide-y divide-border border-t border-border">
+    <% qa.each_with_index do |card, index| %>
+      <%= render "activity/qa_card", card: card, open: index.zero? %>
+    <% end %>
+  </div>
+<% end %>

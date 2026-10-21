@@ -21,15 +21,26 @@ class Api::Markdown::EventSentence
 
   def sentence
     case @event.action
-    when "story.created" then "created as #{state_words(@data['state'] || 'idea')}"
-    when "story.state_changed" then "moved to #{state_words(@data['to'])}#{work}"
+    when "story.created" then "created as #{state_words(@data['state'] || 'idea')}#{' (proposed in a daily)' if @data['daily']}"
+    when "story.state_changed" then "moved to #{state_words(@data['to'])}#{work}#{' · QA pending' if @data['qa'] == 'pending'}"
     when "story.edited" then "edited #{Array(@data['fields']).join(', ')}"
     when "story.claimed" then "claimed it"
     when "story.released" then @data["from"] ? "released it from #{@data['from']}" : "released it"
     when "story.reordered" then "reordered it in its milestone"
     when "story.moved" then "moved it to #{milestone(@data.dig('to', 'milestone_id'))}"
     when "comment.added" then "commented"
+    when "question.asked" then "asked: #{@data['title']}#{' (non-blocking)' if @data['blocking'] == false}"
+    when "question.answered" then "answered #{@data['asked_by']}: #{@data['option'] ? "#{@data['option']} " : ''}#{@data['answer']}#{", recorded as D-#{@data['decision']}" if @data['decision']}"
+    when "qa.passed" then "passed QA#{": #{@data['note']}" if @data['note']}"
+    when "qa.failed" then "failed QA: #{@data['note']} (created #{@event.project.key}-#{@data['story']})"
     when "decision.recorded" then "recorded D-#{@data['number']}"
+    when "project.created" then "created the project"
+    when "brief.edited" then "edited the brief"
+    when "milestone.created" then "created milestone #{@data['title']}"
+    when "milestone.edited" then "edited #{milestone_ref} (#{Array(@data['fields']).join(', ')})"
+    when "milestone.closed" then "closed #{milestone_ref}"
+    when "milestone.reopened" then "reopened #{milestone_ref}"
+    when "milestone.reordered" then "reordered #{milestone_ref}"
     else @event.action
     end
   end
@@ -40,6 +51,8 @@ class Api::Markdown::EventSentence
     items << pr_label(@data["pr"]) if @data["pr"].present?
     " (#{items.join(', ')})" if items.any?
   end
+
+  def milestone_ref = @milestone_codes.fetch(@data["milestone_id"], "a deleted milestone")
 
   def milestone(id) = id ? @milestone_codes.fetch(id, "a deleted milestone") : "the inbox"
 end

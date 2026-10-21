@@ -32,6 +32,10 @@ postgram.update!(name: "Postgram", brief: <<~MARKDOWN)
 
     Agencias y gestión de clientes. Generar contenido con IA por el usuario.
 
+    ## Dónde se prueba
+
+    Testing: https://testing.postgram.app
+
     ## Glosario
 
     Post: lo que escribe el maker, una vez. Publicación: cada copia de un post en una red.
@@ -128,9 +132,16 @@ end
 # M2 · en el orden de 5.1 Tablero y 5.3 Roadmap: 8 abiertas y 4 hechas.
 # Las hechas primero: #49 está bloqueada por #47.
 m2_done = [
-  seed_story(postgram, 47, "Borradores automáticos", milestone: m2, state: :done, labels: %w[editor]),
-  seed_story(postgram, 43, "Subir varias imágenes a la vez", milestone: m2, state: :done, labels: %w[editor]),
-  seed_story(postgram, 42, "Conectar Instagram", milestone: m2, state: :done, labels: %w[redes]),
+  seed_story(postgram, 47, "Borradores automáticos", milestone: m2, state: :done, labels: %w[editor],
+             body: story_body(historia: "Como maker, quiero que mi post se guarde solo, para no perder lo que escribo.",
+                              criterios: [ "Mientras escribes, el post se guarda solo cada pocos segundos.", "Si cierras la pestaña y vuelves, el borrador sigue ahí.",
+                                           "Los borradores salen en la lista de posts con la etiqueta «Borrador»." ])),
+  seed_story(postgram, 43, "Subir varias imágenes a la vez", milestone: m2, state: :done, labels: %w[editor],
+             body: story_body(historia: "Como maker, quiero subir varias imágenes de una vez, para no repetir el gesto.",
+                              criterios: [ "Puedo elegir varias imágenes en un solo selector.", "Cada imagen sale en el post en el orden en que la elegí." ])),
+  seed_story(postgram, 42, "Conectar Instagram", milestone: m2, state: :done, labels: %w[redes],
+             body: story_body(historia: "Como maker, quiero conectar mi cuenta de Instagram, para publicar allí.",
+                              criterios: [ "Desde Ajustes puedo conectar y desconectar Instagram.", "Un post publicado sale en mi perfil de Instagram." ])),
   seed_story(postgram, 41, "Conectar LinkedIn", milestone: m2, state: :done, labels: %w[redes])
 ]
 m2_stories = [
@@ -181,10 +192,14 @@ m3_stories = [
   seed_story(postgram, 27, "Panel de rendimiento por post", milestone: m3, state: :defining, labels: %w[analítica]),
   seed_story(postgram, 28, "Comparar redes", milestone: m3, state: :defining, labels: %w[analítica], blocked_by: [ 51 ]),
   seed_story(postgram, 29, "Resumen semanal por email", milestone: m3, state: :defining),
-  seed_story(postgram, 30, "Mejores horas para publicar", milestone: m3, state: :defining, labels: %w[analítica]),
+  # Con una pregunta abierta en el cuerpo: sale en «Te toca» de Actividad (MT-30).
+  seed_story(postgram, 30, "Mejores horas para publicar", milestone: m3, state: :defining, labels: %w[analítica],
+             body: Story::BODY_TEMPLATE + "¿Las horas se calculan por red o con todas juntas?\n"),
   seed_story(postgram, 32, "Alertas cuando un post despega", milestone: m3)
 ]
 m3_stories.each.with_index(1) { |story, position| story.update!(position: position) }
+# #29 lleva 4 días en Definiendo sin cambios: está parada y sale en «Te toca» (MT-30).
+postgram.stories.find_by!(number: 29).update_columns(updated_at: 4.days.ago)
 
 # Decisiones (5.5) ------------------------------------------------------------
 # El cuerpo es el porqué; se pinta tras «Por qué:», así que empieza en minúscula.
@@ -222,11 +237,11 @@ seed_comment(s48, claude, "Empiezo con Prawn, como dice D-14. ¿El export incluy
 # Solo los que se ven en los mockups. Se añaden a mano y solo si la historia aún
 # no los tiene, para que las seeds sigan siendo idempotentes.
 
-def seed_event(project, action, actor:, at:, story: nil, data: {})
+def seed_event(project, action, actor:, at:, story: nil, data: {}, reason: nil)
   data = data.deep_stringify_keys
   return if project.events.where(story: story, action: action, actor: actor).any? { it.data == data }
 
-  project.events.create!(story: story, action: action, actor: actor, data: data, occurred_at: at)
+  project.events.create!(story: story, action: action, actor: actor, data: data, reason: reason, occurred_at: at)
 end
 
 # #49 (5.4 · Historial): creada como idea → pasa a Definiendo → claude la define → pasa a Lista.
@@ -238,6 +253,53 @@ seed_event(postgram, "story.state_changed", story: s49, actor: fran, at: 1.day.a
 seed_event(postgram, "story.claimed", story: s48, actor: claude, at: s48.claimed_at)
 seed_event(postgram, "story.claimed", story: s45, actor: codex, at: s45.claimed_at)
 
+# Preguntas de agentes (5.10b y 5.10). La de #49 es la del mockup, ya respondida por
+# Fran y con la historia otra vez en Lista; así #49 sigue siendo la siguiente. La
+# abierta es de #50, con la forma de 5.10: bloquea, y codex la soltó.
+s50 = postgram.stories.find_by!(number: 50)
+today = Time.current.beginning_of_day
+# Las horas de los mockups (hoy 10:12…) nunca quedan en el futuro si se siembra antes.
+def not_future(time) = [ time, Time.current - 1.minute ].min
+
+def seed_question(story, title, actor:, at:, options:, answered: nil, **attributes)
+  question = story.questions.find_or_initialize_by(title: title)
+  return question unless question.new_record?
+
+  question.assign_attributes(actor: actor, options: options, created_at: at, updated_at: at, **attributes)
+  question.save!
+  return question unless answered
+
+  question.update!(answer: answered[:option], answer_note: answered[:note], answered_by: answered[:by], answered_at: answered[:at])
+  question
+end
+
+q49 = seed_question(s49, "¿Qué hacemos si una variable de la plantilla no tiene valor al publicar?", actor: codex, at: not_future(today + 10.hours + 12.minutes),
+                    context: "Pasa con {enlace} en los posts sin enlace.", reversible: true, recommended: 2,
+                    options: [ "Quitarla y publicar", "Avisar antes de publicar", "Publicar el texto tal cual" ],
+                    answered: { option: 2, by: fran, at: not_future(today + 10.hours + 40.minutes), note: "Que el aviso diga qué variable falta y deje publicar igualmente." })
+seed_event(postgram, "story.state_changed", story: s49, actor: codex, at: not_future(today + 9.hours + 30.minutes), data: { from: "ready", to: "in_progress", claimed: true })
+seed_event(postgram, "story.state_changed", story: s49, actor: codex, at: q49.created_at, data: { from: "in_progress", to: "ready", released: true })
+seed_event(postgram, "question.asked", story: s49, actor: codex, at: q49.created_at,
+           data: { question_id: q49.id, title: q49.title, blocking: true, recommended: 2 })
+seed_event(postgram, "question.answered", story: s49, actor: fran, at: q49.answered_at,
+           data: { question_id: q49.id, option: 2, answer: q49.answer_text, asked_by: "codex" })
+
+q50 = seed_question(s50, "¿Qué redes enseñamos en la vista previa?", actor: codex, at: 40.minutes.ago,
+                    context: "Hoy hay tres conectadas: X, LinkedIn e Instagram. codex ha soltado PG-50 hasta que contestes.",
+                    reversible: true, recommended: 2, options: [ "Solo las que el post tiene marcadas", "Todas las conectadas", "Una a elegir cada vez" ])
+seed_event(postgram, "question.asked", story: s50, actor: codex, at: q50.created_at,
+           data: { question_id: q50.id, title: q50.title, blocking: true, recommended: 2 })
+
+# QA pendiente (5.9, 5.12): tres historias hechas hace poco que Fran aún no ha probado.
+# Las demás hechas son anteriores a la funcionalidad y no entran. Una que ya se probó
+# en desarrollo no vuelve a quedar pendiente.
+{ 47 => [ codex, 1.day.ago.change(hour: 18, min: 40), %w[4f3e2a1 9b1c7d0 c02e5f8] ], 43 => [ claude, today + 6.hours + 22.minutes, %w[a7d41e3 5e90b2c] ],
+  42 => [ codex, today + 3.hours + 5.minutes, %w[d1f8a64] ] }.each do |number, (actor, at, commits)|
+  story = postgram.stories.find_by!(number: number)
+  seed_event(postgram, "story.state_changed", story: story, actor: actor, at: not_future(at), data: { from: "in_progress", to: "done", commits: commits, qa: "pending" })
+  story.update_columns(qa: "pending") if story.qa.nil?
+end
+
 # Brief editado hace 3 días (5.5).
 seed_event(postgram, "brief.edited", actor: fran, at: 3.days.ago)
 
@@ -246,5 +308,21 @@ seed_event(postgram, "brief.edited", actor: fran, at: 3.days.ago)
 maker_tracker = Project.find_or_create_by!(key: "MT") { it.name = "Maker Tracker" }
 seed_milestone(maker_tracker, "Núcleo v2", "El modelo nuevo funcionando, con la UI mínima para definir producto.")
 seed_event(maker_tracker, "project.created", actor: fran, at: 2.days.ago)
+
+# Mientras no mirabas (5.9, 5.11): lo que hicieron los agentes desde la visita anterior de Fran (ayer por la noche).
+visit_at = 1.day.ago.change(hour: 23, min: 10)
+seed_event(postgram, "decision.recorded", story: s48, actor: claude, at: not_future(visit_at + 70.minutes), data: { number: 14, title: postgram.decisions.find_by!(number: 14).title })
+seed_event(postgram, "story.reordered", story: s45, actor: claude, at: not_future(visit_at + 90.minutes), reason: "las reservas de Navidad abren el 1 de noviembre",
+           data: { from: { milestone_id: m2.id, position: 3 }, to: { milestone_id: m2.id, position: 1 } })
+seed_event(postgram, "brief.edited", actor: claude, at: not_future(visit_at + 100.minutes))
+seed_comment(s49, codex, "Aviso hecho: si falta {enlace}, el editor lo dice antes de publicar y deja seguir.", at: not_future(today + 12.hours + 21.minutes))
+seed_event(postgram, "comment.added", story: s49, actor: codex, at: not_future(today + 12.hours + 21.minutes))
+
+seed_event(postgram, "story.edited", story: s49, actor: codex, at: not_future(today + 12.hours + 20.minutes),
+           data: { fields: %w[body], criteria: { checked: 2, unchecked: 0, done: 2, total: 3 } })
+
+# Sus visitas a la portada y a #49. Solo si no existen: una visita real no se pisa.
+Visit.find_or_create_by!(key: Visit::HOME) { it.assign_attributes(since: visit_at, seen_at: visit_at) }
+Visit.find_or_create_by!(key: Visit.key_for(s49)) { it.assign_attributes(story: s49, since: visit_at, seen_at: visit_at) }
 
 puts "Seeds created!"

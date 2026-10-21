@@ -11,6 +11,8 @@ class Api::BaseController < ActionController::API
   before_action { response.set_header("X-MT-API-Version", Api::Operations::VERSION.to_s) }
   before_action :authenticate_actor
   skip_before_action :authenticate_actor, only: :route_not_found
+  # Presencia (MT-36): cada petición autenticada marca al actor como activo.
+  after_action :record_presence, unless: -> { Current.actor.nil? }
 
   rescue_from StandardError, with: :render_internal_error
   rescue_from Api::Error, with: :render_error
@@ -30,6 +32,13 @@ class Api::BaseController < ActionController::API
   # API escribe el suyo.
   rescue_from Story::ClaimedByOther do |e|
     render_error claimed_by_other_error(e.story)
+  end
+  rescue_from Question::AlreadyAnswered do |e|
+    render_error Api::Error.new("ALREADY_ANSWERED", "#{e.question.story.reference} #{e.question.reference} is already answered.", status: :conflict,
+      hint: "see the open questions with mt questions.")
+  end
+  rescue_from Versioned::Conflict do |e|
+    render_error conflict_error(e)
   end
   rescue_from Eventable::ReasonRequired do
     render_error reason_required_error
@@ -57,6 +66,30 @@ class Api::BaseController < ActionController::API
 
     actor.token_used!
     Current.actor = actor
+  end
+
+  # GET lee, el resto escribe. Solo si la respuesta es 2xx: un 404 o un 422 no
+  # dejan presencia. Si la escritura ya marcó la presencia con su evento
+  # (Presence.wrote), no se pisa. Sin proyecto en la ruta también cuenta.
+  def record_presence
+    return if Current.presence_written || !response.successful?
+
+    reading = request.get? || request.head?
+    key = params[:project_key].to_s.upcase.presence
+    Presence.touch(Current.actor, project: (@project || Project.find_by(key: key) if key), project_key: key, target: presence_target(key),
+      mode: reading ? :reading : :writing, detail: reading ? nil : "#{controller_name}##{action_name}")
+  rescue => e
+    Rails.error.report(e, handled: true) # la presencia nunca rompe una petición
+  end
+
+  def presence_target(key)
+    if key && (number = params[:story_number] || params[:number])
+      "#{key}-#{number.to_s.upcase.delete_prefix("#{key}-")}"
+    elsif key && params[:code]
+      "#{key} #{params[:code].to_s.upcase}"
+    elsif controller_name != "projects"
+      controller_name.singularize
+    end
   end
 
   def render_ok(data = {}, summary:, breadcrumbs: [], warnings: [], status: :ok)
@@ -102,6 +135,21 @@ class Api::BaseController < ActionController::API
     since = " since #{Api::Markdown::Formatting.datetime(story.claimed_at)}" if story.claimed_at
     Api::Error.new("CLAIMED_BY_OTHER", "#{story.reference} is claimed by #{story.claimed_by.name}#{since}.", status: :conflict,
       hint: "pick another one with mt next, or ask #{Actor.human.name} to release it.")
+  end
+
+  # "PG-49 changed since you read it: claude edited it at 10:42 (you had version 4, it is on 5)."
+  def conflict_error(conflict)
+    record = conflict.record
+    at = Api::Markdown::Formatting.datetime(conflict.edited_at) if conflict.edited_at
+    by = " (#{[ conflict.editor&.name, at ].compact.join(', ')})" if conflict.editor || at
+    subject, reread = case record
+    when Story then [ record.reference, "mt show #{record.reference}" ]
+    when Milestone then [ record.code, "mt milestone show #{record.code}" ]
+    else [ "the brief of #{record.name}", "mt brief" ]
+    end
+    Api::Error.new("CONFLICT", "#{subject} changed since you read it (you had version #{conflict.expected}, it is on #{conflict.current}). Nothing was saved.",
+      status: :conflict, details: { expected_version: conflict.expected, current_version: conflict.current },
+      hint: "Someone changed it#{by}. Read it again with #{reread} and apply your changes on top.")
   end
 
   # Cada controlador que pide motivo dice cómo repetir el comando con él.

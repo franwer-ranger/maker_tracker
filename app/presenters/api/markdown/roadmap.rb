@@ -13,17 +13,19 @@ class Api::Markdown::Roadmap
   end
 
   def milestones
-    @milestones ||= (@closed ? @project.milestones : @project.milestones.open).includes(stories: %i[claimed_by project]).to_a
+    @milestones ||= (@closed ? @project.milestones : @project.milestones.open).includes(stories: %i[claimed_by project questions]).to_a
   end
 
-  def ideas = @ideas ||= @project.ideas.includes(:claimed_by, :project).to_a
+  def ideas = @ideas ||= @project.ideas.includes(:claimed_by, :project, :questions).to_a
 
   def done_numbers = @done_numbers ||= @project.stories.done.pluck(:number)
 
   def next_story = defined?(@next_story) ? @next_story : (@next_story = @project.next_story)
 
+  def ready_work = @ready_work ||= ReadyWork.for(@project)
+
   def to_s
-    sections = [ "# Roadmap · #{@project.name}", *milestones.map { milestone_section(it) } ]
+    sections = [ "# Roadmap · #{@project.name}\n\nReady work: #{ready_work_line(ready_work)}", *milestones.map { milestone_section(it) } ]
     sections << inbox_section if ideas.any?
     sections << closed_line unless @closed || closed_milestones.empty?
     sections.join("\n\n") + "\n"

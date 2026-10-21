@@ -1,0 +1,29 @@
+<%# Un proyecto al que le queda poco trabajo (MT-33): dos historias Listas y desbloqueadas o menos en sus hitos abiertos; con 0 se ha quedado sin trabajo. Local: card. %>
+<% project = card.project %>
+<% ready = card.ready_count %>
+<article id="te-toca-proyecto-<%= project.id %>" class="flex gap-4 py-5 pl-4 pr-4 shadow-[inset_2px_0_0_var(--color-accent)] md:pl-5 md:pr-6 md:pb-6">
+  <span class="hidden w-14 shrink-0 font-mono text-control leading-5 text-text-muted md:block"><%= project.key %></span>
+  <div class="flex min-w-0 grow basis-0 flex-col gap-2 md:gap-1.5">
+    <div class="flex items-center gap-2 font-mono text-xs">
+      <span class="shrink-0 text-control text-text md:hidden"><%= project.key %></span>
+      <span class="text-accent">poco trabajo listo · <%= ready_work_counts(ready, card.defining_count) %> · espera <%= short_time_ago(card.since) %></span>
+    </div>
+    <h2 class="text-[17px] font-medium leading-6 md:text-base"><%= low_work_title(project, ready) %></h2>
+    <p class="text-sm text-text-muted">
+      <%= ready.zero? ? "Los agentes no tienen qué coger en los hitos abiertos de #{project.name}." : "A los agentes casi no les queda qué coger en los hitos abiertos de #{project.name}." %>
+      <%= card.defining_count.positive? ? "Hay #{card.defining_count} en Definiendo: define una y siguen." : "Tampoco hay ninguna en Definiendo: escribe o define una en el Roadmap." %>
+    </p>
+    <div class="flex flex-col gap-2.5 pt-2 md:gap-2 md:pt-3">
+      <% card.options.each do |story| %>
+        <div class="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
+          <%= link_to project_story_path(project, story), class: "flex min-h-11 w-full shrink-0 items-center gap-2.5 rounded-md border border-strong px-3.5 py-2 transition-colors duration-150 ease-brand hover:bg-surface md:min-h-control md:w-72 md:px-4 #{ComponentsHelper::FOCUS_RING}" do %>
+            <span class="shrink-0 whitespace-nowrap font-mono text-xs text-text-muted"><%= story.reference %></span>
+            <span class="truncate text-[15px] font-medium leading-5 md:text-sm md:leading-[18px]"><%= story.title %></span>
+          <% end %>
+          <span class="font-mono text-xs text-text-muted">mt show <%= story.reference %></span>
+        </div>
+      <% end %>
+      <%= link_to "Ir al Roadmap de #{project.key}", project_roadmap_path(project), class: "flex min-h-11 items-center rounded-md text-[15px] leading-5 text-text-muted hover:text-text md:min-h-control-sm md:text-sm #{ComponentsHelper::FOCUS_RING}" %>
+    </div>
+  </div>
+</article>

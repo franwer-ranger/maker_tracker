@@ -1,0 +1,29 @@
+<%# «Probada» y «Falla…» de una historia con QA pendiente, con su comando `mt qa`. «Falla…» abre su nota (un checkbox, sin JavaScript) y crea una historia en Definiendo, enlazada. Locals: story, compact (el bloque de la Historia: botones pequeños). %>
+<% compact = local_assigns[:compact] %>
+<% toggle = "qa-falla-#{story.id}-#{compact ? 'historia' : 'actividad'}" %>
+<% button = "flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-strong bg-bg text-text transition-colors duration-150 ease-brand hover:bg-surface #{ComponentsHelper::FOCUS_RING}" %>
+<% size = compact ? "h-control-sm px-3 text-control leading-4" : "h-11 w-full text-[15px] md:h-10 md:w-72 md:text-sm md:leading-[18px]" %>
+<% command = "font-mono text-xs text-text-muted" %>
+<div class="<%= compact ? "flex flex-wrap items-center gap-2" : "flex flex-col gap-2 pt-3" %>">
+  <%= form_with url: project_story_qa_path(story.project, story), class: compact ? "contents" : "flex flex-col gap-1 md:flex-row md:items-center md:gap-4" do %>
+    <%= hidden_field_tag :result, "ok" %>
+    <button type="submit" class="<%= button %> <%= size %> font-medium"><%= icon "check", size: 16, class: "text-state-done" %>Probada</button>
+    <% unless compact %><span class="<%= command %>">mt qa <%= story.reference %> ok</span><% end %>
+  <% end %>
+
+  <input type="checkbox" id="<%= toggle %>" class="peer sr-only">
+  <div class="<%= compact ? "contents" : "flex flex-col gap-1 md:flex-row md:items-center md:gap-4" %>">
+    <label for="<%= toggle %>" class="<%= button %> <%= size %> font-medium peer-focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]"><%= icon "x-mark", size: 16, class: "text-text-muted" %>Falla…</label>
+    <span class="<%= command %> <%= "pl-2" if compact %>">mt qa <%= story.reference %> <%= compact ? "ok · mt qa #{story.reference} " : "" %>fail --note "…"</span>
+  </div>
+
+  <%= form_with url: project_story_qa_path(story.project, story), class: "hidden basis-full flex-col gap-2 pt-1 peer-checked:flex" do %>
+    <%= hidden_field_tag :result, "fail" %>
+    <%= text_area_tag :note, nil, rows: 3, required: true, "aria-label": "Qué falla", placeholder: "Qué falla, para que quien lo arregle lo vea…",
+          class: "w-full rounded-md border border-strong bg-surface-sunken px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <p class="text-control text-text-muted">Crea una historia en Definiendo <%= story.milestone ? "en #{story.milestone.code}" : "en la bandeja" %>, enlazada a esta.</p>
+      <%= ui_button "Falla: crear historia", variant: :secondary, size: :sm, type: "submit", class: "max-md:h-11 max-md:w-full" %>
+    </div>
+  <% end %>
+</div>

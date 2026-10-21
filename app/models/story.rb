@@ -28,9 +28,11 @@ class Story < ApplicationRecord
   belongs_to :claimed_by, class_name: "Actor", optional: true
   has_many :comments, -> { order(:created_at, :id) }, inverse_of: :story
   has_many :decisions, inverse_of: :story
+  has_many :questions, -> { oldest_first }, inverse_of: :story
 
   include NumberedInProject
   include Operations
+  include Qa
 
   enum :state, STATE_NAMES.keys.index_by(&:itself), default: :idea, validate: true
   positioned on: %i[project milestone]
@@ -74,8 +76,9 @@ class Story < ApplicationRecord
     super(value.presence&.strip)
   end
 
-  # Bloqueada no es un estado: se deriva de `blocked_by`.
-  def blocked?(done_numbers: nil) = pending_blockers(done_numbers: done_numbers).any?
+  # Bloqueada no es un estado: se deriva de `blocked_by` y de las preguntas
+  # abiertas que bloquean (MT-29).
+  def blocked?(done_numbers: nil) = pending_blockers(done_numbers: done_numbers).any? || blocking_questions.any?
 
   # Números de `blocked_by` que aún no están hechos.
   def pending_blockers(done_numbers: nil)
@@ -85,7 +88,22 @@ class Story < ApplicationRecord
     blocked_by - done_numbers
   end
 
+  # Preguntas abiertas que la bloquean: la historia espera a quien responde.
+  # Con `includes(:questions)` no consulta una vez por historia.
+  def blocking_questions = questions.select { it.open? && it.blocking? }
+
+  # Las abiertas, bloqueen o no, y las respondidas.
+  def open_questions_asked = questions.select(&:open?)
+
+  def answered_questions = questions.select(&:answered?)
+
   # Algún criterio (`- [ ]` / `- [x]`) en el cuerpo.
+  # Criterios marcados y totales de un cuerpo, para el resumen de ediciones (MT-31).
+  def self.criteria_counts(body)
+    boxes = body.to_s.scan(/^\s*[-*] \[([ xX])\]/).flatten
+    { done: boxes.count { it != " " }, total: boxes.size }
+  end
+
   def criteria? = body.to_s.match?(/^\s*[-*] \[[ xX]\]/)
 
   # En Definiendo y sin ningún criterio.
@@ -109,7 +127,12 @@ class Story < ApplicationRecord
   def readiness_issues = readiness_problems.map { READINESS_ISSUES.fetch(it) }
 
   def open_questions?
-    body.to_s[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip.present?
+    open_questions_text.present?
+  end
+
+  # El texto bajo «## Preguntas abiertas» del cuerpo, o nil si está vacío.
+  def open_questions_text
+    body.to_s[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip.presence
   end
 
   # Las historias que tienen a esta en su `blocked_by`.

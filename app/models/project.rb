@@ -2,19 +2,29 @@
 # hitos ordenados, cada uno con sus historias ordenadas.
 class Project < ApplicationRecord
   include Eventable
+  include Versioned
 
   BRIEF_TEMPLATE = <<~MARKDOWN.freeze
     ## Visión
 
     ## Principios
 
+    ## Autonomía
+
+    Los agentes pueden crear ideas y historias en Definiendo, escribir el cuerpo de las historias, comentar y reordenar dentro de un hito con motivo. Preguntan antes de marcar una historia como Lista, tocar el brief, crear o reordenar hitos, o cerrar un hito.
+
     ## Fuera de alcance
+
+    ## Dónde se prueba
+
+    Testing o producción, con su URL, en una línea: aquí se prueba lo que los agentes dan por hecho.
 
     ## Glosario
   MARKDOWN
 
   has_many :milestones, -> { order(:position) }, inverse_of: :project
   has_many :stories, inverse_of: :project
+  has_many :questions, through: :stories
   has_many :decisions, -> { order(:number) }, inverse_of: :project
   has_many :events, inverse_of: :project
 
@@ -46,18 +56,25 @@ class Project < ApplicationRecord
     end
   end
 
-  def create_story!(attributes, actor:)
+  # `data` se añade al evento (la daily marca así las ideas que propone).
+  def create_story!(attributes, actor:, data: {})
     transaction do
       stories.create!(attributes).tap do |story|
-        record_event!("story.created", actor: actor, story: story, data: { state: story.state, milestone_id: story.milestone_id })
+        record_event!("story.created", actor: actor, story: story, data: { state: story.state, milestone_id: story.milestone_id }.merge(data))
       end
     end
   end
 
-  def edit_brief!(text, actor:)
-    return false if text == brief
-
+  # Con `version:` (la del brief que leyó quien edita) falla con
+  # Versioned::Conflict si el brief ya cambió.
+  def edit_brief!(text, actor:, version: nil)
     transaction do
+      lock!
+      next false if text == brief
+
+      check_version!(version, attribute: :brief_version)
+
+      bump_version(:brief_version)
       update!(brief: text)
       record_event!("brief.edited", actor: actor)
     end
@@ -69,6 +86,21 @@ class Project < ApplicationRecord
         record_event!("decision.recorded", actor: actor, story: decision.story, data: { number: decision.number })
       end
     end
+  end
+
+  # Dónde se prueba (MT-32): la URL de la primera línea bajo «## Dónde se prueba»
+  # del brief. Nil si no hay sección o la línea no trae ninguna.
+  def qa_url
+    section = brief.to_s[/^## Dónde se prueba\s*$(.*?)(?=^## |\z)/m, 1].to_s
+    url = section[%r{https?://[^\s)>\]]+}]&.sub(/[.,;:]+\z/, "")
+    url if url && URI.parse(url).host.present?
+  rescue URI::InvalidURIError
+    nil
+  end
+
+  def last_editor
+    event = events.where(action: "brief.edited").recent_first.includes(:actor).first
+    [ event&.actor, event&.occurred_at ]
   end
 
   # El hito en el que se trabaja: el primero abierto.
@@ -84,7 +116,7 @@ class Project < ApplicationRecord
   def next_story
     done = stories.done.pluck(:number)
     milestones.open.each do |milestone|
-      story = milestone.stories.ready.ordered.find { !it.blocked?(done_numbers: done) }
+      story = milestone.stories.ready.ordered.includes(:questions).find { !it.blocked?(done_numbers: done) }
       return story if story
     end
     nil
