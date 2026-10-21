@@ -5,6 +5,8 @@
 # antepone `mt next` antes del frontmatter (Next up:, Why this one:).
 class Api::StoryDocument
   FIELDS = %w[number version title milestone state claimed_by mockup labels blocked_by].freeze
+  # Los pone `mt show` si la historia tiene coste (MT-34); se leen pero no se editan.
+  READ_ONLY_FIELDS = %w[cost_usd tokens cost_estimated].freeze
   FRONTMATTER = /\A(?:(?!---[ \t]*\r?\n)[^\n]*\n)*?---[ \t]*\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|\z)(.*)\z/m
 
   def self.parse(markdown) = new(markdown).attributes
@@ -18,7 +20,7 @@ class Api::StoryDocument
     match = @markdown.match(FRONTMATTER)
     raise Api::Error.validation("the markdown has no frontmatter (---).", hint: "start from what mt show PG-49 prints.") unless match
 
-    front = load_yaml(match[1])
+    front = load_yaml(match[1]).except(*READ_ONLY_FIELDS)
     unknown = front.keys - FIELDS
     raise Api::Error.validation("unknown frontmatter keys: #{unknown.join(', ')}.", hint: "the keys are #{FIELDS.join(', ')}.") if unknown.any?
 

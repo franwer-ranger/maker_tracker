@@ -82,7 +82,7 @@ func Main(argv []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if err := cmd.run(e); err != nil {
 		code = fail(stderr, err)
 	}
-	if e.client.VersionWarning != "" {
+	if e.client.VersionWarning != "" && !e.opts.has("hook") {
 		fmt.Fprintln(stderr, "Warning: "+e.client.VersionWarning)
 	}
 	return code

@@ -83,6 +83,13 @@
       </div>
     <% end %>
 
+    <% if !form && (usage = story.usage_total) %>
+      <div class="flex min-h-8 items-center gap-3">
+        <span class="w-28 shrink-0 text-control text-text-muted">Coste</span>
+        <span class="font-mono text-xs text-text" title="Estimado a partir de los transcripts de Claude Code; sale por debajo de la factura real si una sesión muere sin cerrarse."><%= usage_summary usage %></span>
+      </div>
+    <% end %>
+
     <div class="flex min-h-8 items-center gap-3">
       <span class="w-28 shrink-0 text-control text-text-muted">Bloquea</span>
       <%= render "stories/related", stories: story.blocking.order(:number) %>

@@ -64,6 +64,13 @@ module Api::Operations
       command: "mt qa PG-49 ok [--note \"…\"] | mt qa PG-49 fail --note \"…\"",
       description: "Passes the QA of a story, or fails it: fail creates a story in defining in the same milestone and links it in the event. FORBIDDEN for agents; NOT_PENDING if the story does not wait for QA" },
 
+    # Coste por historia (MT-34): una estimación que reporta el hook SessionEnd de Claude Code (o wflow).
+    { method: "POST", path: "/api/projects/:key/usage", command: "mt usage <transcript.jsonl> [--story 49] | mt usage --hook",
+      params: { source: "claude-code | wflow…", session_id: "", started_at: "ISO 8601, first instant of the session", ended_at: "ISO 8601, last instant",
+                models: "list of { model, input, output, cache_read, cache_write_5m, cache_write_1h }: the ACCUMULATED totals of the session",
+                story: "number (optional); skips the resolution" },
+      description: "Reports the tokens a session used. The server prices them (config/model_prices.yml), picks the story (the last one this actor started that was in progress during the session; none, nothing is reported) and records usage.reported with only what is new since the last report of the same source + session_id. A model without a price keeps its tokens and is listed in unpriced_models" },
+
     # Definir producto (#018). Nada se borra; cada cambio deja su evento.
     { method: "POST", path: "/api/projects/:key/stories", command: "mt create \"Title\" [--milestone M2] [--state …] [--number 14] [--file f.md]",
       params: { markdown: "the story in the mt show format (or the separate fields)", title: "", milestone: "M2, its title or inbox", state: "idea | defining | ready",

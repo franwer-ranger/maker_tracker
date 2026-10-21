@@ -32,10 +32,16 @@ class Api::Markdown::Story
       claimed_by: #{@story.claimed_by&.name}
       mockup: #{scalar(@story.mockup)}
       labels: #{list(@story.labels)}
-      blocked_by: #{list(@story.blocked_by)}
+      blocked_by: #{list(@story.blocked_by)}#{usage_fields}
       ---
     YAML
       .gsub(/ +$/, "")
+  end
+
+  # Solo si hay uso (MT-34); es una estimación y `mt edit` lo ignora.
+  def usage_fields
+    total = @story.usage_total or return
+    "\ncost_usd: #{format('%.2f', total.cost_usd)}\ntokens: #{total.tokens}\ncost_estimated: true"
   end
 
   def read_only
@@ -51,8 +57,10 @@ class Api::Markdown::Story
     url = @story.project.qa_url
     case @story.qa
     when "pending"
+      total = @story.usage_total
+      cost = total ? "It cost #{usage_line(total)} (estimated). " : ""
       where = url ? "Test it at #{url}." : "There is no \"Dónde se prueba\" line in the brief to say where."
-      "## QA · pending\n\n#{where} #{@story.reference} is done and does not block anything. Waiting for #{Actor.human.name}: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
+      "## QA · pending\n\n#{where} #{@story.reference} is done and does not block anything. #{cost}Waiting for #{Actor.human.name}: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
     else
       "## QA · #{@story.qa}"
     end
