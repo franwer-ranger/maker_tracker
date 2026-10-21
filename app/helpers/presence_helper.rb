@@ -115,11 +115,17 @@ module PresenceHelper
   end
 
   # Recién creado por un agente que sigue activo: se resalta un momento y lleva «nueva».
+  # Una historia, por su evento story.created (una consulta por página); una decisión, por su actor.
   def fresh_from_agent?(project, record)
-    return false unless record.created_at > Presence::WINDOW.ago && agents_at_work(project).any?
+    return false unless record.created_at > Presence::WINDOW.ago
 
-    actor_id = record.respond_to?(:actor_id) ? record.actor_id : project.events.where(story: record, action: "story.created").pick(:actor_id)
-    agents_at_work(project).any? { it.actor_id == actor_id }
+    agent_ids = agents_at_work(project).map(&:actor_id)
+    return false if agent_ids.empty?
+    return agent_ids.include?(record.actor_id) if record.respond_to?(:actor_id)
+
+    (@fresh_story_ids ||= {})[project.id] ||=
+      project.events.where(action: "story.created", actor_id: agent_ids, occurred_at: Presence::WINDOW.ago..).pluck(:story_id)
+    @fresh_story_ids[project.id].include?(record.id)
   end
 
   # La etiqueta «editando» con la matriz pequeña (tarjeta, fila, hito, brief).

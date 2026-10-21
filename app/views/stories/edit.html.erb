@@ -17,9 +17,7 @@
 
     <div class="max-md:order-4"><%= render "components/markdown_editor", form: form, attribute: :body, label: "Cuerpo en markdown" %></div>
 
-    <% if (editing = agent_writing(@project, @story.reference)) %>
-      <div class="max-md:order-2 max-md:mt-2"><%= render "agents/editing_notice", entry: editing %></div>
-    <% end %>
+    <%= render "agents/editing_notice_frame", story: @story, src: true %>
 
     <% if @notice %>
       <p class="text-control leading-[18px] text-state-defining max-md:order-4" role="status"><%= @notice %> Revisa y guarda.</p>

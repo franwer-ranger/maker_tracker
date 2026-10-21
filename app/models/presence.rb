@@ -37,6 +37,8 @@ module Presence
 
   REGISTRY = Concurrent::Map.new
   PENDING = Concurrent::Map.new # lo que falta por emitir: id de proyecto o :all
+  LAST_SENT = Concurrent::Map.new # cuándo se emitió por última vez cada clave (reloj monotónico)
+  THROTTLE = 1.5 # segundos entre emisiones de la misma clave
   EXECUTOR = Concurrent::SingleThreadExecutor.new
 
   class << self
@@ -74,6 +76,7 @@ module Presence
     def reset!
       REGISTRY.clear
       PENDING.clear
+      LAST_SENT.clear
     end
 
     # Para el barrido y el hilo de emisión. Lo llama config/initializers/presence.rb
@@ -111,7 +114,7 @@ module Presence
         end
         entry = Entry.new(actor_id: actor.id, actor_name: actor.name, project_id: project_id, project_key: project_key,
           target: target, mode: mode, detail: detail, seen_at: now, since: old&.since || now, wrote_at: wrote_at)
-        changed = old.nil? || old.with(seen_at: nil) != entry.with(seen_at: nil)
+        changed = old.nil? || visible(old) != visible(entry)
         enqueue(old.project_id) if old && old.project_id != project_id
         entry
       end
@@ -129,6 +132,10 @@ module Presence
       "#{event.project.key} M#{position}" if position
     end
 
+    # Lo que la UI enseña de una entrada: si cambia, se emite. Que siga activo,
+    # cuándo escribió por última vez o el detalle no cambian lo que se ve.
+    def visible(entry) = [ entry.project_id, entry.target, entry.mode ]
+
     # Un único barrido periódico, arrancado al primer uso en cada proceso.
     def start_sweeper
       return if @sweeper&.running?
@@ -143,20 +150,25 @@ module Presence
       end
     end
 
-    # Emite en otro hilo y agrupa: varios cambios seguidos del mismo proyecto
-    # (p. ej. el de la petición y el de su evento) son una sola emisión.
+    # Emite en otro hilo, agrupa y limita a una emisión cada THROTTLE por
+    # proyecto: la primera sale al momento y lo que llega mientras tanto, en una
+    # sola al final de la ventana (p. ej. un agente que escribe muy seguido).
     def enqueue(project_id)
       [ project_id, :all ].compact.each do |key|
         next if PENDING.put_if_absent(key, true)
 
-        EXECUTOR.post do
+        delay = [ LAST_SENT.fetch(key, -THROTTLE) + THROTTLE - clock, 0 ].max
+        Concurrent::ScheduledTask.execute(delay, executor: EXECUTOR) do
           PENDING.delete(key)
+          LAST_SENT[key] = clock
           Rails.application.executor.wrap { broadcast(key) }
         rescue => e
           Rails.error.report(e, handled: true)
         end
       end
     end
+
+    def clock = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
     # Vuelve a pintar las páginas del proyecto o la portada (MT-38).
     def broadcast(key)

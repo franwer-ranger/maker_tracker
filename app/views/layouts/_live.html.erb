@@ -1,7 +1,10 @@
-<%# En directo (MT-36, MT-38): la página escucha su proyecto (o, en Actividad, todos) y se vuelve a pintar con morph cuando un agente escribe o cambia su presencia. Mientras se edita (formularios de historia y brief) no se escucha, para no tocar lo que se está escribiendo. Y el borde de la ventana (7.4): solo con escrituras recientes de un agente en el proyecto que se mira; con solo lecturas, nada. Local: project. %>
+<%# En directo (MT-36, MT-38): la página escucha su proyecto (o, en Actividad, todos) y se vuelve a pintar con morph cuando un agente escribe o cambia su presencia. Mientras se edita una historia solo se recarga su aviso (live-frame); en el brief no se escucha. Y el borde de la ventana (7.4): solo con escrituras recientes de un agente en el proyecto que se mira; con solo lecturas, nada. Local: project. %>
 <% portada = controller_name == "activity" %>
 <% if action_name.in?(%w[show index]) %>
   <%= turbo_stream_from(*Presence.stream(portada ? :all : project), data: { controller: "live" }) %>
+<% elsif controller_name == "stories" && action_name.in?(%w[edit update]) %>
+  <%# Editando una historia: solo se recarga el aviso de que un agente también la edita. %>
+  <%= turbo_stream_from(*Presence.stream(project), data: { controller: "live-frame", live_frame_id_value: "agent-editing-notice" }) %>
 <% end %>
 <% if !portada && agents_writing?(project) %>
   <div class="pointer-events-none fixed inset-0 z-[60] shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--color-accent)_55%,transparent)]" aria-hidden="true">
