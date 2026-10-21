@@ -1,7 +1,7 @@
 # mt, el CLI de Maker Tracker. Solo biblioteca estándar de Go.
 BIN := bin/mt
 
-.PHONY: build install linux vet clean
+.PHONY: build install linux vet clean test
 
 build:
 	go build -o $(BIN) ./cmd/mt
@@ -26,3 +26,6 @@ vet:
 
 clean:
 	rm -rf bin
+
+test:
+	go test ./...

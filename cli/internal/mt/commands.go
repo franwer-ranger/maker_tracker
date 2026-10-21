@@ -145,7 +145,7 @@ func init() {
 		example:     "mt setup https://tower.your-tailnet.ts.net mt_…", run: runSetup})
 	def(&command{name: "init", group: setupGroup, usage: "mt init <KEY> [--claude]", minArgs: 1, maxArgs: 1,
 		summary:     "Creates .mt with the project in the current directory (the root of the repo)",
-		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart hook (mt context) to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skills (maker-tracker and daily) to .claude/skills/.",
+		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart (mt context) and SessionEnd (mt usage, the cost of the session) hooks to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skills (maker-tracker and daily) to .claude/skills/.",
 		example:     "mt init PG --claude", run: runInit}, "claude! adds the Claude Code hook (and the skill, if it is not installed globally) to the repo")
 	def(&command{name: "project create", group: setupGroup, usage: "mt project create \"Name\" --key <KEY>", minArgs: 1, maxArgs: 1,
 		summary:     "Creates a project, with the brief template",
@@ -179,6 +179,11 @@ func init() {
 			}
 			return err
 		}}, "hook! hook mode: never fails")
+	def(&command{name: "usage", group: workGroup, usage: "mt usage <transcript.jsonl> [--story 49] | mt usage --hook", maxArgs: 1,
+		summary:     "Reports the tokens and the estimated cost of a Claude Code session to the story it worked on",
+		description: "Reads the transcript (and its subagents), adds up the tokens per model and the server prices them. The story is the last one you started that was in progress during the session, unless you pass --story. The hook (SessionEnd, from mt init --claude) runs it with --hook, which never fails or prints anything. By hand it recovers a session whose hook did not fire; it is idempotent: reporting the same session again only adds what is new.",
+		example:     "mt usage ~/.claude/projects/-Users-me-code-app/0b447df5.jsonl",
+		run:         runUsage}, "hook! hook mode (reads the SessionEnd JSON from stdin): never fails or prints", "story the story number, instead of the one the server picks")
 	def(&command{name: "next", group: readGroup, usage: "mt next", maxArgs: 0,
 		summary: "The next ready, unblocked story, whole and with why", example: "mt next",
 		run: func(e *env) error { return e.projectCall("GET", "/next", nil, nil) }})

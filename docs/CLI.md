@@ -424,7 +424,9 @@ Next:
 
 1. Tiene commits que existen en el repo local: desplegada si **todos** son ancestros del sha (`git merge-base --is-ancestor`); si alguno no lo es, sigue esperando, sin error.
 2. Ninguno existe en local (un squash) pero tiene PR: desplegada si el historial del sha trae `Merge pull request #N` o `(#N)` en un asunto.
-3. Nada que comprobar (sin commits conocidos ni PR, o PR sin rastro): se da por desplegada en esta llamada y se avisa con un `Warning:`.
+3. Nada que comprobar (sin commits ni PR): se da por desplegada en esta llamada y se avisa con un `Warning:`, que además queda en el evento `project.deployed` (`warnings`).
+
+Una historia con PR y sin rastro (ningún commit existe aquí y el PR no está en el historial) **espera**: es la opción conservadora (D-68, que aclara D-63). Solo se aceptan como commits los que cumplen `^[0-9a-f]{7,40}$`; cualquier otra cosa se trata como «no existe aquí».
 
 Llamarlo dos veces con el mismo sha, o con uno posterior, es idempotente. Siempre deja un evento `project.deployed` (aunque no marque ninguna), que es lo que activa la espera. Si el servidor no responde (se reinicia al desplegar), falla por conexión: llámalo cuando `/up` ya conteste (`bin/deploy` lo hace).
 
@@ -437,6 +439,27 @@ Con la espera activa, `mt qa` lista solo lo desplegado y termina con una línea 
 `mt qa --undeployed` lista esas (mismo formato). `mt show` de una historia sin desplegar lleva `## QA · waiting for deploy` en vez de `## QA · pending`; `mt qa MT-30 ok|fail` sigue funcionando sobre ella. En el historial, `deployed (a1b2c3d)` (`story.deployed`); en la daily, una frase por llamada: `deployed a1b2c3d: MT-30, MT-32 can be tested now` (`project.deployed`).
 
 En `mt show`, una historia con QA lleva `## QA · pending` (con dónde probarla) o `## QA · passed|failed` antes de `## Questions`, y su historial dice `moved to done (…) · QA pending`.
+
+## Coste (MT-34)
+
+Cuánto ha costado una historia, como **estimación** (D-65). Lo reporta un hook `SessionEnd` de Claude Code que deja `mt init PG --claude` junto al `SessionStart` (`timeout: 10`: el defecto de `SessionEnd` es 1,5 s). Una vez por sesión, `mt usage --hook` lee el transcript (y los `subagents/agent-*.jsonl`), se queda con la última línea de cada `message.id`, suma por modelo `input`, `output`, `cache_read` y `cache_write_5m` / `cache_write_1h` y hace **una** llamada. Con `--hook` no falla ni imprime nunca (sin transcript, JSON raro o sin red, sale con 0). Los dólares los calcula el servidor (`config/model_prices.yml`, con la fecha y la URL de los precios): los `mt` instalados no necesitan actualizarse cuando cambian.
+
+```text
+$ mt usage ~/.claude/projects/-Users-fran-code-app/0b447df5.jsonl [--story 49]
+PG-49: reported ~1.20 $ and 310000 tokens (estimated). A session that touches several stories goes to the last one started.
+
+Next:
+  mt show PG-49
+```
+
+A mano hace lo mismo y sirve para una sesión cuyo hook no se disparó (SIGKILL, Ctrl-C o `-p` pueden no dispararlo: esa sesión no se cuenta, así que la cifra puede quedarse corta). Es idempotente.
+
+- **Qué historia**: la resuelve el servidor, no el hook: de las que **ese actor** empezó (`story.state_changed` a En curso o `story.claimed`) antes de acabar la sesión, la que empezó más tarde que siga En curso o dejara de estarlo después del inicio de la sesión (así vale `mt start`, trabajar, `mt done` y que la sesión termine con la historia ya Hecha). `--story` se salta la regla. Si hay varias, **todo va a la última que empezó** (no se reparte). Sin ninguna: `no story of claude in progress during this session; nothing reported.`, sin evento.
+- **Idempotente por sesión**: se manda el total acumulado de la sesión (con `--resume` el transcript acumula la anterior) y el servidor guarda solo la diferencia con el último reporte del mismo `source` + `session_id`. Lo mismo otra vez: `nothing new in this session since the last report.`; un total menor se ignora.
+- **Modelo sin precio**: sus tokens se guardan y sale en `unpriced_models`; los demás modelos suman dólares. Los modelos se resuelven por su id sin el sufijo de fecha (`claude-haiku-4-5-20251001` → `claude-haiku-4-5`).
+- **Dónde se ve**: `mt show` pone `cost_usd`, `tokens` y `cost_estimated: true` en el frontmatter (solo si hay uso; `mt edit` los ignora), `## QA · pending` y la daily citan el coste de la historia hecha, y el historial lleva `reported ~1.20 $ and 310k tokens (claude-code session 0b447df5, estimated)`. En la app es la propiedad «Coste» del lateral. El total es la suma de los eventos `usage.reported`: no hay columna.
+
+`POST /api/projects/:key/usage` (`source`, `session_id`, `started_at`, `ended_at`, `models: [{ model, input, output, cache_read, cache_write_5m, cache_write_1h }]`, `story` opcional). wflow usará el mismo endpoint con `source: wflow`.
 
 ## Escribir
 
@@ -502,7 +525,7 @@ Error: project PG already exists.
 Hint: pick another key, or use mt init PG if it is yours.
 ```
 
-La skill de Maker Tracker se instala una vez, de forma global, para que un agente la tenga en cualquier carpeta (`$CLAUDE_CONFIG_DIR` si está definida). Repetirlo la actualiza (`… skill updated`) o dice `already up to date`. `mt init PG --claude` deja en el repo `.mt` y el hook `SessionStart`, y la skill solo si no está la global:
+La skill de Maker Tracker se instala una vez, de forma global, para que un agente la tenga en cualquier carpeta (`$CLAUDE_CONFIG_DIR` si está definida). Repetirlo la actualiza (`… skill updated`) o dice `already up to date`. `mt init PG --claude` deja en el repo `.mt` y los hooks `SessionStart` (`mt context`) y `SessionEnd` (`mt usage`, ver Coste; repetirlo añade el que falte y no duplica nada), y la skill solo si no está la global:
 
 ```text
 $ mt skill install

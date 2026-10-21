@@ -32,10 +32,16 @@ class Api::Markdown::Story
       claimed_by: #{@story.claimed_by&.name}
       mockup: #{scalar(@story.mockup)}
       labels: #{list(@story.labels)}
-      blocked_by: #{list(@story.blocked_by)}
+      blocked_by: #{list(@story.blocked_by)}#{usage_fields}
       ---
     YAML
       .gsub(/ +$/, "")
+  end
+
+  # Solo si hay uso (MT-34); es una estimación y `mt edit` lo ignora.
+  def usage_fields
+    total = @story.usage_total or return
+    "\ncost_usd: #{format('%.2f', total.cost_usd)}\ntokens: #{total.tokens}\ncost_estimated: true"
   end
 
   def read_only
@@ -51,18 +57,20 @@ class Api::Markdown::Story
     url = @story.project.qa_url
     case @story.qa
     when "pending"
-      return waiting_for_deploy if @story.qa_awaiting_deploy?
+      total = @story.usage_total
+      cost = total ? "It cost #{usage_line(total)} (estimated). " : ""
+      return waiting_for_deploy(cost) if @story.qa_awaiting_deploy?
 
       where = url ? "Test it at #{url}." : "There is no \"Dónde se prueba\" line in the brief to say where."
-      "## QA · pending\n\n#{where} #{@story.reference} is done and does not block anything. Waiting for #{Actor.human.name}: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
+      "## QA · pending\n\n#{where} #{@story.reference} is done and does not block anything. #{cost}Waiting for #{Actor.human.name}: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
     else
       "## QA · #{@story.qa}"
     end
   end
 
   # MT-46: la historia está hecha pero aún no se ha desplegado. `mt qa ok|fail` sigue funcionando.
-  def waiting_for_deploy
-    "## QA · waiting for deploy\n\n#{@story.reference} is done but not deployed yet: it shows up in mt qa when mt deployed marks it. #{Actor.human.name} can still pass or fail it already: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
+  def waiting_for_deploy(cost = "")
+    "## QA · waiting for deploy\n\n#{@story.reference} is done but not deployed yet: it shows up in mt qa when mt deployed marks it. #{cost}#{Actor.human.name} can still pass or fail it already: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
   end
 
   # "Blocked by PG-47 Borradores automáticos (done): no longer blocking."

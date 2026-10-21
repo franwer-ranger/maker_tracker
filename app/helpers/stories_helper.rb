@@ -18,6 +18,7 @@ module StoriesHelper
     when "story.reordered" then "Cambia de posición en su hito"
     when "story.moved" then "Pasa a #{milestone_name(data.dig('to', 'milestone_id'))}"
     when "comment.added" then "#{event.actor.name} comenta"
+    when "usage.reported" then usage_event_sentence(data)
     when "qa.passed" then "#{event.actor.name} da la QA por probada#{": «#{data['note']}»" if data['note']}"
     when "qa.failed" then "#{event.actor.name} falla la QA: #{project_story_ref(event, data['story'])}"
     when "story.deployed" then "Desplegada · #{data['sha'].to_s.first(7)}"
@@ -37,6 +38,31 @@ module StoriesHelper
   def deployed_sentence(event)
     refs = Array(event.data["stories"]).map { "#{event.project.key}-#{it}" }
     "#{event.actor.name} desplegó #{refs.any? ? y_sentence(refs) : event.data['sha'].to_s.first(7)}"
+  end
+
+  # «Coste estimado: ~1,20 $ · 310 k tokens»; los de un modelo sin precio, aparte.
+  def usage_event_sentence(data)
+    unpriced = Array(data["unpriced_models"])
+    extra = unpriced.sum { |model| Array(data["models"]).sum { it["model"] == model ? it["tokens"].to_i : 0 } }
+    "Coste estimado: ~#{dollars_es(data['cost_usd'])} · #{tokens_es(data['tokens'])} tokens#{" (#{tokens_es(extra)} sin precio)" if unpriced.any?}"
+  end
+
+  # 12,4 -> «12,40 $».
+  def dollars_es(amount) = "#{number_with_precision(amount.to_f, precision: 2, delimiter: '.', separator: ',')} $"
+
+  # 3.100.000 -> «3,1 M»; 310.000 -> «310 k»; 1.200 -> «1.200».
+  def tokens_es(count)
+    count = count.to_i
+    return "#{number_with_precision(count / 1_000_000.0, precision: 1, separator: ',', strip_insignificant_zeros: true)} M" if count >= 1_000_000
+    return "#{(count / 1000.0).round} k" if count >= 10_000
+
+    number_with_delimiter(count, delimiter: ".")
+  end
+
+  # «~12,40 $ · 3,1 M tokens · 4 sesiones», con «+ 8 k tokens sin precio» si hay.
+  def usage_summary(total)
+    base = "~#{dollars_es(total.cost_usd)} · #{tokens_es(total.tokens)} tokens · #{total.sessions} #{total.sessions == 1 ? 'sesión' : 'sesiones'}"
+    total.unpriced? ? "#{base} + #{tokens_es(total.unpriced_tokens)} sin precio" : base
   end
 
   # "M2", o "un hito borrado" si ya no existe.

@@ -44,21 +44,22 @@ func TestClassifyDeploy(t *testing.T) {
 		{Reference: "MT-32", Number: 32, Commits: []string{missing}, PR: "https://github.com/acme/mt/pull/13"},
 		{Reference: "MT-35", Number: 35, Commits: []string{later}},
 		{Reference: "MT-31", Number: 31},
-		{Reference: "MT-36", Number: 36, PR: "#99"},
-		{Reference: "MT-37", Number: 37, Commits: []string{merged, later}}, // uno no es ancestro: espera
+		{Reference: "MT-36", Number: 36, PR: "#99"},                            // PR sin rastro: espera
+		{Reference: "MT-38", Number: 38, Commits: []string{"--output=/tmp/x"}}, // no es un sha: no existe, sin PR ni nada: se avisa
+		{Reference: "MT-37", Number: 37, Commits: []string{merged, later}},     // uno no es ancestro: espera
 	}
 	ready, waiting, warnings := classifyDeploy(r, deployed, candidates)
 
-	if got := references(ready); got != "MT-30, MT-32, MT-31, MT-36" {
+	if got := references(ready); got != "MT-30, MT-32, MT-31, MT-38" {
 		t.Errorf("ready = %s", got)
 	}
-	if got := references(waiting); got != "MT-35, MT-37" {
+	if got := references(waiting); got != "MT-35, MT-36, MT-37" {
 		t.Errorf("waiting = %s", got)
 	}
-	if len(warnings) != 2 || !strings.Contains(warnings[0], "MT-31 has no commits or PR to check") || !strings.Contains(warnings[1], "MT-36: PR #99") {
+	if len(warnings) != 2 || !strings.Contains(warnings[0], "MT-31 has no commits or PR to check") || !strings.Contains(warnings[1], "MT-38 has no commits") {
 		t.Errorf("warnings = %v", warnings)
 	}
-	want := "deployed " + deployed[:7] + ": MT-30, MT-32, MT-31, MT-36 can be tested now · MT-35, MT-37 still waiting"
+	want := "deployed " + deployed[:7] + ": MT-30, MT-32, MT-31, MT-38 can be tested now · MT-35, MT-36, MT-37 still waiting"
 	if got := deployedLine(deployed, ready, waiting); got != want {
 		t.Errorf("line = %q, want %q", got, want)
 	}

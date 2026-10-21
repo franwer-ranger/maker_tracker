@@ -59,6 +59,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_120000) do
     t.datetime "occurred_at", null: false
     t.datetime "created_at", null: false
     t.index ["actor_id"], name: "index_events_on_actor_id"
+    t.index ["project_id", "action"], name: "index_events_on_project_id_and_action"
     t.index ["project_id", "occurred_at"], name: "index_events_on_project_id_and_occurred_at"
     t.index ["project_id"], name: "index_events_on_project_id"
     t.index ["story_id", "occurred_at"], name: "index_events_on_story_id_and_occurred_at"

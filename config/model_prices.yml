@@ -1,0 +1,32 @@
+# Precios por millón de tokens (USD) para estimar el coste de las historias
+# (MT-34, D-65). Salen de la página oficial de Anthropic; al cambiarlos, cambia
+# también `as_of`. Cada clave es el id del modelo sin el sufijo de fecha
+# (claude-haiku-4-5-20251001 -> claude-haiku-4-5). Un modelo que no está aquí
+# guarda sus tokens sin dólares (ModelPrice.for devuelve nil).
+#
+# Columnas: input, output, cache_read, cache_write_5m, cache_write_1h.
+# Los precios de lectura de caché difieren de 0,1x en algunos modelos: están tal cual en la página.
+as_of: "2026-10-22"
+source: "https://platform.claude.com/docs/en/about-claude/pricing"  # antes https://docs.claude.com/en/docs/about-claude/pricing
+models:
+  claude-fable-5-1:   { input: 10,   output: 50, cache_read: 0.25, cache_write_5m: 12.5,  cache_write_1h: 20 }
+  claude-mythos-5-1:  { input: 10,   output: 50, cache_read: 0.25, cache_write_5m: 12.5,  cache_write_1h: 20 }
+  claude-fable-5:     { input: 10,   output: 50, cache_read: 1,    cache_write_5m: 12.5,  cache_write_1h: 20 }
+  claude-mythos-5:    { input: 10,   output: 50, cache_read: 1,    cache_write_5m: 12.5,  cache_write_1h: 20 }
+  claude-opus-5-5:    { input: 4,    output: 20, cache_read: 0.2,  cache_write_5m: 5,     cache_write_1h: 8 }
+  claude-opus-5:      { input: 5,    output: 25, cache_read: 0.5,  cache_write_5m: 6.25,  cache_write_1h: 10 }
+  claude-opus-4-8:    { input: 5,    output: 25, cache_read: 0.5,  cache_write_5m: 6.25,  cache_write_1h: 10 }
+  claude-opus-4-7:    { input: 5,    output: 25, cache_read: 0.5,  cache_write_5m: 6.25,  cache_write_1h: 10 }
+  claude-opus-4-6:    { input: 5,    output: 25, cache_read: 0.5,  cache_write_5m: 6.25,  cache_write_1h: 10 }
+  claude-opus-4-5:    { input: 5,    output: 25, cache_read: 0.5,  cache_write_5m: 6.25,  cache_write_1h: 10 }
+  claude-opus-4-1:    { input: 15,   output: 75, cache_read: 1.5,  cache_write_5m: 18.75, cache_write_1h: 30 }
+  claude-opus-4:      { input: 15,   output: 75, cache_read: 1.5,  cache_write_5m: 18.75, cache_write_1h: 30 }
+  claude-sonnet-5-5:  { input: 2,    output: 10, cache_read: 0.1,  cache_write_5m: 2.5,   cache_write_1h: 4 }
+  claude-sonnet-5:    { input: 2,    output: 10, cache_read: 0.2,  cache_write_5m: 2.5,   cache_write_1h: 4 }
+  claude-sonnet-4-6:  { input: 3,    output: 15, cache_read: 0.3,  cache_write_5m: 3.75,  cache_write_1h: 6 }
+  claude-sonnet-4-5:  { input: 3,    output: 15, cache_read: 0.3,  cache_write_5m: 3.75,  cache_write_1h: 6 }
+  claude-sonnet-4:    { input: 3,    output: 15, cache_read: 0.3,  cache_write_5m: 3.75,  cache_write_1h: 6 }
+  # Haiku 5.5 cobra más por petición si el prompt pasa de 100.000 tokens (0,5 / 2,5 / 0,05 / 0,625 / 1).
+  # Aquí solo hay totales por sesión, así que se usa la tarifa baja: puede quedarse corto.
+  claude-haiku-5-5:   { input: 0.1,  output: 0.5, cache_read: 0.01, cache_write_5m: 0.125, cache_write_1h: 0.2 }
+  claude-haiku-4-5:   { input: 1,    output: 5,  cache_read: 0.1,  cache_write_5m: 1.25,  cache_write_1h: 2 }

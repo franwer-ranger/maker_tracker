@@ -45,6 +45,8 @@ When your story is done it is not tested yet: it stays with **QA pending** until
 
 In a project whose deploy script calls `mt deployed` (MT-46), done is not enough: a story shows up in `mt qa` only once it is deployed, and `mt qa` says how many are still waiting (`mt qa --undeployed` lists them). Nothing changes for you: keep passing real commits and the PR to `mt done`, because `mt deployed` uses them to know what a deploy contains. If your project deploys by hand, add `mt deployed` (from the root of the repo, once the app answers) at the end of its deploy script.
 
+The cost of a story is an estimate that you do not report by hand: the `SessionEnd` hook that `mt init --claude` leaves runs `mt usage --hook`, which sends the tokens of the session to the last story you started in it (`usage.reported`; `mt show` prints `cost_usd` and `tokens` in the frontmatter). If a session did not fire the hook, recover it with `mt usage <transcript.jsonl>`: it is idempotent. A session that touches several stories counts for the last one you started.
+
 Where each project is tested is one line under `## Dónde se prueba` in its brief (`Testing: https://…`, or production). Read it with `mt context`. If the brief has no such line, ask the person where it is tested; add it to the brief only if the person agrees (the brief is theirs).
 
 ## Decisions
@@ -87,7 +89,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 4. **With the OK**, write it:
    ```
    mt project create "Postgram" --key PG
-   mt init PG --claude                 # at the root of the repo: .mt and the SessionStart hook
+   mt init PG --claude                 # at the root of the repo: .mt and the SessionStart and SessionEnd hooks
    mt brief --file brief.md
    mt milestone create "Publicar sin fricción" --goal "…"   # one per milestone, in order
    mt decide "PDFs con Prawn" --why "…"                     # one per decision, oldest first

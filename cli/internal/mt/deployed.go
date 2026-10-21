@@ -33,26 +33,33 @@ func (r repo) git(args ...string) *exec.Cmd {
 
 // resolve devuelve el sha completo de ref, o error si no es un commit conocido.
 func (r repo) resolve(ref string) (string, error) {
-	out, err := r.git("rev-parse", "--verify", "--quiet", ref+"^{commit}").Output()
+	out, err := r.git("rev-parse", "--verify", "--quiet", "--end-of-options", ref+"^{commit}").Output()
 	if err != nil {
 		return "", err
 	}
 	return strings.TrimSpace(string(out)), nil
 }
 
+// commitPattern: lo único que se acepta como commit venido del servidor. Algo
+// que no lo cumple se trata como «no existe aquí» y nunca llega a git.
+var commitPattern = regexp.MustCompile(`^[0-9a-f]{7,40}$`)
+
 func (r repo) exists(sha string) bool {
+	if !commitPattern.MatchString(sha) {
+		return false
+	}
 	_, err := r.resolve(sha)
 	return err == nil
 }
 
 // isAncestor: `git merge-base --is-ancestor` (sale con 0 si lo es).
 func (r repo) isAncestor(sha, of string) bool {
-	return r.git("merge-base", "--is-ancestor", sha, of).Run() == nil
+	return r.git("merge-base", "--is-ancestor", "--end-of-options", sha, of).Run() == nil
 }
 
 // subjects son los asuntos del historial de sha, para buscar PR (#N).
 func (r repo) subjects(sha string) []string {
-	out, err := r.git("log", "--format=%s", sha).Output()
+	out, err := r.git("log", "--format=%s", "--end-of-options", sha).Output()
 	if err != nil {
 		return nil
 	}
@@ -85,10 +92,12 @@ func prInHistory(subjects []string, n int) bool {
 // classifyDeploy decide qué historias contiene sha, en este orden (D-63):
 //  1. Tiene commits que existen aquí: todos tienen que ser ancestros de sha.
 //  2. Ninguno existe aquí (un squash) pero tiene PR: el historial de sha contiene su #N.
-//  3. No se puede comprobar nada (sin commits conocidos ni PR, o PR sin rastro):
-//     se da por desplegada en esta llamada y se avisa.
+//  3. Sin commits ni PR que comprobar: se da por desplegada en esta llamada y se avisa.
 //
-// Una con un commit que existe y no es ancestro sigue esperando, sin error.
+// Una con un commit que existe y no es ancestro sigue esperando, sin error. Una
+// con PR y sin rastro (ningún commit aquí y el PR no está en el historial) también
+// espera: es la opción conservadora (D-68, que sustituye a D-63 en este punto), mejor esperar que enseñar
+// como probable algo que aún no está desplegado.
 func classifyDeploy(r repo, sha string, candidates []deployCandidate) (ready, waiting []deployCandidate, warnings []string) {
 	var subjects []string
 	loaded := false
@@ -120,10 +129,10 @@ func classifyDeploy(r repo, sha string, candidates []deployCandidate) (ready, wa
 				ready = append(ready, c)
 				continue
 			}
-			warnings = append(warnings, fmt.Sprintf("%s: PR #%d is not in the history of %s and none of its commits is here: I take it as deployed.", c.Reference, n, short(sha)))
-		} else {
-			warnings = append(warnings, fmt.Sprintf("%s has no commits or PR to check: I take it as deployed.", c.Reference))
+			waiting = append(waiting, c)
+			continue
 		}
+		warnings = append(warnings, fmt.Sprintf("%s has no commits or PR to check: I take it as deployed.", c.Reference))
 		ready = append(ready, c)
 	}
 	return ready, waiting, warnings
@@ -190,7 +199,8 @@ func runDeployed(e *env) error {
 		numbers[i] = c.Number
 	}
 	// Siempre se envía, aunque no haya nada que marcar: la primera llamada activa la espera en el proyecto.
-	posted, err := e.client.Do("POST", path+"/deployed", nil, map[string]any{"sha": sha, "stories": numbers})
+	// Los avisos también van en el evento, para que quede por qué se dio una por desplegada.
+	posted, err := e.client.Do("POST", path+"/deployed", nil, map[string]any{"sha": sha, "stories": numbers, "warnings": warnings})
 	if err != nil {
 		return err
 	}

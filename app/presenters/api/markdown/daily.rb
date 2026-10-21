@@ -42,7 +42,8 @@ class Api::Markdown::Daily
     skipped = changes.size - events.size
     codes = Api::Markdown::EventSentence.milestone_codes(@project)
     lines = events.group_by(&:story).flat_map do |story, group|
-      heading = story ? "#{story.reference}  #{story.title}" : "Project"
+      cost = story&.done? && story.usage_total
+      heading = story ? "#{story.reference}  #{story.title}#{"  (cost #{usage_line(cost)}, estimated)" if cost}" : "Project"
       rows = group.map { [ datetime(it.occurred_at), it.actor.name, Api::Markdown::EventSentence.new(it, codes).to_s ] }
       [ heading, *table(rows).map { "  #{it}" } ]
     end

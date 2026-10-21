@@ -1,6 +1,7 @@
 <%# QA pendiente (5.12): arriba de la historia, antes del cuerpo. Es una tarea tuya, no bloquea nada. Local: story. %>
 <% event = story_done_event(story) %>
 <% url = story.project.qa_url %>
+<% usage = story.usage_total %>
 <% commits = event&.commits || [] %>
 <% waiting = story.qa_awaiting_deploy? %>
 <section id="qa" class="flex flex-col gap-3" aria-label="QA pendiente">
@@ -12,7 +13,7 @@
     <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
       <span class="flex min-w-0 items-center gap-2 font-mono text-xs text-text-muted">
         <%= state_dot :done %>
-        <span><%= ["Hecha #{away_time(event&.occurred_at || story.updated_at)}", event&.actor&.name, (pluralize_es(commits.size, "commit") if commits.any?)].compact.join(" · ") %></span>
+        <span><%= ["Hecha #{away_time(event&.occurred_at || story.updated_at)}", event&.actor&.name, (pluralize_es(commits.size, "commit") if commits.any?), ("Coste #{usage_summary(usage)}" if usage)].compact.join(" · ") %></span>
       </span>
       <% if waiting %>
         <span class="text-control text-text-muted">Aún no está desplegada</span>

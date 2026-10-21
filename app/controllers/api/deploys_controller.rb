@@ -4,6 +4,7 @@
 # puede llamarlo: avisar de un despliegue no es probar la QA.
 class Api::DeploysController < Api::BaseController
   Formatting = Api::Markdown::Formatting
+  MAX_STORIES = 500
 
   # Las historias Hechas con QA pendiente y sin desplegar, con los commits y el
   # PR de su evento de Hecha. `active`: si el proyecto ya espera al despliegue.
@@ -19,10 +20,14 @@ class Api::DeploysController < Api::BaseController
     sha = params.require(:sha).to_s.strip
     raise Api::Error.validation("sha must be a git commit sha.", hint: "mt deployed [<sha>] sends it for you.") unless sha.match?(/\A\h{4,64}\z/)
 
-    numbers = Array(params[:stories]).map { Integer(it.to_s.delete_prefix("#").delete_prefix("#{project.key}-"), exception: false) }
+    list = Array(params[:stories])
+    raise Api::Error.validation("stories can have at most #{MAX_STORIES} numbers.") if list.size > MAX_STORIES
+
+    numbers = list.map { Integer(it.to_s.delete_prefix("#").delete_prefix("#{project.key}-"), 10, exception: false) }
     raise Api::Error.validation("stories must be a list of story numbers.", hint: "for example { \"sha\": \"a1b2c3d\", \"stories\": [30, 32] }.") if numbers.any?(&:nil?)
 
-    marked = project.deploy!(sha: sha, numbers: numbers, actor: Current.actor)
+    warnings = Array(params[:warnings]).first(MAX_STORIES).map { it.to_s.truncate(300) }
+    marked = project.deploy!(sha: sha, numbers: numbers, actor: Current.actor, warnings: warnings)
     refs = marked.map(&:reference)
     summary = refs.any? ? "Deployed #{sha.first(7)}: #{refs.to_sentence} can be tested now." : "Deployed #{sha.first(7)}: no story was waiting for it."
     render_ok({ sha: sha, marked: refs, stories: marked.map { Formatting.story_data(it) } }, status: :created, summary: summary, breadcrumbs: [ "mt qa" ])

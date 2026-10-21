@@ -104,11 +104,12 @@ class Project < ApplicationRecord
 
   # `mt deployed`: marca como desplegadas las historias `numbers` (solo las que
   # esperan, así llamar dos veces es idempotente) y deja un evento del proyecto
-  # aunque no marque ninguna: con él se activa la espera. Devuelve las marcadas.
-  def deploy!(sha:, numbers:, actor:)
+  # aunque no marque ninguna: con él se activa la espera. `warnings` son los
+  # avisos del CLI (las que dio por desplegadas sin nada que comprobar). Devuelve las marcadas.
+  def deploy!(sha:, numbers:, actor:, warnings: [])
     transaction do
       marked = stories.qa_pending.where(deployed_at: nil, number: numbers).order(:number).select { it.deployed!(sha: sha, actor: actor) }
-      record_event!("project.deployed", actor: actor, data: { sha: sha, stories: marked.map(&:number) })
+      record_event!("project.deployed", actor: actor, data: { sha: sha, stories: marked.map(&:number), warnings: warnings.presence }.compact)
       marked
     end
   end

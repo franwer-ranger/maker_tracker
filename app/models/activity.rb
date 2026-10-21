@@ -58,7 +58,7 @@ class Activity
 
   # Lo último que ha pasado, de todos los proyectos.
   def recent_events(limit = RECENT)
-    Event.includes(:project, :story, :actor).recent_first.limit(limit).to_a
+    Event.where.not(action: Changes::GROUPED).includes(:project, :story, :actor).recent_first.limit(limit).to_a
   end
 
   private
