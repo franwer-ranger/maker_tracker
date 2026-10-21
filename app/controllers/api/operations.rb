@@ -37,7 +37,7 @@ module Api::Operations
     # Trabajar (#017). Todo queda a nombre del actor del token, con su evento.
     { method: "POST", path: "/api/projects/:key/stories/:number/start", params: {}, command: "mt start PG-49",
       description: "Claims the story and moves it to in_progress. CLAIMED_BY_OTHER if someone else has it; warnings if it was not ready, is blocked or has no criteria" },
-    { method: "POST", path: "/api/projects/:key/stories/:number/done", params: { commits: "list of shas (optional)", pr: "PR url (optional)" },
+    { method: "POST", path: "/api/projects/:key/stories/:number/done", params: { commits: "list of shas, or of {sha, message} (optional)", pr: "PR url (optional)" },
       command: "mt done PG-49 [--commit sha]… [--pr url]", description: "Moves the story to done with its commits and PR in the event" },
     { method: "POST", path: "/api/projects/:key/stories/:number/release", params: { reason: "why you release it (required for agents)" },
       command: "mt release PG-49 --reason \"…\"", description: "Moves it back to ready and unclaims it" },

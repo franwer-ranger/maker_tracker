@@ -102,7 +102,7 @@ func runSkillInstall(e *env) error {
 	if e.cfg.URL == "" {
 		next = []string{"mt setup <url> <token>"}
 	}
-	printFooter(e.stdout, nil, next)
+	printFooter(e.footerWriter(), nil, next)
 	return nil
 }
 

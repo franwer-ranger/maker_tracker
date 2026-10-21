@@ -85,24 +85,26 @@ module StoriesHelper
 
   # «Qué cambió desde tu visita» (5.11): una línea por cosa nueva, no por evento.
   # Marca: ! un cambio de estado o de sitio, − algo que deja de esperar, + algo nuevo.
-  ChangeLine = Data.define(:mark, :text, :who, :at, :detail)
+  ChangeLine = Data.define(:mark, :text, :who, :at, :detail, :commits)
   CHANGE_MARKS = { "!" => "text-state-defining", "−" => "text-text-muted", "+" => "text-state-done" }.freeze
+
+  def change_line(mark, text, who, at, detail, commits: []) = ChangeLine.new(mark, text, who, at, detail, commits)
 
   def story_change_lines(events)
     lines = without_round_trips(events).group_by { it.action == "comment.added" ? [ it.action, it.actor_id ] : it.id }.flat_map do |_, group|
       event = group.last
       case event.action
       when "comment.added"
-        [ ChangeLine.new("+", "#{pluralize_es(group.size, 'comentario')} de #{event.actor.name}", event.actor.name, event.occurred_at, nil) ]
+        [ change_line("+", "#{pluralize_es(group.size, 'comentario')} de #{event.actor.name}", event.actor.name, event.occurred_at, nil) ]
       when "story.state_changed" then state_change_lines(event)
       when "decision.recorded"
         title = decision_title(event)
-        [ ChangeLine.new("+", [ "D-#{event.data['number']}", title ].compact.join(" · "), event.actor.name, event.occurred_at, nil) ]
-      when "question.answered" then [ ChangeLine.new("−", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+        [ change_line("+", [ "D-#{event.data['number']}", title ].compact.join(" · "), event.actor.name, event.occurred_at, nil) ]
+      when "question.answered" then [ change_line("−", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
       when "story.claimed", "story.released", "story.reordered", "story.moved"
-        [ ChangeLine.new("!", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+        [ change_line("!", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
       when "story.edited" then [ edit_line(event) ]
-      else [ ChangeLine.new("+", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
+      else [ change_line("+", event_sentence(event), event.actor.name, event.occurred_at, nil) ]
       end
     end
     lines.sort_by.with_index { |line, index| [ { "!" => 0, "−" => 1, "+" => 2 }.fetch(line.mark), index ] }
@@ -124,7 +126,7 @@ module StoriesHelper
     else
       event_sentence(event)
     end
-    ChangeLine.new("+", text, event.actor.name, event.occurred_at, nil)
+    change_line("+", text, event.actor.name, event.occurred_at, nil)
   end
 
   # Quita las idas y vueltas del mismo actor (Lista → En curso y En curso → Lista), que no cambian nada.
@@ -146,10 +148,10 @@ module StoriesHelper
   # "Estado: Lista → En curso" y, si trae trabajo, sus commits en otra línea.
   def state_change_lines(event)
     data = event.data
-    lines = [ ChangeLine.new("!", "Estado: #{Story.human_state(data['from'])} → #{Story.human_state(data['to'])}", event.actor.name, event.occurred_at, nil) ]
-    commits = Array(data["commits"]).map { it.to_s.first(7) }
-    work = commits + [ (data["pr"].present? ? "PR #{data['pr'].to_s.delete_prefix('#')}" : nil) ].compact
-    lines << ChangeLine.new("+", pluralize_es(commits.size, "commit"), event.actor.name, event.occurred_at, work.join(", ")) if commits.any?
+    lines = [ change_line("!", "Estado: #{Story.human_state(data['from'])} → #{Story.human_state(data['to'])}", event.actor.name, event.occurred_at, nil) ]
+    commits = event.commits
+    pr = ("PR #{data['pr'].to_s[%r{/pull/(\d+)}, 1] ? "##{data['pr'].to_s[%r{/pull/(\d+)}, 1]}" : data['pr'].to_s.delete_prefix('#')}" if data["pr"].present?)
+    lines << change_line("+", pluralize_es(commits.size, "commit"), event.actor.name, event.occurred_at, pr, commits: commits) if commits.any?
     lines
   end
 

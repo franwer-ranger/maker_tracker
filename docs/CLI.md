@@ -18,6 +18,7 @@ La app sigue en español. Si enseña un comando o una clave (`mt next`, `ready`)
 4. **Fechas absolutas**, `2026-10-15 22:40` (y solo la hora si es de hoy). Un agente no sabe qué día es "ayer", y así puede compararlas con `git log`.
 5. **Estados** en minúscula en la prosa (`ready`, `in progress`) y con su clave en el frontmatter (`ready`, `in_progress`), que es lo que acepta `mt`.
 6. **El final es siempre igual:** primero los avisos (`Warning: …`), uno por línea, y después `Next:` con los comandos sugeridos (los `breadcrumbs` de la API), uno por línea y con sangría de dos espacios.
+   **Dónde va el pie:** en una terminal, a stdout, como siempre. Si stdout no es una terminal (`mt brief > f.md`, `mt show MT-14 > f.md`, una tubería), los `Warning:` y `Next:` van a **stderr**, para que el fichero que se edita y se vuelve a subir (`--file`) no lleve el pie dentro. Con `--json` no cambia nada: el sobre va entero a stdout. Con `--hook` (el hook `SessionStart`, que corre con stdout en una tubería y del que Claude Code solo inyecta stdout) el pie va siempre a stdout. El Bash de los agentes recibe stdout y stderr, así que el cambio solo se nota al redirigir a un fichero.
 7. **Errores por stderr**, en dos líneas: `Error: …` y `Hint: …`. Salida con código 1, o 2 si el comando está mal escrito.
 8. **`--json`** imprime el sobre de la API tal cual, sin nada más.
 9. **Lo que se escribe se escribe corto:** `start`, `done`, `comment`… responden con una línea (el `summary`), los avisos y `Next:`.
@@ -105,7 +106,7 @@ PG-49  Plantillas de post reutilizables
 Project
   2026-10-21 09:12  fran    edited the brief
 PG-45  Programar publicaciones
-  2026-10-21 11:20  codex   moved to done (4f3e2a1, PR #63)
+  2026-10-21 11:20  codex   moved to done (4f3e2a1 · Guarda el borrador, PR #63)
 
 ## In progress
 
@@ -386,6 +387,7 @@ $ mt qa
 PG-47  Borradores automáticos          done 2026-10-20 18:40 by codex  https://testing.postgram.app
        1 Mientras escribes, el post se guarda solo cada pocos segundos.
        2 Si cierras la pestaña y vuelves, el borrador sigue ahí.
+       4f3e2a1 · Guarda el borrador cada pocos segundos
 PG-43  Subir varias imágenes a la vez  done 01:12 by claude            https://testing.postgram.app
        1 Puedo elegir varias imágenes en un solo selector.
 
@@ -455,7 +457,11 @@ Next:
 ```text
 $ mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63
 PG-49 done by claude, with 1 commit and PR #63.
+```
 
+`--commit` lee el asunto de cada commit con `git log -1 --format=%s <sha>` (en el repo donde corres `mt`) y lo envía junto al sha; si git falla (fuera del repo, sha desconocido) envía solo el sha, sin error. La API acepta `commits` como lista de shas o de `{sha, message}`. Donde se pintan (historia, «Qué cambió», QA, `mt show`, `mt daily`, `mt qa`) salen como `4f3e2a1 · asunto`; en la web el sha enlaza al commit si el evento trae un PR de GitHub. Los eventos viejos (solo shas) se siguen leyendo. En `mt qa --json`, `commits` es siempre una lista de `{sha, message}` (`[]` si no hay; `message` falta si no se conoce).
+
+```text
 Next:
   mt next
 ```

@@ -19,7 +19,7 @@ class Api::StoryWorkController < Api::BaseController
   # Pasa a Hecha con sus commits y su PR en el evento.
   def done
     ensure_not_claimed_by_other!
-    commits = Array(params[:commits]).map(&:to_s).compact_blank
+    commits = commits_param
     pr = params[:pr].presence
     warnings = []
     warnings << "it has no commits or PR: nobody will know where the code is. Use --commit <sha> or --pr <url>." if commits.empty? && pr.nil?
@@ -41,6 +41,19 @@ class Api::StoryWorkController < Api::BaseController
   end
 
   private
+
+  # `commits` llega como lista de shas o de `{sha, message}` (MT-44). Se guarda
+  # el objeto si trae asunto y el sha a secas si no, y se lee con `Event#commits`.
+  def commits_param
+    Array(params[:commits]).filter_map do |item|
+      sha, message = item.respond_to?(:to_unsafe_h) ? item.to_unsafe_h.values_at("sha", "message") : [ item, nil ]
+      sha = sha.to_s.strip
+      message = message.to_s.lines.first.to_s.strip.first(300)
+      next if sha.blank?
+
+      message.present? ? { sha: sha, message: message } : sha
+    end
+  end
 
   def story_data = { story: Api::Markdown::Formatting.story_data(story.reload) }
 

@@ -1,0 +1,3 @@
+<%# Un commit (MT-44): «sha corto · asunto», el sha en mono y, si se conoce el repo, enlazado al commit. Locals: commit (Event::Commit), class. %>
+<% sha = commit.url ? link_to(commit.short, commit.url, target: "_blank", rel: "noopener", class: "rounded-sm font-mono text-text underline decoration-border-strong underline-offset-[3px] hover:decoration-text #{ComponentsHelper::FOCUS_RING}") : tag.span(commit.short, class: "font-mono text-text") %>
+<span class="<%= class_names("min-w-0 break-words text-text-muted", local_assigns[:class]) %>"><%= sha %><% if commit.message %> · <%= commit.message %><% end %></span>

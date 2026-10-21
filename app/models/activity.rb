@@ -50,7 +50,7 @@ class Activity
     stories.map do |story|
       event = done[story.id]
       QaCard.new(story: story, project: story.project, done_at: event&.occurred_at || story.updated_at, done_by: event&.actor,
-        commits: Array(event&.data&.dig("commits")).size, url: story.project.qa_url, criteria: story.criteria_list)
+        commits: event&.commits || [], url: story.project.qa_url, criteria: story.criteria_list)
     end.sort_by { [ it.done_at, it.story.id ] }
   end
 
