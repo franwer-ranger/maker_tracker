@@ -190,4 +190,21 @@ $ mt start 49 --as claude
 → en curso · claude · 22:41<% end %>
     </div>
   </section>
+
+  <%# Fila · Avisos (MT-47): la línea de avisos push en sus estados. Sin naranja. %>
+  <section class="flex flex-col gap-[18px]">
+    <%= section_label "Fila · Avisos · barra lateral y pie de la portada en el móvil" %>
+    <div class="flex flex-wrap items-start gap-16">
+      <div class="flex w-[232px] flex-col gap-6 px-4">
+        <% PushHelper::PUSH_STATES.each_key do |state| %>
+          <%= push_line :sidebar, state: state %>
+        <% end %>
+      </div>
+      <div class="flex w-[390px] flex-col px-4">
+        <% PushHelper::PUSH_STATES.each_key do |state| %>
+          <%= push_line :page, state: state %>
+        <% end %>
+      </div>
+    </div>
+  </section>
 </div>

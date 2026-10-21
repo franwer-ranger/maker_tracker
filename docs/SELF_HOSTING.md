@@ -139,6 +139,25 @@ All optional, in `.env` (start from `.env.example`):
 
 After changing `.env`: `docker compose up -d`.
 
+### Push notifications
+
+Maker Tracker can notify your phone and your computer when something is waiting for you: a blocking question from an agent, a story to test, or a project running out of Ready stories. It needs a VAPID key pair, which only you generate:
+
+```bash
+docker compose exec -u rails app bin/rails "mt:vapid[mailto:you@example.com]"
+```
+
+It prints three lines (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`). Add them to `.env` and run `docker compose up -d`. Until they are set, the app does not offer notifications. The subject is a contact (`mailto:` or `https://`) that Apple, Google and Mozilla can see.
+
+Then, on each device, turn them on from the line at the bottom of the sidebar (on a phone, at the bottom of Activity):
+
+- **Desktop**: Chrome, Edge, Firefox and Safari, from the tab. No install needed.
+- **iPhone / iPad** (iOS 16.4 or newer): only from the app installed on the home screen (Share > Add to Home Screen), opened from there.
+
+Notifications need HTTPS, which `tailscale serve` already gives you. They travel through Apple, Google or Mozilla's push servers, so the server needs outbound internet access but no open port. Tapping one opens the app on your tailnet address, so Tailscale has to be on in that device.
+
+**Changing the keys invalidates every subscription**: you have to turn notifications on again on each device. Keep them with your `.env`.
+
 ## Day to day
 
 ```bash
