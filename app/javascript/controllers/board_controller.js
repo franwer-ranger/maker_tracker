@@ -13,8 +13,13 @@ export default class extends Controller {
   static values = { sortable: Boolean, stateUrl: String, positionUrl: String, tabKey: String }
 
   connect() {
-    const remembered = this.#storage("get")
-    if (remembered && this.tabTargets.some((tab) => tab.dataset.state === remembered)) this.#show(remembered)
+    // Al abrir y tras cada repintado en directo (morph, MT-38), que trae la pestaña por defecto.
+    this.restore = () => {
+      const remembered = this.#storage("get")
+      if (remembered && this.tabTargets.some((tab) => tab.dataset.state === remembered)) this.#show(remembered)
+    }
+    this.restore()
+    document.addEventListener("turbo:morph", this.restore)
 
     this.toggleDragging = () => this.columnTargets.forEach((column) => column.sortable?.option("disabled", mobile.matches))
     mobile.addEventListener("change", this.toggleDragging)
@@ -22,6 +27,7 @@ export default class extends Controller {
 
   disconnect() {
     mobile.removeEventListener("change", this.toggleDragging)
+    document.removeEventListener("turbo:morph", this.restore)
   }
 
   select({ currentTarget }) {

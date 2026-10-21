@@ -1,8 +1,8 @@
-<%# Barra inferior del móvil (5.9 · Móvil, MT-45): la misma en Actividad, Tablero, Roadmap, Brief e Historia. Las pestañas salen de `bottom_tabs` (ActivityHelper): para marcar una (p. ej. el punto de un agente trabajando, MT-38), se añade el dato allí y se pinta en `tab_item`. Una pantalla que no la quiere (editar una historia) hace content_for :hide_tab_bar. %>
+<%# Barra inferior del móvil (5.9 · Móvil, MT-45): la misma en Actividad, Tablero, Roadmap, Brief e Historia. Las pestañas salen de `bottom_tabs` (ActivityHelper), que también dice dónde está trabajando un agente (el punto, MT-38). Una pantalla que no la quiere (editar una historia) hace content_for :hide_tab_bar. %>
 <% unless content_for?(:hide_tab_bar) %>
   <nav class="flex shrink-0 justify-around border-t border-border bg-bg px-3 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2 md:hidden" aria-label="Secciones">
     <% bottom_tabs(project).each do |tab| %>
-      <%= tab_item tab[:label], tab[:href], icon: tab[:icon], active: tab[:active], count: tab[:count] %>
+      <%= tab_item tab[:label], tab[:href], icon: tab[:icon], active: tab[:active], count: tab[:count], working: tab[:working] %>
     <% end %>
   </nav>
 <% end %>

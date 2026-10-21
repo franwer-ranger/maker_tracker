@@ -53,7 +53,8 @@ module ComponentsHelper
   end
 
   # nav_item "Actividad", project_path(project), count: 3
-  def nav_item(label, href, active: current_page?(href), count: nil)
+  # `working: true` pone el punto de un agente que está tocando esa sección (MT-38).
+  def nav_item(label, href, active: current_page?(href), count: nil, working: false)
     classes = class_names(
       "flex h-nav shrink-0 items-center justify-between rounded-md px-3 text-sm leading-[18px] transition-colors duration-150 ease-brand",
       FOCUS_RING,
@@ -62,7 +63,8 @@ module ComponentsHelper
     link_to href, class: classes, aria: { current: ("page" if active) } do
       safe_join([
         tag.span(label),
-        (tag.span(count, class: "rounded-full bg-accent px-1.5 font-mono text-xs leading-[18px] text-bg") if count)
+        (tag.span(count, class: "rounded-full bg-accent px-1.5 font-mono text-xs leading-[18px] text-bg") if count),
+        (agent_dot(title: "Un agente está trabajando aquí") if working)
       ].compact)
     end
   end
@@ -130,6 +132,36 @@ module ComponentsHelper
         (tag.span(detail, class: "text-text-muted") if detail)
       ].compact)
     end
+  end
+
+  # Agente trabajando (7.4, MT-38): matriz de puntos naranjas con una ola de
+  # opacidad hecha solo con CSS (`.agent-dots` en application.tailwind.css); con
+  # prefers-reduced-motion se queda quieta en el dibujo del mockup.
+  #   agent_dots           → 9×3 de 3px (cabecera)
+  #   agent_dots size: :sm → 4×3 de 2px (etiqueta «editando»)
+  AGENT_DOTS = {
+    md: { cols: 9, grid: "grid-cols-9 gap-[3px]", dot: "size-[3px]",
+          pattern: [ 0.15, 0.3, 0.15, 1, 0.55, 0.55, 0.15, 0.15, 0.15, 0.15, 0.55, 1, 0.3, 0.15, 0.15, 1, 1, 0.3, 0.3, 0.15, 0.15, 0.3, 0.15, 0.15, 1, 0.3, 0.3 ] },
+    sm: { cols: 4, grid: "grid-cols-4 gap-0.5", dot: "size-0.5",
+          pattern: [ 1, 0.3, 0.15, 0.55, 0.3, 1, 1, 0.15, 0.15, 0.55, 0.3, 1 ] }
+  }.freeze
+  AGENT_WAVE = 1.6 # segundos; la ola cruza la matriz de izquierda a derecha
+
+  def agent_dots(size: :md, **attrs)
+    spec = AGENT_DOTS.fetch(size)
+    dots = spec[:pattern].each_with_index.map do |opacity, index|
+      col, row = index % spec[:cols], index / spec[:cols]
+      # Retraso negativo: la ola ya está en marcha al pintar y cada columna llega un poco después.
+      delay = ((col.to_f / spec[:cols]) * 0.8 + row * 0.1 - 1) * AGENT_WAVE
+      tag.span class: "#{spec[:dot]} rounded-full bg-accent", style: "--o:#{opacity};animation-delay:#{format('%.2f', delay)}s"
+    end
+    tag.span safe_join(dots), class: class_names("agent-dots grid shrink-0", spec[:grid], attrs.delete(:class)), aria: { hidden: true }, **attrs
+  end
+
+  # El punto de «aquí hay un agente» (navegación, pestañas, fila de proyecto): 6px con halo, latiendo.
+  def agent_dot(**attrs)
+    tag.span class: class_names("agent-pulse inline-block size-1.5 shrink-0 rounded-full bg-accent",
+      "shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-accent)_22%,transparent)]", attrs.delete(:class)), aria: { hidden: true }, **attrs
   end
 
   # meta_line "wflow", "implement", "41 min", "$3.12" → wflow · implement · 41 min · $3.12

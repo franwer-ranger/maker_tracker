@@ -23,7 +23,11 @@
     </div>
     <div class="flex shrink-0 items-center gap-6 max-md:pt-2">
       <%= render "shared/ready_work", project: @project %>
-      <%= render "boards/milestone_menu" %>
+      <%# El agente trabajando (7.4, MT-38) va pegado al selector de hito. %>
+      <div class="flex items-center gap-2 max-md:hidden">
+        <%= render "agents/indicator", project: @project %>
+        <%= render "boards/milestone_menu" %>
+      </div>
     </div>
   </header>
 

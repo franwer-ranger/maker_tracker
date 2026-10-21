@@ -1,7 +1,8 @@
 <% stories = milestone.stories.to_a %>
 <%# Un hito del Roadmap (5.3). En el móvil: bloque a todo el ancho con borde abajo, fila de 56px con chevron (sin asa: no se arrastra) y, abierto, sobre surface-sunken con su objetivo. %>
+<% editing = agent_writing(@project, "#{@project.key} #{milestone.code}") %>
 <li data-id="<%= milestone.id %>">
-  <%= tag.details class: "group rounded-lg border border-border pl-4 pr-5 open:border-strong open:bg-surface-sunken open:pb-2 max-md:rounded-none max-md:border-0 max-md:border-b max-md:px-0 max-md:open:border-border max-md:open:pb-0", open: milestone == @open_milestone do %>
+  <%= tag.details class: "#{'md:!border-[color-mix(in_srgb,var(--color-accent)_70%,transparent)] ' if editing}group rounded-lg border border-border pl-4 pr-5 open:border-strong open:bg-surface-sunken open:pb-2 max-md:rounded-none max-md:border-0 max-md:border-b max-md:px-0 max-md:open:border-border max-md:open:pb-0", open: milestone == @open_milestone do %>
     <summary class="flex min-h-[50px] cursor-pointer list-none items-center gap-3 rounded-md group-open:items-start group-open:pb-4 group-open:pt-[18px] <%= ComponentsHelper::FOCUS_RING %> [&::-webkit-details-marker]:hidden max-md:min-h-14 max-md:flex-wrap max-md:gap-x-2.5 max-md:gap-y-1.5 max-md:rounded-none max-md:px-4 max-md:group-open:pb-3 max-md:group-open:pt-4">
       <span class="cursor-grab text-text-subtle group-open:mt-0.5 max-md:hidden" data-handle data-action="pointerdown->roadmap#suspendStories click->roadmap#preventToggle" title="Arrastra para reordenar"><%= icon "bars-2", size: 16 %></span>
       <%= icon "chevron-right", size: 16, class: "text-text-muted transition-transform duration-150 ease-brand group-open:mt-1 group-open:rotate-90 group-open:text-text md:hidden" %>
@@ -12,7 +13,7 @@
           <span class="hidden text-control leading-[18px] text-text-muted group-open:block max-md:group-open:hidden">Objetivo: <%= milestone.goal.sub(/\A./) { it.downcase } %></span>
         <% end %>
       </span>
-      <span class="font-mono text-xs group-open:leading-5 max-md:shrink-0 max-md:group-open:leading-6"><%= milestone_summary_tag milestone %></span>
+      <span class="font-mono text-xs group-open:leading-5 max-md:shrink-0 max-md:group-open:leading-6"><%= editing ? agent_editing_label(editing) : milestone_summary_tag(milestone) %></span>
       <% if milestone.goal.present? %>
         <span class="hidden w-full pl-[60px] text-control leading-5 text-text-muted max-md:group-open:block md:hidden"><%= milestone.goal %></span>
       <% end %>

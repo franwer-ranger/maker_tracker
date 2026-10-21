@@ -1,0 +1,2 @@
+<%# El aviso en un marco que se recarga solo (stories/edit, MT-38): vacío si nadie más la está escribiendo. La respuesta del marco (Stories::AgentNoticesController) va sin `src`. Locals: story, src (true en la página). %>
+<%= turbo_frame_tag "agent-editing-notice", src: (project_story_agent_notice_path(@project, story) if local_assigns[:src]), class: "block empty:hidden max-md:order-2 max-md:mt-2" do %><% if (editing = agent_writing(@project, story.reference)) %><%= render "agents/editing_notice", entry: editing %><% end %><% end %>

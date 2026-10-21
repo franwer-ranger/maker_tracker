@@ -1,0 +1,6 @@
+<%# Un agente está escribiendo esta historia mientras Fran la mira o la edita (MT-38): solo avisa, no bloquea; si los dos guardan, el conflicto lo resuelve MT-37. Fila de atención: marca lateral naranja. Local: entry (de Presence). %>
+<div class="flex items-center gap-3 rounded-lg border border-border bg-surface-sunken px-4 py-3 shadow-[inset_2px_0_0_var(--color-accent)]" role="status">
+  <%= agent_dots size: :sm %>
+  <span class="grow text-control leading-[18px] text-text max-md:text-sm">Un agente también está editando esta historia</span>
+  <span class="shrink-0 font-mono text-xs text-text-muted"><%= entry.actor_name %></span>
+</div>

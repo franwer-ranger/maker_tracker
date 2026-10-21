@@ -1,7 +1,8 @@
 <li data-number="<%= story.number %>">
   <%= link_to project_story_path(@project, story), draggable: false,
         class: class_names(
-          "flex flex-col gap-2.5 rounded-lg border border-border p-3 transition-colors duration-150 ease-brand hover:border-strong",
+          "flex flex-col gap-2.5 rounded-lg border p-3 transition-colors duration-150 ease-brand",
+          story_card_border(story),
           ComponentsHelper::FOCUS_RING,
           "bg-surface-raised": !story.done?
         ) do %>

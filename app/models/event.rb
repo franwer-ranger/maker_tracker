@@ -12,9 +12,10 @@ class Event < ApplicationRecord
 
   validates :action, presence: true
 
-  # Cada escritura se emite en directo (MT-36) para el proyecto y la portada; si
-  # la hizo el actor de una petición de la API, además lo marca «escribiendo».
-  # No es un callback de dominio: no cambia datos, solo avisa.
+  # Cada escritura se emite en directo (MT-36) para el proyecto y la portada: las
+  # páginas abiertas se vuelven a pintar con morph y lo nuevo aparece en su sitio
+  # (MT-38). Si la hizo el actor de una petición de la API, además lo marca
+  # «escribiendo». No es un callback de dominio: no cambia datos, solo avisa.
   after_create_commit :broadcast_write
   # Y decide si avisa por push (MT-47); el envío va en un job.
   after_create_commit -> { Push::Notifier.call(self) }
@@ -45,9 +46,10 @@ class Event < ApplicationRecord
   private
 
   def broadcast_write
-    locals = { event: self }
-    Turbo::StreamsChannel.broadcast_append_later_to([ project, :writes ], target: "writes", partial: "presences/write", locals: locals)
-    Turbo::StreamsChannel.broadcast_append_later_to(:writes, target: "writes", partial: "presences/write", locals: locals)
+    # Lleva el id de la petición: la pestaña que hizo el cambio no se repinta dos veces.
+    [ Presence.stream(project), Presence.stream(:all) ].each do |stream|
+      Turbo::StreamsChannel.broadcast_refresh_later_to(*stream)
+    end
     if Current.actor == actor && actor.agent?
       Presence.wrote(self)
       Current.presence_written = true
