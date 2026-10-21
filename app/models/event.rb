@@ -32,11 +32,11 @@ class Event < ApplicationRecord
   # guardan como lista de strings (solo el sha) y los nuevos como `{sha, message}`;
   # se normaliza al leer, sin migrar. Siempre una lista (vacía si no hay).
   def commits
-    repo = data["pr"].to_s[%r{\Ahttps?://[^/]+/[^/]+/[^/]+(?=/pull/\d+)}]
+    repo = data["pr"].to_s[%r{\Ahttps://github\.com/[^/]+/[^/]+(?=/pull/\d+)}]
     Array(data["commits"]).filter_map do |item|
       sha, message = item.is_a?(Hash) ? item.values_at("sha", "message") : [ item, nil ]
       sha = sha.to_s.strip
-      Commit.new(sha: sha, message: message.to_s.strip.presence, url: ("#{repo}/commit/#{sha}" if repo)) if sha.present?
+      Commit.new(sha: sha, message: message.to_s.strip.presence, url: ("#{repo}/commit/#{sha}" if repo && sha.match?(/\A\h{4,40}\z/))) if sha.present?
     end
   end
 

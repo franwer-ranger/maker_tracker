@@ -437,7 +437,7 @@ $ mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63
 PG-49 done by claude, with 1 commit and PR #63.
 ```
 
-`--commit` lee el asunto de cada commit con `git log -1 --format=%s <sha>` (en el repo donde corres `mt`) y lo envía junto al sha; si git falla (fuera del repo, sha desconocido) envía solo el sha, sin error. La API acepta `commits` como lista de shas o de `{sha, message}`. Donde se pintan (historia, «Qué cambió», QA, `mt show`, `mt daily`, `mt qa`) salen como `4f3e2a1 · asunto`; en la web el sha enlaza al commit si el evento trae un PR de GitHub. Los eventos viejos (solo shas) se siguen leyendo.
+`--commit` lee el asunto de cada commit con `git log -1 --format=%s <sha>` (en el repo donde corres `mt`) y lo envía junto al sha; si git falla (fuera del repo, sha desconocido) envía solo el sha, sin error. La API acepta `commits` como lista de shas o de `{sha, message}`. Donde se pintan (historia, «Qué cambió», QA, `mt show`, `mt daily`, `mt qa`) salen como `4f3e2a1 · asunto`; en la web el sha enlaza al commit si el evento trae un PR de GitHub. Los eventos viejos (solo shas) se siguen leyendo. En `mt qa --json`, `commits` es siempre una lista de `{sha, message}` (`[]` si no hay; `message` falta si no se conoce).
 
 ```text
 Next:

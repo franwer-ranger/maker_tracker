@@ -299,7 +299,11 @@ seed_event(postgram, "question.asked", story: s50, actor: codex, at: q50.created
   43 => [ claude, today + 6.hours + 22.minutes, [ { sha: "a7d41e3", message: "Permite elegir varias imágenes en el selector" }, { sha: "5e90b2c", message: "Sube las imágenes en paralelo" } ], nil ],
   42 => [ codex, today + 3.hours + 5.minutes, %w[d1f8a64], nil ] }.each do |number, (actor, at, commits, pr)|
   story = postgram.stories.find_by!(number: number)
-  seed_event(postgram, "story.state_changed", story: story, actor: actor, at: not_future(at), data: { from: "in_progress", to: "done", commits: commits, pr: pr, qa: "pending" }.compact)
+  data = { from: "in_progress", to: "done", commits: commits, pr: pr, qa: "pending" }.compact
+  # Una BD sembrada antes de MT-44 trae este evento con los commits como shas: se sustituye, no se duplica.
+  stale = postgram.events.where(story: story, action: "story.state_changed").select { it.data["to"] == "done" && it.data["qa"] == "pending" && it.data != data.deep_stringify_keys }
+  Event.where(id: stale.map(&:id)).delete_all
+  seed_event(postgram, "story.state_changed", story: story, actor: actor, at: not_future(at), data: data)
   story.update_columns(qa: "pending") if story.qa.nil?
 end
 
