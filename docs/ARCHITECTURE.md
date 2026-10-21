@@ -51,6 +51,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 - Maker Tracker es dueño de los **hechos**: cada transición, reclamación, reordenación, commit o PR enlazado genera un `Event` con su actor y fecha. Los eventos no se editan ni se borran, y no hay endpoint que lo permita.
 - Preguntar y responder también son hechos: `question.asked` y `question.answered` (con actor y fecha; el segundo guarda la opción (o el texto, si fue libre) y, con `--decide`, el `D-n`). Si preguntar suelta la historia, es además un `story.state_changed` con `released`.
 - La QA también: `qa.passed` y `qa.failed` (actor, fecha, nota; el segundo guarda el número de la historia que crea). Pasar a Hecha escribe `qa: pending` en el evento `story.state_changed` y en `stories.qa` (`pending | passed | failed`; nulo en las hechas antes de MT-32, que no entran). Al salir de Hecha `qa` vuelve a nulo: lo que pasó con la QA solo queda en los eventos.
+- El despliegue también (MT-46): `story.deployed` por historia (`sha`) y `project.deployed` por llamada a `mt deployed` (`sha` y `stories`, los números marcados, aunque sea una lista vacía). La columna `stories.deployed_at` es nula al pasar a Hecha y al salir de ella, como `qa`. La daily y «Qué cambió» cuentan una sola frase por llamada (`Changes` deja fuera `story.deployed` salvo al pedir una historia).
 - Los campos derivados (fecha de inicio y fin de una historia, PR actual, coste) se calculan a partir de los eventos y los runs, no los escribe nadie a mano.
 
 ### Roadmap como datos (propuesta)
@@ -106,6 +107,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 | `mt decide "…" --why "…"` | Registra una decisión |
 | `mt ask <n> "…" --option … --recommend 2` | Pregunta con opciones y recomendación; bloquea la historia y la suelta, salvo con `--no-bloqueante` |
 | `mt answer <n> 2 [--question id] [--decide]` o `mt answer <n> --text "…"` (respuesta libre; solo una persona; un agente recibe `FORBIDDEN`, D-52) · `mt questions` | Responde una pregunta (y, si quiere, la registra como decisión) · lista las abiertas de todos los proyectos |
+| `mt deployed [sha]` (cualquier actor) | Avisa de que un sha está desplegado: las Hechas que contiene salen en «Por probar» (MT-46) |
 | `mt qa` · `mt qa <n> ok [--note]` · `mt qa <n> fail --note "…"` (solo una persona; un agente recibe `FORBIDDEN`) | Lista la QA pendiente de todos los proyectos · la da por probada · falla: crea una historia en Definiendo enlazada |
 | `mt create` · `mt edit` · `mt move` · `mt reorder` · `mt brief` | Escriben producto (crear y editar historias con `--file`, cambiar estado, ordenar con motivo, editar el brief) |
 
@@ -169,6 +171,12 @@ Las preguntas se responden desde la UI con `POST /p/:slug/stories/:n/questions/:
 Es derivado de Hecha, no un estado y no bloquea nada: `Story::Qa` (`app/models/story/qa.rb`) y la columna `stories.qa`. `move_to!(:done)` la deja en `pending` (y salir de Hecha la vuelve a nulo; lo que pasó solo queda en los eventos); las historias hechas antes tienen `qa` nulo y no entran. `qa_pass!` y `qa_fail!` (solo actor humano) cambian `qa` y registran `qa.passed` / `qa.failed`; `qa_fail!` crea además, en la misma transacción, una historia en Definiendo en el mismo hito (`create_story!` con `qa_failed_from` en su evento) y su número va en `qa.failed`. Dónde se prueba: `Project#qa_url`, la primera URL bajo `## Dónde se prueba` del brief (sin configuración).
 
 En Actividad, `Activity#qa_pending` (tres consultas para todos los proyectos: historias con proyecto e hito, y sus eventos de Hecha; no entra en `for_you`, así que no cuenta en el contador ni añade consultas al resto de pantallas) pinta el grupo «Por probar» al final de «Te toca» (`activity/_qa_group`, `_qa_card`). La UI usa `POST /p/:slug/stories/:n/qa` (`Stories::QaController`, `result=ok|fail`, `note`) y la API `GET /api/qa` y `POST /api/projects/:key/stories/:n/qa`. La Historia enseña el bloque «QA pendiente» (`stories/_qa`) y la propiedad «QA».
+
+### La QA espera al despliegue (MT-46)
+
+Hecha es mergeada, no desplegada, así que «Por probar» solo enseña lo desplegado donde se prueba (D-62). `stories.deployed_at` la pone `Story::Qa#deployed!` (evento `story.deployed`) y `Story::Operations#move_to!` la deja a nulo al entrar o salir de Hecha. `Project#deploys?` (existe un evento `project.deployed`) activa la espera por proyecto sin configuración (D-64): `Story.qa_testable` (QA pendiente y, o el proyecto no despliega, o `deployed_at`) es lo que listan `Activity#qa_pending` y `GET /api/qa`; `Story.qa_undeployed` (pendiente, sin `deployed_at`, en proyecto con espera) alimenta la línea atenuada «N hechas sin desplegar» (`activity/_undeployed`, fuera del contador de «Te toca», con `Activity#qa_undeployed_count`) y `GET /api/qa?undeployed=true`. Ambos scopes llevan la comprobación de `project.deployed` como subconsulta: sin consultas extra por proyecto.
+
+La API (`Api::DeploysController`): `GET /api/projects/:key/deployed` devuelve `{active, stories: [{reference, number, title, done_at, commits: [sha], pr}]}` (leídos con `Event#commits`) y `POST` con `{sha, stories: [números]}` llama a `Project#deploy!`, que marca las que esperan (idempotente: lo ya desplegado no se vuelve a marcar) y registra `project.deployed`. El servidor no necesita el repo: qué contiene un sha lo calcula el CLI con git (D-63, `cli/internal/mt/deployed.go`). Cualquier actor con token puede llamarla. **Para avisar al desplegar (MT-47)**: el evento es `project.deployed` (con `data["stories"]`, los números que pasan a poder probarse); `Project#deploy!` devuelve esas historias y es el sitio donde engancharlo.
 
 ## Mientras no mirabas (MT-31)
 

@@ -1,0 +1,47 @@
+#!/bin/bash -e
+
+# Updates a self-hosted Maker Tracker (the tower) and tells it what is deployed:
+#
+#   bin/deploy
+#
+# git pull, docker compose up -d --build, waits for /up to answer and then runs
+# `mt deployed` with the HEAD that was deployed, so the stories done in it show
+# up in "Por probar" (MT-46). Run it at the root of the repo, on the server.
+#
+# If mt is missing or `mt deployed` fails it only warns: the deploy is already
+# done. Settings (all optional): MAKER_TRACKER_PORT (read from .env, 3002),
+# DEPLOY_WAIT_SECONDS (120).
+
+cd "$(dirname "$0")/.."
+
+echo "== git pull =="
+git pull --ff-only
+
+echo "== docker compose up -d --build =="
+docker compose up -d --build
+
+# The port the app listens on, from the environment, .env or the default.
+port="${MAKER_TRACKER_PORT:-}"
+if [ -z "$port" ] && [ -f .env ]; then
+  port="$(sed -n 's/^MAKER_TRACKER_PORT=//p' .env | tail -n 1 | tr -d "\"' \r")"
+fi
+url="http://127.0.0.1:${port:-3002}/up"
+
+echo "== waiting for $url =="
+deadline=$((SECONDS + ${DEPLOY_WAIT_SECONDS:-120}))
+until curl -fs -o /dev/null --max-time 5 "$url"; do
+  if [ "$SECONDS" -ge "$deadline" ]; then
+    echo "The app did not answer at $url in time: check docker compose logs app." >&2
+    echo "Not running mt deployed: nothing is deployed until the app is up." >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+sha="$(git rev-parse HEAD)"
+echo "== mt deployed ${sha:0:7} =="
+if ! command -v mt >/dev/null 2>&1; then
+  echo "Warning: mt is not installed here, so Maker Tracker was not told about the deploy (see docs/SELF_HOSTING.md)." >&2
+elif ! mt deployed "$sha"; then
+  echo "Warning: mt deployed failed. The deploy is done; run 'mt deployed' by hand to mark what can be tested." >&2
+fi

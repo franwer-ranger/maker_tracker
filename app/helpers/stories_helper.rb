@@ -20,6 +20,8 @@ module StoriesHelper
     when "comment.added" then "#{event.actor.name} comenta"
     when "qa.passed" then "#{event.actor.name} da la QA por probada#{": «#{data['note']}»" if data['note']}"
     when "qa.failed" then "#{event.actor.name} falla la QA: #{project_story_ref(event, data['story'])}"
+    when "story.deployed" then "Desplegada · #{data['sha'].to_s.first(7)}"
+    when "project.deployed" then deployed_sentence(event)
     when "decision.recorded" then "Se decide D-#{data['number']}"
     when "brief.edited" then "#{event.actor.name} edita el brief"
     when "milestone.created" then "#{event.actor.name} crea el hito #{data['title']}"
@@ -29,6 +31,12 @@ module StoriesHelper
     when "milestone.reordered" then "#{event.actor.name} reordena #{milestone_event_ref(event)}"
     else event.action
     end
+  end
+
+  # «torre desplegó MT-30 y MT-32»: una sola frase por llamada a `mt deployed` (MT-46).
+  def deployed_sentence(event)
+    refs = Array(event.data["stories"]).map { "#{event.project.key}-#{it}" }
+    "#{event.actor.name} desplegó #{refs.any? ? y_sentence(refs) : event.data['sha'].to_s.first(7)}"
   end
 
   # "M2", o "un hito borrado" si ya no existe.
@@ -182,6 +190,9 @@ module StoriesHelper
     case story.qa
     when "pending"
       url = story.project.qa_url
+      if story.qa_awaiting_deploy? # MT-46: se puede dar por probada, pero aún no está donde se prueba
+        return tag.span(class: "flex items-center gap-2") { safe_join([ dot.call(false), tag.span("Esperando al despliegue", class: "text-control text-text-muted") ]) }
+      end
       tag.span(class: "flex items-center gap-2") do
         safe_join([ dot.call(false), tag.span("Pendiente", class: "text-control text-text"),
           (tag.span("en #{URI.parse(url).host}", class: "font-mono text-xs text-text-muted") if url) ].compact)

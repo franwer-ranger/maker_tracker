@@ -51,11 +51,18 @@ class Api::Markdown::Story
     url = @story.project.qa_url
     case @story.qa
     when "pending"
+      return waiting_for_deploy if @story.qa_awaiting_deploy?
+
       where = url ? "Test it at #{url}." : "There is no \"Dónde se prueba\" line in the brief to say where."
       "## QA · pending\n\n#{where} #{@story.reference} is done and does not block anything. Waiting for #{Actor.human.name}: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
     else
       "## QA · #{@story.qa}"
     end
+  end
+
+  # MT-46: la historia está hecha pero aún no se ha desplegado. `mt qa ok|fail` sigue funcionando.
+  def waiting_for_deploy
+    "## QA · waiting for deploy\n\n#{@story.reference} is done but not deployed yet: it shows up in mt qa when mt deployed marks it. #{Actor.human.name} can still pass or fail it already: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
   end
 
   # "Blocked by PG-47 Borradores automáticos (done): no longer blocking."

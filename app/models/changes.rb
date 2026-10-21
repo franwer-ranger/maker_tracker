@@ -10,6 +10,9 @@ class Changes
   # Acciones que son contabilidad de la herramienta y no algo que le pasó al
   # producto: no salen en ningún «qué ha pasado».
   BOOKKEEPING = %w[daily.held].freeze
+  # `story.deployed` se cuenta una vez por llamada, en el `project.deployed` que
+  # la agrupa (MT-46). Solo se ve cuando se pide la historia, que no tiene la otra.
+  GROUPED = %w[story.deployed].freeze
 
   attr_reader :project, :since, :until_time
 
@@ -44,6 +47,7 @@ class Changes
 
   def scope
     scope = project.events.where("occurred_at > ?", since).where.not(action: BOOKKEEPING).order(:occurred_at, :id)
+    scope = scope.where.not(action: GROUPED) unless @story
     scope = scope.where("occurred_at <= ?", until_time) if until_time
     scope = scope.where.not(actor: @except_actor) if @except_actor
     scope = scope.where(story: @story) if @story

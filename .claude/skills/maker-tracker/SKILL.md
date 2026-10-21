@@ -43,6 +43,8 @@ A story is done whole or not closed. If something is left out when you finish, s
 
 When your story is done it is not tested yet: it stays with **QA pending** until the person tries it where it is deployed. It is derived, not a state: it blocks nothing and `mt next` ignores it, so carry on. `mt qa` lists what is waiting in every project, with the criteria and where to test it. Only a person passes (`mt qa PG-49 ok`) or fails it (`mt qa PG-49 fail --note "…"`, which creates a new story in defining linked to the original); `mt qa` with ok/fail is refused to agents (`FORBIDDEN`). If it failed, the new story arrives through `mt next` like any other.
 
+In a project whose deploy script calls `mt deployed` (MT-46), done is not enough: a story shows up in `mt qa` only once it is deployed, and `mt qa` says how many are still waiting (`mt qa --undeployed` lists them). Nothing changes for you: keep passing real commits and the PR to `mt done`, because `mt deployed` uses them to know what a deploy contains. If your project deploys by hand, add `mt deployed` (from the root of the repo, once the app answers) at the end of its deploy script.
+
 Where each project is tested is one line under `## Dónde se prueba` in its brief (`Testing: https://…`, or production). Read it with `mt context`. If the brief has no such line, ask the person where it is tested; add it to the brief only if the person agrees (the brief is theirs).
 
 ## Decisions
@@ -96,8 +98,8 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 ## Commands
 
 - Set up: `mt setup` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea`
+- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa [--undeployed]`
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

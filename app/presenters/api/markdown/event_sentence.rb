@@ -33,6 +33,8 @@ class Api::Markdown::EventSentence
     when "question.answered" then "answered #{@data['asked_by']}: #{@data['option'] ? "#{@data['option']} " : ''}#{@data['answer']}#{", recorded as D-#{@data['decision']}" if @data['decision']}"
     when "qa.passed" then "passed QA#{": #{@data['note']}" if @data['note']}"
     when "qa.failed" then "failed QA: #{@data['note']} (created #{@event.project.key}-#{@data['story']})"
+    when "story.deployed" then "deployed (#{@data['sha'].to_s.first(7)})"
+    when "project.deployed" then deployed_sentence
     when "decision.recorded" then "recorded D-#{@data['number']}"
     when "project.created" then "created the project"
     when "brief.edited" then "edited the brief"
@@ -43,6 +45,12 @@ class Api::Markdown::EventSentence
     when "milestone.reordered" then "reordered #{milestone_ref}"
     else @event.action
     end
+  end
+
+  # Una sola frase por llamada a `mt deployed` (MT-46): "deployed a1b2c3d: MT-30, MT-32 can be tested now".
+  def deployed_sentence
+    refs = Array(@data["stories"]).map { "#{@event.project.key}-#{it}" }
+    "deployed #{@data['sha'].to_s.first(7)}#{": #{refs.join(', ')} can be tested now" if refs.any?}"
   end
 
   # Commits y PR al terminar: " (4f3e2a1 · Subject; 9b1c7d0, PR #63)".

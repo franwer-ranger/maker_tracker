@@ -83,6 +83,26 @@ git pull && docker compose up -d --build
 
 Database migrations run on start. Your data in `./data/` is untouched.
 
+### Tell Maker Tracker what is deployed
+
+If you use the Maker Tracker app to define your product, "Por probar" (QA) can wait until a story is really deployed where you test it. `bin/deploy` does the update above and then tells it:
+
+```bash
+cd maker_tracker
+bin/deploy
+```
+
+It runs `git pull --ff-only` and `docker compose up -d --build`, waits for `/up` to answer and runs `mt deployed` with the deployed `HEAD`: the stories done in it appear in "Por probar". If `mt` is missing or fails it only warns; the deploy is already done. It needs `mt` on the server, set up as in [Agents](#agents) (below), with its own actor (`mt:token[torre]`) and the repo's `.mt` file (it is in git). A project that never calls `mt deployed` keeps showing every done story in "Por probar", as before: the wait switches on by itself with the first call.
+
+`mt` for Linux, built from any machine (check the server with `uname -m`: `x86_64` is `amd64`, `aarch64` is `arm64`):
+
+```bash
+make -C cli linux GOARCH=amd64                       # or GOARCH=arm64 → cli/bin/mt-linux-amd64
+scp cli/bin/mt-linux-amd64 <server>:.local/bin/mt    # ~/.local/bin must be in the server's PATH
+```
+
+**Other projects:** their deploy script calls `mt deployed` from the root of their repo, once the app answers (`mt deployed [<sha>]`, sha defaults to `HEAD`; the repo needs its `.mt`). It is safe to call twice.
+
 ## Backups
 
 The `backup` container takes a consistent copy of the database on start and then every 24 hours, checks it with SQLite's `integrity_check` and keeps the newest 14. Each backup is a folder `data/backups/<UTC date-time>/` with `production.sqlite3` and the app secret.
