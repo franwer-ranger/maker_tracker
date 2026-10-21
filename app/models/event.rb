@@ -16,6 +16,8 @@ class Event < ApplicationRecord
   # la hizo el actor de una petición de la API, además lo marca «escribiendo».
   # No es un callback de dominio: no cambia datos, solo avisa.
   after_create_commit :broadcast_write
+  # Y decide si avisa por push (MT-47); el envío va en un job.
+  after_create_commit -> { Push::Notifier.call(self) }
 
   def readonly? = persisted? || super
 

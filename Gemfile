@@ -30,6 +30,9 @@ gem "jbuilder"
 # Use the database-backed adapter for Action Cable in production
 gem "solid_cable"
 
+# Web Push (MT-47): VAPID y cifrado aes128gcm de los avisos [https://github.com/pushpad/web-push]
+gem "web-push", "~> 3.1"
+
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
 

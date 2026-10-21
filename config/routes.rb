@@ -7,6 +7,10 @@ Rails.application.routes.draw do
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
+  # Avisos push de este dispositivo (MT-47): por `endpoint`, que es lo que conoce el navegador.
+  post "push_subscriptions", to: "push_subscriptions#create"
+  delete "push_subscriptions", to: "push_subscriptions#destroy"
+
   if Rails.env.development?
     get "design" => "design#show"
     get "design/movil" => "design#mobile" # las piezas del móvil, dentro de un iframe de 390px

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_22_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_22_224800) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -90,8 +90,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_120000) do
     t.datetime "updated_at", null: false
     t.integer "last_decision_number", default: 0, null: false
     t.integer "brief_version", default: 1, null: false
+    t.datetime "last_pushed_at"
+    t.datetime "ready_low_notified_at"
     t.index ["key"], name: "index_projects_on_key", unique: true
     t.index ["slug"], name: "index_projects_on_slug", unique: true
+  end
+
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.integer "actor_id", null: false
+    t.text "endpoint", null: false
+    t.string "p256dh", null: false
+    t.string "auth", null: false
+    t.string "user_agent"
+    t.datetime "last_sent_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_push_subscriptions_on_actor_id"
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
   end
 
   create_table "questions", force: :cascade do |t|
@@ -161,6 +176,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_120000) do
   add_foreign_key "events", "projects"
   add_foreign_key "events", "stories"
   add_foreign_key "milestones", "projects"
+  add_foreign_key "push_subscriptions", "actors"
   add_foreign_key "questions", "actors"
   add_foreign_key "questions", "actors", column: "answered_by_id"
   add_foreign_key "questions", "stories"

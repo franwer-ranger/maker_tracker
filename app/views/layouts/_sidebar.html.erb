@@ -28,13 +28,17 @@
     </div>
   </div>
 
-  <% agents = Actor.agent.order(:name) %>
-  <% if agents.any? %>
-    <div class="flex flex-col gap-3.5 px-2">
-      <%= section_label "Agentes" %>
-      <% agents.each do |agent| %>
-        <%= agent_status project, agent %>
-      <% end %>
-    </div>
-  <% end %>
+  <%# Al pie: los agentes y, debajo, la línea de avisos push (MT-47). %>
+  <div class="flex flex-col gap-6">
+    <% agents = Actor.agent.order(:name) %>
+    <% if agents.any? %>
+      <div class="flex flex-col gap-3.5 px-2">
+        <%= section_label "Agentes" %>
+        <% agents.each do |agent| %>
+          <%= agent_status project, agent %>
+        <% end %>
+      </div>
+    <% end %>
+    <%= push_line :sidebar %>
+  </div>
 </aside>

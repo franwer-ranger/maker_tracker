@@ -39,4 +39,7 @@
       <%= render "activity/ready_work", summaries: @ready_work %>
     </div>
   </div>
+
+  <%# En el móvil no hay barra lateral: la línea de avisos (MT-47) va al pie de la portada, encima de las pestañas. %>
+  <%= push_line :page %>
 </div>
