@@ -24,7 +24,7 @@ In a repo that is already in Maker Tracker (it has `.mt`), the session starts wi
 1. **"What's next?"** → `mt next`. It gives you the first ready, unblocked story in the roadmap, whole, with why it is that one. Don't pick another one on your own unless asked.
 2. `mt start PG-49`: claims it in your name and moves it to in progress. If someone else has it (`CLAIMED_BY_OTHER`), take another one.
 3. Read the whole story (`mt show PG-49`): context, acceptance criteria, out of scope, notes and the mockup if it has one. Build it in this repo, meeting every criterion.
-4. `mt done PG-49 --commit <sha> [--commit <sha>…] [--pr <url>]`: closes it, linking the code. Without commits or PR nobody will know where it is.
+4. `mt done PG-49 --commit <sha> [--commit <sha>…] [--pr <url>]`: closes it, linking the code (mt reads each commit subject with git, so run it inside the repo). Without commits or PR nobody will know where it is.
 
 A story is done whole or not closed. If something is left out when you finish, say it in a comment before `mt done`.
 

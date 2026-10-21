@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -250,7 +251,7 @@ func init() {
 	def(&command{name: "done", group: workGroup, usage: "mt done <story> [--commit sha]… [--pr url]", minArgs: 1, maxArgs: 1,
 		summary: "Moves it to done, linking its commits or PR", example: "mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63",
 		run: func(e *env) error {
-			body := map[string]any{"commits": e.opts.all("commit")}
+			body := map[string]any{"commits": commitsWithSubject(e.opts.all("commit"))}
 			return e.storyCall("POST", e.arg(0), "/done", optional(body, e, "pr"))
 		}}, "commit* a commit sha (can be repeated)", "pr the PR url")
 	def(&command{name: "release", group: workGroup, usage: "mt release <story> --reason \"…\"", minArgs: 1, maxArgs: 1,
@@ -539,4 +540,20 @@ func runInit(e *env) error {
 	}
 	printFooter(e.footerWriter(), warnings, []string{"mt context", "mt next"})
 	return nil
+}
+
+// commitsWithSubject envía cada sha con su asunto, leído con git en el repo
+// donde corre mt (MT-44). Si git falla (fuera del repo, sha desconocido, sin
+// git) o el asunto está vacío, envía solo el sha: nunca es un error.
+func commitsWithSubject(shas []string) []any {
+	commits := make([]any, 0, len(shas))
+	for _, sha := range shas {
+		out, err := exec.Command("git", "log", "-1", "--format=%s", sha, "--").Output()
+		if subject := strings.TrimSpace(string(out)); err == nil && subject != "" {
+			commits = append(commits, map[string]string{"sha": sha, "message": subject})
+		} else {
+			commits = append(commits, sha)
+		}
+	}
+	return commits
 }
