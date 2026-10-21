@@ -51,6 +51,7 @@ Sustituye al actual (`projects`, `sprints`, `items`, `comments`, `users` con Dev
 - Maker Tracker es dueño de los **hechos**: cada transición, reclamación, reordenación, commit o PR enlazado genera un `Event` con su actor y fecha. Los eventos no se editan ni se borran, y no hay endpoint que lo permita.
 - Preguntar y responder también son hechos: `question.asked` y `question.answered` (con actor y fecha; el segundo guarda la opción (o el texto, si fue libre) y, con `--decide`, el `D-n`). Si preguntar suelta la historia, es además un `story.state_changed` con `released`.
 - La QA también: `qa.passed` y `qa.failed` (actor, fecha, nota; el segundo guarda el número de la historia que crea). Pasar a Hecha escribe `qa: pending` en el evento `story.state_changed` y en `stories.qa` (`pending | passed | failed`; nulo en las hechas antes de MT-32, que no entran). Al salir de Hecha `qa` vuelve a nulo: lo que pasó con la QA solo queda en los eventos.
+- El coste también (MT-34, D-65): `usage.reported` por sesión, con `data: { source, session_id, models, tokens, cost_usd, estimated: true, unpriced_models, session_total }`. Lo reporta el hook `SessionEnd` de Claude Code (o wflow, con `source: wflow`) a `POST /api/projects/:key/usage`; el servidor calcula los dólares (`ModelPrice`, `config/model_prices.yml`), elige la historia (`Story.usage_target`: la última que ese actor empezó durante la sesión; sin ninguna, no hay evento) y guarda solo la diferencia con el último reporte de la misma sesión (`session_total` es el acumulado). El total de una historia (`Story#usage_total`) es la suma de sus eventos; no hay columna ni tabla `Run` (D-61).
 - Los campos derivados (fecha de inicio y fin de una historia, PR actual, coste) se calculan a partir de los eventos y los runs, no los escribe nadie a mano.
 
 ### Roadmap como datos (propuesta)
@@ -107,9 +108,10 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 | `mt ask <n> "…" --option … --recommend 2` | Pregunta con opciones y recomendación; bloquea la historia y la suelta, salvo con `--no-bloqueante` |
 | `mt answer <n> 2 [--question id] [--decide]` o `mt answer <n> --text "…"` (respuesta libre; solo una persona; un agente recibe `FORBIDDEN`, D-52) · `mt questions` | Responde una pregunta (y, si quiere, la registra como decisión) · lista las abiertas de todos los proyectos |
 | `mt qa` · `mt qa <n> ok [--note]` · `mt qa <n> fail --note "…"` (solo una persona; un agente recibe `FORBIDDEN`) | Lista la QA pendiente de todos los proyectos · la da por probada · falla: crea una historia en Definiendo enlazada |
+| `mt usage <transcript> [--story n]` · `mt usage --hook` | Reporta el uso (tokens, coste estimado) de una sesión de Claude Code; el hook `SessionEnd` lo hace solo |
 | `mt create` · `mt edit` · `mt move` · `mt reorder` · `mt brief` | Escriben producto (crear y editar historias con `--file`, cambiar estado, ordenar con motivo, editar el brief) |
 
-**Skill + hook SessionStart**: la skill enseña al agente a usar `mt` y el hook inyecta `mt context` al empezar cada sesión, así cada conversación arranca sabiendo la filosofía del proyecto. `mt init PG --claude` los deja en el repo del proyecto.
+**Skill + hooks**: la skill enseña al agente a usar `mt`, el hook `SessionStart` inyecta `mt context` al empezar cada sesión y el `SessionEnd` reporta su coste (`mt usage --hook`), así cada conversación arranca sabiendo la filosofía del proyecto. `mt init PG --claude` los deja en el repo del proyecto.
 
 **MCP**: al final, fino, como envoltorio de la misma API. Pocas herramientas, una por dominio (`mt_stories`, `mt_roadmap`…), con varias acciones cada una. Modo solo lectura disponible. Sirve para Claude Desktop o el móvil.
 
