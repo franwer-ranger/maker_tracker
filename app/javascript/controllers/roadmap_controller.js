@@ -4,12 +4,25 @@ import Sortable from "sortablejs"
 // Roadmap: arrastrar hitos (Milestone#reorder!) e historias, dentro de su hito,
 // a otro o a la bandeja (Story#reorder!). Al soltar no se guarda todavía: se
 // pide un motivo opcional, porque el evento no se puede editar después.
+// En el móvil (< 768px) no se arrastra: el orden se cambia en el escritorio o con `mt reorder`.
+const mobile = window.matchMedia("(max-width: 767px)")
+
 export default class extends Controller {
   static targets = ["milestones", "stories", "pending", "pendingLabel", "reason", "error"]
   static values = { milestoneUrl: String, storyUrl: String }
 
+  connect() {
+    this.toggleDragging = () => this.#sortables().forEach((sortable) => sortable.option("disabled", mobile.matches))
+    mobile.addEventListener("change", this.toggleDragging)
+  }
+
+  disconnect() {
+    mobile.removeEventListener("change", this.toggleDragging)
+  }
+
   milestonesTargetConnected(list) {
     list.sortable = Sortable.create(list, {
+      disabled: mobile.matches,
       handle: "[data-handle]",
       animation: 150,
       easing: "cubic-bezier(0.32, 0.72, 0, 1)",
@@ -25,6 +38,7 @@ export default class extends Controller {
     if (list.sortable) return
 
     list.sortable = Sortable.create(list, {
+      disabled: mobile.matches,
       group: "roadmap-stories",
       animation: 150,
       easing: "cubic-bezier(0.32, 0.72, 0, 1)",
@@ -78,6 +92,10 @@ export default class extends Controller {
   discard() {
     this.change = null
     Turbo.visit(window.location.href, { action: "replace" })
+  }
+
+  #sortables() {
+    return [...this.milestonesTargets, ...this.storiesTargets].map((list) => list.sortable).filter(Boolean)
   }
 
   #mountStories() {

@@ -1,4 +1,4 @@
-<details class="group rounded-lg border border-dashed border-strong pl-4 pr-5 open:pb-2">
+<details class="group rounded-lg border border-dashed border-strong pl-4 pr-5 open:pb-2 max-md:hidden">
   <summary class="flex h-[50px] cursor-pointer list-none items-center gap-3 rounded-md <%= ComponentsHelper::FOCUS_RING %> [&::-webkit-details-marker]:hidden">
     <span class="w-4 shrink-0"></span>
     <span class="w-8 shrink-0"></span>
@@ -14,3 +14,22 @@
     <div class="border-t border-border pt-2"><%= render "stories/new_idea", milestone: nil %></div>
   </div>
 </details>
+
+<%# Bandeja en el móvil (5.3 · Móvil): su número, «ver todas» (el Tablero de la bandeja) y «Nueva idea», que se convierte en un campo en línea: Intro la crea y Esc cancela. Sin asas: en el móvil no se reordena. %>
+<section class="flex flex-col gap-3 px-4 pt-6 md:hidden" aria-label="Bandeja de ideas">
+  <div class="flex items-center justify-between">
+    <%= section_label "Bandeja de ideas · #{@ideas.size}" %>
+    <%= link_to "ver todas", project_path(@project, hito: "ideas"), class: "rounded-sm font-mono text-xs text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING} #{ComponentsHelper::TOUCH_TARGET}" %>
+  </div>
+  <details class="group" data-controller="menu" data-action="toggle->menu#toggle">
+    <summary class="flex h-11 cursor-pointer list-none items-center gap-2.5 rounded-md border border-dashed border-strong px-3.5 text-[15px] leading-5 text-text-muted group-open:hidden <%= ComponentsHelper::FOCUS_RING %> [&::-webkit-details-marker]:hidden">
+      <%= icon "plus", size: 16 %>
+      Nueva idea
+    </summary>
+    <%= form_with url: project_stories_path(@project), scope: :story do |form| %>
+      <%= form.text_field :title, required: true, autofocus: true, placeholder: "Título de la idea", "aria-label": "Título de la idea", enterkeyhint: "done",
+            class: "h-11 w-full rounded-md border border-strong bg-surface-sunken px-3.5 text-[15px] leading-5 text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+    <% end %>
+  </details>
+  <p class="text-control leading-5 text-text-subtle">Para cambiar el orden, en el escritorio o con <span class="font-mono">mt reorder</span>.</p>
+</section>

@@ -1,14 +1,31 @@
-<%# Columna lateral de la Historia (5.4): estado, propiedades e historial. Local: story, form (al editar). %>
+<%# Columna lateral de la Historia (5.4): estado, propiedades e historial. Local: story, form (al editar).
+    En el móvil (5.4 / 5.6 · Móvil) la columna se deshace (max-md:contents) y cada sección va a su sitio con `order` (ver stories/show):
+    el estado es una píldora bajo el título, las propiedades una caja surface-raised (o, al editar, campos apilados) y el historial, al final. %>
 <% form = local_assigns[:form] %>
-<aside class="flex w-[392px] shrink-0 flex-col gap-9 pt-9">
-  <section class="flex flex-col gap-3">
-    <%= section_label "Estado" %>
+<% field = "grow rounded-md border border-strong bg-surface-sunken text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)] h-control-sm px-2.5 max-md:h-11 max-md:px-3" %>
+<% row = class_names("flex gap-3", form ? "min-h-8 items-center max-md:flex-col max-md:items-stretch max-md:gap-1.5" : "min-h-8 items-center max-md:min-h-10") %>
+<% label = class_names("w-28 shrink-0 text-control text-text-muted", form ? "max-md:w-auto" : "max-md:w-[104px]") %>
+<% history = story.history.includes(:actor).to_a %>
+<aside class="flex w-[392px] shrink-0 flex-col gap-9 pt-9 max-md:contents">
+  <section class="<%= class_names("flex flex-col gap-3 max-md:order-3 max-md:-mt-2.5 max-md:gap-3.5", "max-md:hidden": form) %>">
+    <%= section_label "Estado", class: "max-md:hidden" %>
     <% if form %>
       <div class="pointer-events-none opacity-60"><%= state_selector "estado-solo-lectura", selected: story.state, compact: true, disabled: true %></div>
       <p class="text-control leading-5 text-text-muted">El estado se cambia al guardar o cancelar la edición.</p>
     <% else %>
-      <%= form_with url: project_story_state_path(@project, story), method: :patch, data: { controller: "autosubmit" } do %>
+      <%= form_with url: project_story_state_path(@project, story), method: :patch, class: "max-md:hidden", data: { controller: "autosubmit" } do %>
         <%= state_selector "state", selected: story.state, compact: true, data: { action: "change->autosubmit#submit" } %>
+      <% end %>
+      <%# En el móvil, el selector de estado es una píldora: un <select> nativo, invisible, encima de la píldora. %>
+      <%= form_with url: project_story_state_path(@project, story), method: :patch, class: "flex md:hidden", data: { controller: "autosubmit" } do %>
+        <label class="<%= "relative flex h-8 items-center gap-2 rounded-full bg-surface pl-3 pr-2.5 shadow-[inset_0_0_0_1px_var(--color-border-strong)] has-[:focus-visible]:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)] #{ComponentsHelper::TOUCH_TARGET}" %>">
+          <%= state_dot story.state, halo: false %>
+          <span class="text-control font-medium text-text"><%= story.human_state %></span>
+          <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
+          <%= select_tag :state, options_for_select(ComponentsHelper::STATES.map { |value, name| [ name, value ] }, story.state),
+                id: "story_state_movil", "aria-label": "Estado", data: { action: "change->autosubmit#submit" },
+                class: "absolute inset-0 z-10 size-full cursor-pointer appearance-none opacity-0" %>
+        </label>
       <% end %>
       <p class="text-control leading-5 text-text-muted"><%= state_explanation story, @project.next_story %></p>
       <% ready_warnings(story).each do |warning| %>
@@ -19,74 +36,88 @@
     <% end %>
   </section>
 
-  <section class="flex flex-col gap-1">
-    <%= section_label "Propiedades", class: "pb-2" %>
+  <section class="<%= class_names("flex flex-col gap-1 max-md:order-5", form ? "max-md:mt-4 max-md:gap-4" : "max-md:rounded-xl max-md:bg-surface-raised max-md:px-3.5 max-md:py-1 max-md:shadow-[inset_0_0_0_1px_var(--color-border)]") %>">
+    <%= section_label "Propiedades", class: class_names("pb-2", "max-md:hidden": !form, "max-md:pb-0": form) %>
 
-    <div class="flex min-h-8 items-center gap-3">
-      <span class="w-28 shrink-0 text-control text-text-muted">Hito</span>
-      <% if form %>
-        <span class="text-control text-text"><%= story.milestone ? milestone_label(story.milestone) : "Bandeja de ideas" %></span>
-      <% else %>
-        <%= form_with url: project_story_position_path(@project, story), method: :patch, class: "min-w-0 grow", data: { controller: "autosubmit" } do %>
-          <label class="sr-only" for="story_milestone">Hito</label>
-          <%= select_tag :milestone,
-                options_for_select(@project.milestones.map { [ "#{milestone_label(it)}#{' · cerrado' if it.closed?}", it.id ] } + [ [ "Bandeja de ideas", "ideas" ] ],
-                                   story.milestone&.id || "ideas"),
-                id: "story_milestone", data: { action: "change->autosubmit#submit" },
-                class: "-ml-2 w-full cursor-pointer rounded-md border-0 bg-transparent py-1 pl-2 pr-8 text-control text-text hover:bg-surface focus:outline-none focus:ring-0 focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]" %>
+    <div class="<%= class_names("flex flex-col gap-1", form ? "max-md:gap-4" : "max-md:gap-0 max-md:divide-y max-md:divide-border") %>">
+      <div class="<%= class_names(row, "max-md:hidden": form) %>">
+        <span class="<%= label %>">Hito</span>
+        <% if form %>
+          <span class="text-control text-text"><%= story.milestone ? milestone_label(story.milestone) : "Bandeja de ideas" %></span>
+        <% else %>
+          <%= form_with url: project_story_position_path(@project, story), method: :patch, class: "min-w-0 grow", data: { controller: "autosubmit" } do %>
+            <label class="sr-only" for="story_milestone">Hito</label>
+            <%= select_tag :milestone,
+                  options_for_select(@project.milestones.map { [ "#{milestone_label(it)}#{' · cerrado' if it.closed?}", it.id ] } + [ [ "Bandeja de ideas", "ideas" ] ],
+                                     story.milestone&.id || "ideas"),
+                  id: "story_milestone", data: { action: "change->autosubmit#submit" },
+                  class: "-ml-2 w-full cursor-pointer rounded-md border-0 bg-transparent py-1 pl-2 pr-8 text-control text-text hover:bg-surface focus:outline-none focus:ring-0 focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)] max-md:h-11 max-md:truncate" %>
+          <% end %>
         <% end %>
-      <% end %>
-    </div>
-
-    <div class="flex min-h-8 items-center gap-3">
-      <span class="w-28 shrink-0 text-control text-text-muted">Mockup</span>
-      <% if form %>
-        <%= form.url_field :mockup, placeholder: "https://app.paper.design/…", "aria-label": "Mockup",
-              class: "h-control-sm grow rounded-md border border-strong bg-surface-sunken px-2.5 text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
-      <% elsif story.mockup.present? %>
-        <%= link_to story.mockup, target: "_blank", rel: "noopener",
-              class: "flex items-center gap-1.5 rounded-sm text-control text-text underline decoration-border-strong underline-offset-[3px] hover:decoration-text #{ComponentsHelper::FOCUS_RING}" do %>
-          <%= mockup_label story.mockup %>
-          <%= icon "arrow-top-right-on-square", size: 14, class: "text-text-muted" %>
-        <% end %>
-      <% else %>
-        <span class="text-control text-text-subtle">—</span>
-      <% end %>
-    </div>
-
-    <div class="flex min-h-8 items-center gap-3">
-      <span class="w-28 shrink-0 text-control text-text-muted">Labels</span>
-      <% if form %>
-        <%= form.text_field :labels, value: story.labels.join(", "), placeholder: "editor, ui", "aria-label": "Labels, separadas por comas",
-              class: "h-control-sm grow rounded-md border border-strong bg-surface-sunken px-2.5 font-mono text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
-      <% elsif story.labels.any? %>
-        <span class="flex flex-wrap gap-1.5"><% story.labels.each do |label| %><%= ui_label label %><% end %></span>
-      <% else %>
-        <span class="text-control text-text-subtle">—</span>
-      <% end %>
-    </div>
-
-    <div class="flex min-h-8 items-center gap-3">
-      <span class="w-28 shrink-0 text-control text-text-muted">Bloqueada por</span>
-      <% if form %>
-        <%= form.text_field :blocked_by, value: Array(story.blocked_by).join(", "), placeholder: "47, 45", "aria-label": "Bloqueada por, números de historia",
-              class: "h-control-sm grow rounded-md border border-strong bg-surface-sunken px-2.5 font-mono text-control text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
-      <% else %>
-        <%= render "stories/related", stories: @project.stories.where(number: story.blocked_by).order(:number), questions: story.blocking_questions %>
-      <% end %>
-    </div>
-
-    <% if !form && story.qa %>
-      <div class="flex min-h-8 items-center gap-3">
-        <span class="w-28 shrink-0 text-control text-text-muted">QA</span>
-        <%= qa_status story %>
       </div>
-    <% end %>
 
-    <div class="flex min-h-8 items-center gap-3">
-      <span class="w-28 shrink-0 text-control text-text-muted">Bloquea</span>
-      <%= render "stories/related", stories: story.blocking.order(:number) %>
+      <div class="<%= class_names(row, "max-md:hidden": !form && story.mockup.blank?) %>">
+        <% if form %>
+          <label for="story_mockup" class="<%= label %>">Mockup</label>
+          <%= form.url_field :mockup, placeholder: "https://app.paper.design/…", class: "#{field} max-md:font-mono" %>
+        <% else %>
+          <span class="<%= label %>">Mockup</span>
+          <% if story.mockup.present? %>
+            <%= link_to story.mockup, target: "_blank", rel: "noopener",
+                  class: "flex items-center gap-1.5 rounded-sm text-control text-text underline decoration-border-strong underline-offset-[3px] hover:decoration-text #{ComponentsHelper::FOCUS_RING} #{ComponentsHelper::TOUCH_TARGET}" do %>
+              <%= mockup_label story.mockup %>
+              <%= icon "arrow-top-right-on-square", size: 14, class: "text-text-muted" %>
+            <% end %>
+          <% else %>
+            <span class="text-control text-text-subtle">—</span>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="<%= class_names(row, "max-md:hidden": !form && story.labels.none?) %>">
+        <% if form %>
+          <label for="story_labels" class="<%= label %>">Labels</label>
+          <%= form.text_field :labels, value: story.labels.join(", "), placeholder: "editor, ui", "aria-describedby": "story_labels_ayuda", class: "#{field} font-mono" %>
+          <span id="story_labels_ayuda" class="sr-only">Separadas por comas</span>
+        <% else %>
+          <span class="<%= label %>">Labels</span>
+          <% if story.labels.any? %>
+            <span class="flex flex-wrap gap-1.5"><% story.labels.each do |label| %><%= ui_label label %><% end %></span>
+          <% else %>
+            <span class="text-control text-text-subtle">—</span>
+          <% end %>
+        <% end %>
+      </div>
+
+      <% blockers = @project.stories.where(number: story.blocked_by).order(:number) %>
+      <div class="<%= class_names(row, "max-md:hidden": !form && blockers.none? && story.blocking_questions.none?) %>">
+        <% if form %>
+          <label for="story_blocked_by" class="<%= label %>">Bloqueada por</label>
+          <%= form.text_field :blocked_by, value: Array(story.blocked_by).join(", "), placeholder: "47, 45", inputmode: "numeric", "aria-describedby": "story_blocked_by_ayuda", class: "#{field} font-mono" %>
+          <span id="story_blocked_by_ayuda" class="sr-only">Números de historia, separados por comas</span>
+        <% else %>
+          <span class="<%= label %>">Bloqueada por</span>
+          <%= render "stories/related", stories: blockers, questions: story.blocking_questions %>
+        <% end %>
+      </div>
+
+      <% if !form && story.qa %>
+        <div class="<%= row %>">
+          <span class="<%= label %>">QA</span>
+          <%= qa_status story %>
+        </div>
+      <% end %>
+
+      <% blocking = story.blocking.order(:number) %>
+      <div class="<%= class_names(row, "max-md:hidden": form || blocking.none?) %>">
+        <span class="<%= label %>">Bloquea</span>
+        <%= render "stories/related", stories: blocking %>
+      </div>
     </div>
+
+    <% if form %>
+      <p class="text-control leading-5 text-text-muted md:hidden">El estado se cambia al guardar o cancelar la edición.</p>
+    <% end %>
 
     <% if form && story.errors.any? %>
       <ul class="flex flex-col gap-1 pt-2 text-control text-accent" role="alert">
@@ -95,18 +126,20 @@
     <% end %>
   </section>
 
-  <section class="flex flex-col gap-3">
+  <%# Historial: en el móvil, los 2 últimos y «Ver los N anteriores» (un checkbox, sin JavaScript); en escritorio, todos. %>
+  <section class="<%= class_names("flex flex-col gap-3 max-md:order-7 max-md:pt-2", "max-md:hidden": form) %>">
     <%= section_label "Historial" %>
-    <ol class="flex flex-col gap-3">
-      <% story.history.includes(:actor).each do |event| %>
-        <li class="flex flex-col gap-0.5 pl-3 <%= event_marker_class event %>">
-          <span class="text-control leading-[18px] text-text"><%= event_sentence event %></span>
-          <% if event.reason.present? %>
-            <span class="text-control leading-[18px] text-text-muted">«<%= event.reason %>»</span>
-          <% end %>
-          <span class="font-mono text-xs text-text-muted"><%= event.actor.name %> · <%= relative_day(event.occurred_at, time_of_day: true) %></span>
-        </li>
-      <% end %>
+    <% older = history.drop(2) %>
+    <% if older.any? %><input type="checkbox" id="historial-<%= story.id %>" class="peer sr-only"><% end %>
+    <ol class="flex flex-col gap-3 peer-checked:[&>li]:flex">
+      <%= render partial: "stories/event", collection: history.first(2), as: :event %>
+      <%= render partial: "stories/event", collection: older, as: :event, locals: { hidden_on_mobile: true } %>
     </ol>
+    <% if older.any? %>
+      <label for="historial-<%= story.id %>" class="<%= "flex h-11 cursor-pointer items-center justify-between rounded-md text-sm text-text-muted peer-checked:hidden peer-focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)] md:hidden" %>">
+        Ver los <%= older.size %> anteriores
+        <%= icon "chevron-down", size: 16 %>
+      </label>
+    <% end %>
   </section>
 </aside>

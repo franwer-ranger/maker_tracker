@@ -3,14 +3,14 @@
 <% if stories.any? || questions.any? %>
   <span class="flex flex-wrap items-center gap-x-4 gap-y-1">
     <% questions.each do |question| %>
-      <a href="#pregunta-<%= question.id %>" class="flex items-center gap-2 rounded-sm text-control <%= ComponentsHelper::FOCUS_RING %>">
+      <a href="#pregunta-<%= question.id %>" class="flex items-center gap-2 rounded-sm text-control <%= ComponentsHelper::FOCUS_RING %> <%= ComponentsHelper::TOUCH_TARGET %>">
         <span class="inline-block size-1.5 shrink-0 rounded-full bg-avatar" aria-hidden="true"></span>
         <span class="font-mono text-text"><%= Actor.human.name %></span>
         <span class="text-text-muted">pregunta de <%= question.actor.name %></span>
       </a>
     <% end %>
     <% stories.each do |related| %>
-      <%= link_to project_story_path(@project, related), class: "flex items-center gap-2 rounded-sm text-control #{ComponentsHelper::FOCUS_RING}" do %>
+      <%= link_to project_story_path(@project, related), class: "flex items-center gap-2 rounded-sm text-control #{ComponentsHelper::FOCUS_RING} #{ComponentsHelper::TOUCH_TARGET}" do %>
         <span class="font-mono text-text">#<%= related.number %></span>
         <%= state_dot related.state, halo: false %>
         <span class="text-text-muted"><%= related.human_state %></span>

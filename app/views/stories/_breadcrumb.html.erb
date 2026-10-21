@@ -1,12 +1,13 @@
-<nav class="flex items-center gap-2 text-control" aria-label="Miga de pan">
-  <%= link_to "Roadmap", project_roadmap_path(@project), class: "rounded-sm text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
-  <span class="text-text-subtle">/</span>
-  <% if story.milestone %>
-    <%= link_to milestone_label(story.milestone), project_path(@project, hito: story.milestone.position),
-          class: "rounded-sm text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
-  <% else %>
-    <%= link_to "Bandeja de ideas", project_path(@project, hito: "ideas"), class: "rounded-sm text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
+<%# Miga de pan de la Historia. En escritorio, Roadmap / M2 · título / PG-49; en el móvil, «‹ M2 / PG-49», que vuelve al hito (5.4 · Móvil). %>
+<nav class="flex items-center gap-2 text-control max-md:h-9 max-md:gap-1 max-md:px-2 max-md:text-sm" aria-label="Miga de pan">
+  <%= link_to "Roadmap", project_roadmap_path(@project), class: "rounded-sm text-text-muted hover:text-text max-md:hidden #{ComponentsHelper::FOCUS_RING}" %>
+  <span class="text-text-subtle max-md:hidden">/</span>
+  <%= link_to project_path(@project, hito: story.milestone ? story.milestone.position : "ideas"),
+        class: "flex items-center gap-1 rounded-sm text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING} #{ComponentsHelper::TOUCH_TARGET}" do %>
+    <%= icon "chevron-left", size: 18, class: "md:hidden" %>
+    <span class="md:hidden"><%= story.milestone ? story.milestone.code : "Ideas" %></span>
+    <span class="max-md:hidden"><%= story.milestone ? milestone_label(story.milestone) : "Bandeja de ideas" %></span>
   <% end %>
   <span class="text-text-subtle">/</span>
-  <span class="font-mono text-text" aria-current="page"><%= story.reference %></span>
+  <span class="font-mono text-text max-md:text-control max-md:leading-5" aria-current="page"><%= story.reference %></span>
 </nav>

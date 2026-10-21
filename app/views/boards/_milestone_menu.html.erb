@@ -1,10 +1,19 @@
+<%# Selector de hito del Tablero (5.2). En escritorio, el botón «Hito …» de la cabecera; con `mobile: true`, el de 5.1 · Móvil: la línea en mono sobre el titular («M2 · EN CURSO · 4/12 ⌄»). En el móvil las opciones salen en la hoja inferior. %>
+<% mobile = local_assigns[:mobile] %>
 <% current = { milestone: @milestone && milestone_label(@milestone), ideas: "Bandeja de ideas", all: "Todos los hitos" }.fetch(@filter) %>
-<%= ui_menu align: :right, class: "group", summary: capture { %>
-  <span class="flex h-control-sm items-center gap-2 rounded-md border border-strong bg-bg px-3 group-open:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]">
-    <span class="font-mono text-xs text-text-muted">Hito</span>
-    <span class="text-control font-medium text-text"><%= current %></span>
-    <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
-  </span>
+<%= ui_menu align: :right, sheet: "Hito", class: class_names("group", mobile ? "self-start md:hidden" : "max-md:hidden"), summary: capture { %>
+  <% if mobile %>
+    <span class="flex h-11 items-center gap-1.5">
+      <span class="font-mono text-xs uppercase tracking-label text-text-muted"><%= board_heading_label(@filter, @milestone, short: true) %></span>
+      <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
+    </span>
+  <% else %>
+    <span class="flex h-control-sm items-center gap-2 rounded-md border border-strong bg-bg px-3 group-open:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]">
+      <span class="font-mono text-xs text-text-muted">Hito</span>
+      <span class="text-control font-medium text-text"><%= current %></span>
+      <%= icon "chevron-down", size: 14, class: "text-text-muted" %>
+    </span>
+  <% end %>
 <% } do %>
   <% @milestones.reject(&:closed?).each do |milestone| %>
     <% done, total = milestone.progress %>

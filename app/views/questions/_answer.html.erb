@@ -37,7 +37,7 @@
   </details>
 
   <% if decide %>
-    <label class="flex min-h-control-sm cursor-pointer items-center gap-2.5 text-control text-text-muted">
+    <label class="flex min-h-control-sm cursor-pointer items-center gap-2.5 text-control text-text-muted max-md:min-h-11">
       <%= check_box_tag :decide, "1", false, class: "size-4 shrink-0 cursor-pointer appearance-none rounded-sm border border-strong bg-surface-sunken checked:border-text checked:bg-text #{ComponentsHelper::FOCUS_RING}" %>
       <span>Registrar también como decisión</span>
       <span class="font-mono text-text-subtle">--decide</span>

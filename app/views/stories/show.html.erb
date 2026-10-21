@@ -1,34 +1,48 @@
 <% content_for :title, "#{@story.reference} · #{@story.title}" %>
-<div class="flex items-start gap-16 px-12 py-10">
-  <article class="flex min-w-0 grow basis-0 flex-col gap-7">
-    <%= render "stories/breadcrumb", story: @story %>
+<%# En escritorio, dos columnas: la historia y, a la derecha, la columna lateral (estado, propiedades, historial).
+    En el móvil (5.4 · Móvil) es una sola columna: las dos se deshacen (max-md:contents) y cada bloque toma su sitio con `order`:
+    miga y «Editar» · título · estado · avisos (QA, cambios, preguntas) · propiedades · cuerpo y comentarios · historial. %>
+<div class="flex flex-col gap-6 px-4 pb-10 md:flex-row md:items-start md:gap-16 md:px-12 md:py-10">
+  <article class="flex min-w-0 grow basis-0 flex-col gap-7 max-md:contents">
+    <div class="flex items-center justify-between gap-6 max-md:order-1 max-md:-mx-4 max-md:h-[52px] max-md:pl-2 max-md:pr-4">
+      <%= render "stories/breadcrumb", story: @story %>
+      <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_story_path(@project, @story), class: "md:hidden #{ComponentsHelper::TOUCH_TARGET}" %>
+    </div>
 
-    <div class="flex items-start justify-between gap-6">
-      <h1 class="text-3xl font-semibold leading-[38px] tracking-[-0.01em]"><%= @story.title %></h1>
-      <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_story_path(@project, @story), class: "mt-1" %>
+    <div class="flex items-start justify-between gap-6 max-md:order-2 max-md:-mt-2">
+      <h1 class="text-3xl font-semibold leading-[38px] tracking-[-0.01em] max-md:text-[26px] max-md:leading-8"><%= @story.title %></h1>
+      <%= ui_button "Editar", variant: :secondary, size: :sm, icon: "pencil", href: edit_project_story_path(@project, @story), class: "mt-1 max-md:hidden" %>
     </div>
 
     <% if flash[:notice] %>
-      <p class="font-mono text-control text-text-muted" role="status"><%= flash[:notice] %></p>
+      <p class="font-mono text-control text-text-muted max-md:order-4" role="status"><%= flash[:notice] %></p>
     <% end %>
     <% if flash[:alert] %>
-      <p class="text-control text-accent" role="alert"><%= flash[:alert] %></p>
+      <p class="text-control text-accent max-md:order-4" role="alert"><%= flash[:alert] %></p>
     <% end %>
 
-    <%= render "stories/qa", story: @story if @story.qa_pending? %>
+    <% if @story.qa_pending? %>
+      <div class="max-md:order-4"><%= render "stories/qa", story: @story %></div>
+    <% end %>
 
-    <%= render "stories/since_visit", since: @since, events: @changes if @changes&.any? %>
+    <% if @changes&.any? %>
+      <div class="max-md:order-4"><%= render "stories/since_visit", since: @since, events: @changes %></div>
+    <% end %>
 
-    <%= render "stories/open_questions", story: @story if @story.open_questions_asked.any? %>
+    <% if @story.open_questions_asked.any? %>
+      <div class="max-md:order-4"><%= render "stories/open_questions", story: @story %></div>
+    <% end %>
 
-    <div data-controller="markdown">
+    <div data-controller="markdown" class="max-md:order-6 max-md:mt-2">
       <textarea hidden data-markdown-target="source"><%= @story.body %></textarea>
-      <div class="markdown" data-markdown-target="output"></div>
+      <div class="markdown max-md:text-[15px]" data-markdown-target="output"></div>
     </div>
 
-    <%= render "stories/answered_questions", story: @story %>
+    <% if @story.answered_questions.any? %>
+      <div class="max-md:order-6"><%= render "stories/answered_questions", story: @story %></div>
+    <% end %>
 
-    <section id="comentarios" class="flex flex-col gap-3.5 border-t border-border pt-6">
+    <section id="comentarios" class="flex flex-col gap-3.5 border-t border-border pt-6 max-md:order-6 max-md:gap-3">
       <%= section_label "Comentarios · #{@story.comments.size}" %>
       <% @story.comments.includes(:actor).each do |comment| %>
         <div class="flex flex-col gap-1.5">
@@ -37,12 +51,12 @@
             <span class="font-mono text-control text-text"><%= comment.actor.name %></span>
             <time class="font-mono text-xs text-text-muted" datetime="<%= comment.created_at.iso8601 %>"><%= relative_day(comment.created_at, time_of_day: true) %></time>
           </div>
-          <div class="pl-3.5 text-sm leading-[22px] text-text-soft"><%= simple_format comment.body, {}, wrapper_tag: "p" %></div>
+          <div class="pl-3.5 text-sm leading-[22px] text-text-soft max-md:pl-0 max-md:text-[15px] max-md:leading-6"><%= simple_format comment.body, {}, wrapper_tag: "p" %></div>
         </div>
       <% end %>
       <%= form_with model: Comment.new, url: project_story_comments_path(@project, @story) do |form| %>
         <%= form.text_field :body, required: true, placeholder: "Escribe un comentario…", "aria-label": "Escribe un comentario",
-              class: "h-control w-full rounded-md border border-strong bg-surface-sunken px-3 text-sm leading-[18px] text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+              class: "h-control w-full rounded-md border border-strong bg-surface-sunken px-3 text-sm leading-[18px] text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)] max-md:h-11 max-md:px-3.5 max-md:text-[15px] max-md:leading-5" %>
       <% end %>
     </section>
   </article>

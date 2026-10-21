@@ -1,9 +1,9 @@
 <% content_for :title, "Proyectos" %>
-<div class="flex flex-col items-center pt-24 pb-24">
-  <div class="flex w-[640px] flex-col gap-10">
+<div class="flex flex-col items-center pt-24 pb-24 max-md:px-4 max-md:pt-12">
+  <div class="flex w-[640px] max-w-full flex-col gap-10">
     <header class="flex flex-col gap-2.5">
       <%= section_label "Maker Tracker" %>
-      <h1 class="font-display text-display tracking-[-0.02em]">Proyectos</h1>
+      <h1 class="font-display text-display tracking-[-0.02em] max-md:text-display-sm">Proyectos</h1>
     </header>
 
     <% if @projects.any? %>
@@ -16,16 +16,7 @@
                 <span class="text-base font-medium leading-5 text-text"><%= project.name %></span>
                 <span class="text-control text-text-muted"><%= project.current_milestone ? milestone_label(project.current_milestone) : "Sin hitos abiertos" %></span>
               </span>
-              <% in_progress = project.stories.in_progress.count %>
-              <% if in_progress.positive? %>
-                <span class="flex items-center gap-1.5">
-                  <%= state_dot :in_progress %>
-                  <span class="font-mono text-xs text-text-muted"><%= in_progress %> en curso</span>
-                </span>
-              <% else %>
-                <% last = project.last_activity_at %>
-                <span class="font-mono text-xs text-text-subtle">sin actividad<%= " · #{short_time_ago(last)}" if last %></span>
-              <% end %>
+              <%= project_activity project %>
               <%= icon "arrow-right", size: 16, class: "text-text-muted transition-colors duration-150 ease-brand group-hover:text-text" %>
             <% end %>
           </li>
@@ -36,7 +27,7 @@
     <%= form_with model: @project, url: projects_path, class: "flex flex-col gap-4 rounded-xl border border-border bg-surface-sunken p-6" do |form| %>
       <%= section_label "Nuevo proyecto" %>
       <div class="flex items-start gap-3">
-        <div class="grow">
+        <div class="min-w-0 grow">
           <%= ui_field form, :name, label: "Nombre", surface: :bg, placeholder: "Guardería de perros", required: true %>
         </div>
         <div class="w-[120px] shrink-0">
@@ -44,7 +35,7 @@
                                    maxlength: 5, autocapitalize: "characters", class: "font-mono uppercase" %>
         </div>
       </div>
-      <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center justify-between gap-4 max-md:flex-col max-md:items-stretch">
         <p class="text-control text-text-muted">La clave identifica sus historias: GDP-12. De 2 a 5 letras.</p>
         <%= ui_button "Crear y escribir el brief", type: "submit", icon_trailing: "arrow-right" %>
       </div>

@@ -7,7 +7,10 @@ Rails.application.routes.draw do
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
-  get "design" => "design#show" if Rails.env.development?
+  if Rails.env.development?
+    get "design" => "design#show"
+    get "design/movil" => "design#mobile" # las piezas del móvil, dentro de un iframe de 390px
+  end
 
   # API para agentes (mt, MCP). Proyectos por su clave: /api/projects/PG/stories/49.
   # GET /api describe todas las operaciones (Api::Operations).

@@ -182,7 +182,7 @@ module StoriesHelper
       url = story.project.qa_url
       tag.span(class: "flex items-center gap-2") do
         safe_join([ dot.call(false), tag.span("Pendiente", class: "text-control text-text"),
-          (tag.span("en #{URI.parse(url).host}", class: "font-mono text-xs text-text-muted") if url) ].compact)
+          (tag.span("en #{URI.parse(url).host}", class: "font-mono text-xs text-text-muted max-md:hidden") if url) ].compact)
       end
     when "passed"
       tag.span(class: "flex items-center gap-2") do

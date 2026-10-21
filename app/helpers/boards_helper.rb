@@ -30,14 +30,27 @@ module BoardsHelper
     tag.span "Siguiente", class: "flex h-5 items-center rounded-full bg-state-ready px-2 text-xs font-medium text-bg"
   end
 
-  # Texto de la cabecera del tablero: "M2 · En curso · 4/12 hechas".
-  def board_heading_label(filter, milestone)
+  # Texto de la cabecera del tablero: "M2 · En curso · 4/12 hechas" (en el móvil, `short`: "M2 · En curso · 4/12").
+  def board_heading_label(filter, milestone, short: false)
     case filter
     when :ideas then "Bandeja de ideas"
     when :all then "Todos los hitos"
     else
       done, total = milestone.progress
-      [ milestone.code, milestone.status, "#{done}/#{total} hechas" ].join(" · ")
+      [ milestone.code, milestone.status, "#{done}/#{total}#{' hechas' unless short}" ].join(" · ")
     end
+  end
+
+  # La pestaña de estado que abre el Tablero en el móvil (5.1 · Móvil): la
+  # primera con historias empezando por Lista; si no hay ninguna, Lista.
+  BOARD_TAB_ORDER = %w[ready in_progress defining idea done].freeze
+
+  def board_default_tab(columns)
+    BOARD_TAB_ORDER.find { columns[it].any? } || "ready"
+  end
+
+  # Cuántas hay en una columna (la de Hechas cuenta también las que no se enseñan).
+  def board_column_count(state, stories, hidden_done)
+    state == "done" && hidden_done.to_i.positive? ? stories.size + hidden_done : stories.size
   end
 end

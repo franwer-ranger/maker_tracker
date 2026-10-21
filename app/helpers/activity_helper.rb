@@ -145,6 +145,17 @@ module ActivityHelper
     end
   end
 
+  # Las cuatro pestañas de la barra inferior del móvil (layouts/_tab_bar).
+  def bottom_tabs(project)
+    [
+      { label: "Actividad", href: root_path, icon: "inbox", active: current_page?(root_path), count: activity_count },
+      { label: "Tablero", href: project_path(project), icon: "view-columns", active: current_page?(project_path(project)) },
+      { label: "Roadmap", href: project_roadmap_path(project), icon: "list-bullet",
+        active: current_page?(project_roadmap_path(project)) || controller_name == "stories" },
+      { label: "Brief", href: project_brief_path(project), icon: "document-text", active: controller_name == "briefs" }
+    ]
+  end
+
   # Pestaña de la barra inferior del móvil (5.9 · Móvil): icono, etiqueta y, si hay, el contador.
   def tab_item(label, href, icon:, active:, count: nil)
     link_to href, class: class_names("flex w-20 shrink-0 flex-col items-center gap-1 rounded-md py-1.5 text-label leading-[14px] #{ComponentsHelper::FOCUS_RING}",

@@ -1,23 +1,24 @@
-<%# «Probada» y «Falla…» de una historia con QA pendiente, con su comando `mt qa`. «Falla…» abre su nota (un checkbox, sin JavaScript) y crea una historia en Definiendo, enlazada. Locals: story, compact (el bloque de la Historia: botones pequeños). %>
+<%# «Probada» y «Falla…» de una historia con QA pendiente, con su comando `mt qa`. «Falla…» abre su nota (un checkbox, sin JavaScript) y crea una historia en Definiendo, enlazada. Locals: story, compact (el bloque de la Historia: botones pequeños; en el móvil, 5.12 · Móvil, dos columnas de 44px con su comando debajo). %>
 <% compact = local_assigns[:compact] %>
 <% toggle = "qa-falla-#{story.id}-#{compact ? 'historia' : 'actividad'}" %>
 <% button = "flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md border border-strong bg-bg text-text transition-colors duration-150 ease-brand hover:bg-surface #{ComponentsHelper::FOCUS_RING}" %>
-<% size = compact ? "h-control-sm px-3 text-control leading-4" : "h-11 w-full text-[15px] md:h-10 md:w-72 md:text-sm md:leading-[18px]" %>
+<% size = compact ? "h-control-sm px-3 text-control leading-4 max-md:h-11 max-md:text-[15px] max-md:leading-5" : "h-11 w-full text-[15px] md:h-10 md:w-72 md:text-sm md:leading-[18px]" %>
 <% command = "font-mono text-xs text-text-muted" %>
-<div class="<%= compact ? "flex flex-wrap items-center gap-2" : "flex flex-col gap-2 pt-3" %>">
+<div class="<%= compact ? "flex flex-wrap items-center gap-2 max-md:grid max-md:grid-cols-2 max-md:gap-x-2.5 max-md:gap-y-1" : "flex flex-col gap-2 pt-3" %>">
   <%= form_with url: project_story_qa_path(story.project, story), class: compact ? "contents" : "flex flex-col gap-1 md:flex-row md:items-center md:gap-4" do %>
     <%= hidden_field_tag :result, "ok" %>
-    <button type="submit" class="<%= button %> <%= size %> font-medium"><%= icon "check", size: 16, class: "text-state-done" %>Probada</button>
-    <% unless compact %><span class="<%= command %>">mt qa <%= story.reference %> ok</span><% end %>
+    <button type="submit" class="<%= button %> <%= size %> font-medium <%= "max-md:col-start-1 max-md:row-start-1" if compact %>"><%= icon "check", size: 16, class: "text-state-done" %>Probada</button>
+    <span class="<%= command %> <%= "max-md:col-start-1 max-md:row-start-2 md:hidden" if compact %>">mt qa <%= story.reference %> ok</span>
   <% end %>
 
   <input type="checkbox" id="<%= toggle %>" class="peer sr-only">
   <div class="<%= compact ? "contents" : "flex flex-col gap-1 md:flex-row md:items-center md:gap-4" %>">
-    <label for="<%= toggle %>" class="<%= button %> <%= size %> font-medium peer-focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]"><%= icon "x-mark", size: 16, class: "text-text-muted" %>Falla…</label>
-    <span class="<%= command %> <%= "pl-2" if compact %>">mt qa <%= story.reference %> <%= compact ? "ok · mt qa #{story.reference} " : "" %>fail --note "…"</span>
+    <label for="<%= toggle %>" class="<%= button %> <%= size %> font-medium peer-focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)] <%= "max-md:col-start-2 max-md:row-start-1" if compact %>"><%= icon "x-mark", size: 16, class: "text-text-muted" %>Falla…</label>
+    <span class="<%= command %> <%= "pl-2 max-md:hidden" if compact %>">mt qa <%= story.reference %> <%= compact ? "ok · mt qa #{story.reference} " : "" %>fail --note "…"</span>
+    <% if compact %><span class="<%= command %> max-md:col-start-2 max-md:row-start-2 md:hidden">mt qa <%= story.reference %> fail</span><% end %>
   </div>
 
-  <%= form_with url: project_story_qa_path(story.project, story), class: "hidden basis-full flex-col gap-2 pt-1 peer-checked:flex" do %>
+  <%= form_with url: project_story_qa_path(story.project, story), class: "hidden basis-full flex-col gap-2 pt-1 peer-checked:flex #{'max-md:col-span-2' if compact}" do %>
     <%= hidden_field_tag :result, "fail" %>
     <%= text_area_tag :note, nil, rows: 3, required: true, "aria-label": "Qué falla", placeholder: "Qué falla, para que quien lo arregle lo vea…",
           class: "w-full rounded-md border border-strong bg-surface-sunken px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>

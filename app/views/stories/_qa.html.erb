@@ -1,26 +1,28 @@
-<%# QA pendiente (5.12): arriba de la historia, antes del cuerpo. Es una tarea tuya, no bloquea nada. Local: story. %>
+<%# QA pendiente (5.12): arriba de la historia, antes del cuerpo. Es una tarea tuya, no bloquea nada. Local: story.
+    En el móvil (5.12 · Móvil): «Abrir …» como botón a todo el ancho, bajo la ayuda, y «Probada» / «Falla…» en dos columnas. %>
 <% event = story_done_event(story) %>
 <% url = story.project.qa_url %>
 <section id="qa" class="flex flex-col gap-3" aria-label="QA pendiente">
   <div class="flex items-baseline justify-between gap-4">
-    <%= section_label "QA pendiente · te falta probarla" %>
-    <span class="font-mono text-xs text-text-subtle">mt qa <%= story.reference %></span>
+    <%= section_label "QA pendiente · te falta probarla", class: "max-md:hidden" %>
+    <%= section_label "QA pendiente", class: "md:hidden" %>
+    <span class="font-mono text-xs text-text-subtle max-md:hidden">mt qa <%= story.reference %></span>
   </div>
-  <div class="flex flex-col gap-4 rounded-xl border border-strong bg-surface-sunken px-6 py-5">
-    <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-      <span class="flex min-w-0 items-center gap-2 font-mono text-xs text-text-muted">
+  <div class="flex flex-col gap-4 rounded-xl border border-strong bg-surface-sunken px-6 py-5 max-md:gap-3 max-md:p-4">
+    <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 max-md:contents">
+      <span class="flex min-w-0 items-center gap-2 font-mono text-xs text-text-muted max-md:order-1">
         <%= state_dot :done %>
         <span><%= ["Hecha #{away_time(event&.occurred_at || story.updated_at)}", event&.actor&.name, (pluralize_es(Array(event&.data&.dig("commits")).size, "commit") if Array(event&.data&.dig("commits")).any?)].compact.join(" · ") %></span>
       </span>
       <% if url %>
-        <%= link_to url, target: "_blank", rel: "noopener", class: "flex items-center gap-1.5 rounded-sm text-control font-medium text-text #{ComponentsHelper::FOCUS_RING}" do %>
-          Probar en <%= URI.parse(url).host %><%= icon "arrow-top-right-on-square", size: 16 %>
+        <%= link_to url, target: "_blank", rel: "noopener", class: "flex items-center gap-1.5 rounded-sm text-control font-medium text-text #{ComponentsHelper::FOCUS_RING} max-md:order-3 max-md:h-11 max-md:justify-center max-md:gap-2 max-md:rounded-md max-md:border max-md:border-strong max-md:text-[15px] max-md:leading-5" do %>
+          <span class="max-md:hidden">Probar en <%= URI.parse(url).host %></span><span class="md:hidden">Abrir <%= URI.parse(url).host %></span><%= icon "arrow-top-right-on-square", size: 16 %>
         <% end %>
       <% else %>
-        <%= link_to "Sin «Dónde se prueba» en el brief", project_brief_path(story.project), class: "rounded-sm text-control text-text-muted underline decoration-border-strong underline-offset-[3px] hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
+        <%= link_to "Sin «Dónde se prueba» en el brief", project_brief_path(story.project), class: "max-md:order-3 rounded-sm text-control text-text-muted underline decoration-border-strong underline-offset-[3px] hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
       <% end %>
     </div>
-    <p class="text-sm leading-5 text-text-soft">Prueba los criterios de aceptación de abajo. Si algo falla, la nota abre una historia nueva <%= story.milestone ? "en #{story.milestone.code}" : "en la bandeja de ideas" %>, enlazada a esta.</p>
-    <%= render "qa/actions", story: story, compact: true %>
+    <p class="text-sm leading-5 text-text-soft max-md:order-2">Prueba los criterios de aceptación de abajo. Si algo falla, la nota abre una historia nueva <%= story.milestone ? "en #{story.milestone.code}" : "en la bandeja de ideas" %>, enlazada a esta.</p>
+    <div class="max-md:order-4"><%= render "qa/actions", story: story, compact: true %></div>
   </div>
 </section>

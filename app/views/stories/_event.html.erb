@@ -1,0 +1,8 @@
+<%# Un evento del historial de la Historia, con su marca lateral. Locals: event, hidden_on_mobile. %>
+<li class="<%= class_names("flex flex-col gap-0.5 pl-3", event_marker_class(event), "max-md:hidden": local_assigns[:hidden_on_mobile]) %>">
+  <span class="text-control leading-[18px] text-text max-md:text-sm max-md:leading-5"><%= event_sentence event %></span>
+  <% if event.reason.present? %>
+    <span class="text-control leading-[18px] text-text-muted">«<%= event.reason %>»</span>
+  <% end %>
+  <span class="font-mono text-xs text-text-muted"><%= event.actor.name %> · <%= relative_day(event.occurred_at, time_of_day: true) %></span>
+</li>
