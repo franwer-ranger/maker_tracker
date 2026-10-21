@@ -13,7 +13,7 @@
     <div class="max-md:order-1 max-md:-mx-4 max-md:flex max-md:h-[52px] max-md:items-center max-md:pl-2"><%= render "stories/breadcrumb", story: @story %></div>
 
     <%= form.text_area :title, required: true, rows: 1, "aria-label": "Título", data: { controller: "textline", action: "keydown.enter->textline#submit input->textline#resize" },
-          class: "block w-full resize-none overflow-hidden rounded-md border border-strong bg-surface-sunken px-3.5 py-[10px] text-2xl font-semibold leading-[30px] tracking-[-0.01em] text-text [field-sizing:content] focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)] max-md:order-4 max-md:text-xl max-md:leading-7" %>
+          class: "block w-full resize-none overflow-hidden rounded-md border border-strong bg-surface-sunken px-3.5 py-[10px] text-2xl md:pb-[9px] md:pt-[11px] font-semibold leading-[30px] tracking-[-0.01em] text-text [field-sizing:content] focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)] max-md:order-4 max-md:text-xl max-md:leading-7" %>
 
     <div class="max-md:order-4"><%= render "components/markdown_editor", form: form, attribute: :body, label: "Cuerpo en markdown" %></div>
 
