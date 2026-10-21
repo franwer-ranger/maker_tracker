@@ -153,8 +153,8 @@ func (e *env) call(method, path string, query map[string]string, body any) error
 }
 
 // render: con --json, el sobre tal cual. Si no, el markdown (o el summary),
-// los avisos (Warning: …) y "Next:" con los breadcrumbs (docs/CLI.md). Igual
-// con o sin TTY.
+// los avisos (Warning: …) y "Next:" con los breadcrumbs (docs/CLI.md). El pie
+// va a stdout en una terminal y a stderr si stdout se redirige (footerWriter).
 func (e *env) render(envl *Envelope) error {
 	if e.opts.has("json") {
 		var pretty bytes.Buffer
@@ -177,8 +177,20 @@ func (e *env) render(envl *Envelope) error {
 		text = envl.Summary
 	}
 	fmt.Fprintln(e.stdout, strings.TrimRight(text, "\n"))
-	printFooter(e.stdout, envl.Warnings, envl.Breadcrumbs)
+	printFooter(e.footerWriter(), envl.Warnings, envl.Breadcrumbs)
 	return nil
+}
+
+// footerWriter: dónde va el pie. En una terminal, stdout (se ve como siempre).
+// Si stdout es un fichero o una tubería (mt brief > f.md), el pie va a stderr
+// para que no se cuele en el fichero que luego se vuelve a subir.
+func (e *env) footerWriter() io.Writer {
+	if f, ok := e.stdout.(*os.File); ok {
+		if info, err := f.Stat(); err == nil && info.Mode()&os.ModeCharDevice == 0 {
+			return e.stderr
+		}
+	}
+	return e.stdout
 }
 
 // printFooter: los avisos, uno por línea, y después Next: con los comandos.

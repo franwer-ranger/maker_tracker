@@ -484,7 +484,7 @@ func runSetup(e *env) error {
 	if !allSkillsCurrent() {
 		next = append([]string{"mt skill install"}, next...)
 	}
-	printFooter(e.stdout, warnings, next)
+	printFooter(e.footerWriter(), warnings, next)
 	return nil
 }
 
@@ -537,6 +537,6 @@ func runInit(e *env) error {
 		}
 		warnings = append(warnings, skillWarnings...)
 	}
-	printFooter(e.stdout, warnings, []string{"mt context", "mt next"})
+	printFooter(e.footerWriter(), warnings, []string{"mt context", "mt next"})
 	return nil
 }

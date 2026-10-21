@@ -13,7 +13,7 @@ In a repo that is already in Maker Tracker (it has `.mt`), the session starts wi
 
 ## Reading the output
 
-- Every command ends with **`Next:`**: the commands that make sense to run afterwards. Use them instead of guessing.
+- Every command ends with **`Next:`**: the commands that make sense to run afterwards. Use them instead of guessing. When stdout is redirected to a file (`mt brief > f.md`), `Warning:` and `Next:` go to stderr, so the file stays clean to edit and upload again.
 - **`Warning:`** lines don't block, but read them: a story without context, blocked, without criteria, without commits… If a warning changes what you are going to do, say so.
 - Errors go to stderr in two lines, `Error: …` and `Hint: …`. Follow the hint before trying something else. Exit code 1, or 2 if the command itself is wrong.
 - References are always complete (`PG-49`, `D-14`, `M2`) and dates absolute (`2026-10-15 22:40`, or just the time if it is today), so you can copy them into a commit and compare them with `git log`.
