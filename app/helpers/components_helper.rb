@@ -122,7 +122,7 @@ module ComponentsHelper
     dot = class_names(
       "inline-block size-1.5 shrink-0 rounded-full",
       "bg-avatar": kind == :human,
-      "bg-accent #{HALO}": kind != :human && active,
+      "bg-accent agent-sonar #{HALO}": kind != :human && active,
       "bg-text-subtle": kind != :human && !active
     )
     tag.span class: "inline-flex items-center gap-2 text-control leading-4" do
