@@ -113,11 +113,16 @@
     @apply font-semibold text-text;
   }
   /* Casillas de criterios (- [ ] / - [x]) */
+  /* Bloque con sangría, no flex: así el texto, el `código` y los enlaces de la
+     casilla fluyen en una sola línea en vez de partirse en columnas. */
   .markdown li:has(> input[type="checkbox"]) {
-    @apply flex list-none items-start gap-3 text-text;
+    @apply relative list-none pl-7 text-text;
   }
   .markdown ul:has(> li > input[type="checkbox"]) {
     @apply pl-0;
+  }
+  .markdown li > input[type="checkbox"]:first-child {
+    @apply absolute left-0 top-1 m-0;
   }
   .markdown input[type="checkbox"] {
     @apply mt-1 size-4 shrink-0 rounded-sm border border-strong bg-transparent text-state-done focus:ring-0;
