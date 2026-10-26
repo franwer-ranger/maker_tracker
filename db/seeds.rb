@@ -163,7 +163,7 @@ m2_stories = [
                ## Criterios de aceptación
                - [ ] Desde un post publicado, «Guardar como plantilla» crea una plantilla con el texto y las imágenes.
                - [ ] Al crear un post nuevo puedo elegir una plantilla y se rellena el editor.
-               - [ ] Las variables {fecha} y {enlace} se sustituyen al usar la plantilla.
+               - [ ] Las variables `{fecha}` y `{enlace}` se sustituyen al usar la plantilla, también en `mt show PG-49` (con `--json` sale el texto sin sustituir).
 
                ## Fuera de alcance
                Compartir plantillas entre cuentas (M4).
