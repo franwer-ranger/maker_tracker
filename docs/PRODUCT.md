@@ -8,6 +8,18 @@ Maker Tracker es la herramienta donde se **definen y organizan productos**, pens
 
 La referencia es Paper frente a Figma: una herramienta ligera, con un MCP de primera clase, en la que el agente es un usuario más y no un añadido.
 
+**Es el sitio donde Fran le da trabajo a sus agentes y del que solo le llega lo que le necesita** (D-79). Hace tres cosas:
+
+| | Qué resuelve | Para quién |
+|---|---|---|
+| **Definir** | Pasar de una idea a una historia que un agente ejecuta sin preguntar | Fran con la IA |
+| **Repartir** | Que varios agentes, en varias máquinas y ramas, cojan trabajo sin pisarse ni quedarse colgados | Los agentes |
+| **Atender** | Que a Fran le llegue solo lo que necesita su decisión o su prueba, con las opciones listas | Fran |
+
+Definir tiene que ser sencillo, pero ahí no competimos: Obsidian o el markdown del repo ya guardan y editan bien. **Repartir y atender son el producto** y donde va el foco. El kanban y el roadmap se quedan como vistas de consulta.
+
+**El criterio es la atención de Fran:** lo que no se la ahorre no entra. Es un criterio para decidir, no una métrica: no se mide.
+
 ## Cómo trabajo (el flujo que la herramienta debe servir)
 
 1. **Definición del producto**: es donde está el esfuerzo humano. Itero con la IA las definiciones (en Maker Tracker) y los mockups (en Paper).
