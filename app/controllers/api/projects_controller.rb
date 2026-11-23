@@ -16,7 +16,7 @@ class Api::ProjectsController < Api::BaseController
 
     markdown = [ summary, Api::Markdown::Formatting.table(rows).join("\n").presence ].compact.join("\n\n")
 
-    render_ok({ actor: Current.actor.name, projects: data, markdown: markdown },
+    render_ok({ actor: Current.actor.name, actor_kind: Current.actor.kind, projects: data, markdown: markdown },
       summary: summary,
       breadcrumbs: data.first(3).map { "mt init #{it[:key]}" })
   end

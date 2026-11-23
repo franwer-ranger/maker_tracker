@@ -143,6 +143,10 @@ func init() {
 		summary:     "Saves the instance and the token in ~/.config/mt/config and checks they work",
 		description: "Create the token on the server with bin/rails \"mt:token[your-name]\". MT_URL and MT_TOKEN take precedence over the file.",
 		example:     "mt setup https://tower.your-tailnet.ts.net mt_…", run: runSetup})
+	def(&command{name: "whoami", group: setupGroup, usage: "mt whoami", maxArgs: 0,
+		summary:     "Shows the actor you sign as, the instance, where the url and the token come from and the project of .mt",
+		description: "Check it before creating a new token: one actor per token, and MT_URL and MT_TOKEN take precedence over ~/.config/mt/config. Exits with 1 if the token is not valid or mt is not configured.",
+		example:     "mt whoami", run: runWhoami})
 	def(&command{name: "init", group: setupGroup, usage: "mt init <KEY> [--claude]", minArgs: 1, maxArgs: 1,
 		summary:     "Creates .mt with the project in the current directory (the root of the repo)",
 		description: "mt looks for .mt upwards from the current directory. With --claude it also adds the SessionStart (mt context) and SessionEnd (mt usage, the cost of the session) hooks to .claude/settings.json and, if the skill is not installed globally (mt skill install), the skills (maker-tracker and daily) to .claude/skills/.",

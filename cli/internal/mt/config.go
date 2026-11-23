@@ -10,11 +10,21 @@ import (
 )
 
 // Config es la instancia y el token: ~/.config/mt/config, con MT_URL y
-// MT_TOKEN por encima.
+// MT_TOKEN por encima. URLFrom y TokenFrom dicen de dónde salió cada uno
+// (mt whoami): SourceEnv, SourceFile o "" si no hay.
 type Config struct {
 	URL   string
 	Token string
+
+	Path                     string // el fichero de configuración
+	URLFrom, TokenFrom       string
+	FileHasURL, FileHasToken bool // el fichero también lo tiene (el entorno manda)
 }
+
+const (
+	SourceEnv  = "env"
+	SourceFile = "file"
+)
 
 func configPath() (string, error) {
 	dir := os.Getenv("XDG_CONFIG_HOME")
@@ -39,15 +49,25 @@ func loadConfig() (Config, error) {
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return cfg, err
 	}
+	cfg.Path = path
 	cfg.URL, cfg.Token = values["url"], values["token"]
+	cfg.FileHasURL, cfg.FileHasToken = cfg.URL != "", cfg.Token != ""
+	cfg.URLFrom, cfg.TokenFrom = sourceIf(cfg.FileHasURL), sourceIf(cfg.FileHasToken)
 	if v := os.Getenv("MT_URL"); v != "" {
-		cfg.URL = v
+		cfg.URL, cfg.URLFrom = v, SourceEnv
 	}
 	if v := os.Getenv("MT_TOKEN"); v != "" {
-		cfg.Token = v
+		cfg.Token, cfg.TokenFrom = v, SourceEnv
 	}
 	cfg.URL = strings.TrimRight(cfg.URL, "/")
 	return cfg, nil
+}
+
+func sourceIf(inFile bool) string {
+	if inFile {
+		return SourceFile
+	}
+	return ""
 }
 
 func saveConfig(cfg Config) (string, error) {

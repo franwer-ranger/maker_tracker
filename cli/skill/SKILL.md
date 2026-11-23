@@ -18,6 +18,7 @@ In a repo that is already in Maker Tracker (it has `.mt`), the session starts wi
 - Errors go to stderr in two lines, `Error: …` and `Hint: …`. Follow the hint before trying something else. Exit code 1, or 2 if the command itself is wrong.
 - References are always complete (`PG-49`, `D-14`, `M2`) and dates absolute (`2026-10-15 22:40`, or just the time if it is today), so you can copy them into a commit and compare them with `git log`.
 - `--json` prints the API envelope as is, if you need structured data.
+- **Who you sign as**: `mt whoami` prints your actor, the instance and where the url and the token come from (`~/.config/mt/config`, or `MT_URL` / `MT_TOKEN`, which take precedence). Check your identity with `mt whoami` before creating a token: a new token is a new actor, and duplicated identities split the history.
 
 ## The development loop
 
@@ -99,7 +100,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 
 ## Commands
 
-- Set up: `mt setup` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
+- Set up: `mt setup` · `mt whoami` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
 - Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa [--undeployed]`
 - Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
