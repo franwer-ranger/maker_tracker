@@ -23,11 +23,13 @@ class Page < ApplicationRecord
   normalizes :slug, with: -> { it.strip.downcase }
   normalizes :icon, :area, with: -> { it.strip.presence }
 
-  validates :title, presence: true
+  # La de la portada sale del nombre del proyecto: si falta, el error es el del nombre.
+  validates :title, presence: true, unless: :cover?
   validates :slug, presence: true, uniqueness: { scope: :project_id },
     format: { with: /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/, message: :slug_format }
   validates :slug, exclusion: { in: RESERVED_SLUGS, message: :reserved_slug }
   validate :cover_is_the_cover
+  validate :cover_changes_only_body, if: -> { cover? && persisted? }
 
   # La portada se llama como el proyecto si nadie le pone otro título.
   before_validation -> { self.title = project&.name if cover? && title.blank? }
@@ -44,7 +46,8 @@ class Page < ApplicationRecord
 
   # Título, icono, área, tipo y cuerpo. Con `version:` (la que leyó quien edita)
   # falla con Versioned::Conflict si la página ya cambió, sin guardar nada. La
-  # portada solo cambia de cuerpo y no deja de ser la portada.
+  # portada solo cambia de cuerpo: otro título, icono, área o tipo es un error
+  # de validación.
   def edit!(attributes, actor:, version: nil)
     attributes = attributes.to_h.stringify_keys
     unknown = attributes.keys - EDITABLE_FIELDS
@@ -87,5 +90,9 @@ class Page < ApplicationRecord
   def cover_is_the_cover
     errors.add(:slug, :cover_slug) if cover? != (slug == COVER_SLUG)
     errors.add(:kind, :cover_kind) if kind_changed? && persisted? && (kind_was == "cover" || cover?)
+  end
+
+  def cover_changes_only_body
+    %w[title icon area].each { errors.add(it, :cover_body_only) if attribute_changed?(it) }
   end
 end

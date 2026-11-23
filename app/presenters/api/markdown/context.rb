@@ -12,6 +12,9 @@ class Api::Markdown::Context
 
   def decisions = @decisions ||= in_force.limit(DECISIONS).includes(:actor, :story, :supersedes).to_a
 
+  # Las capacidades y las transversales; la portada es el brief.
+  def documentation = @documentation ||= @project.pages.documentation.ordered.to_a
+
   # En el orden del roadmap: hitos abiertos, luego los demás y la bandeja.
   def in_progress
     @in_progress ||= @project.stories.in_progress.includes(:claimed_by, :milestone).to_a
@@ -41,18 +44,10 @@ class Api::Markdown::Context
   #   board    Tablero  Planificar
   #   agents   Agentes  cross-cutting
   def documentation_section
-    pages = @project.pages.documentation.ordered.to_a
-    return "## Documentation
+    return "## Documentation\n\nNo capabilities yet. Create one with mt doc create <slug> --title \"…\"." if documentation.empty?
 
-No capabilities yet. Create one with mt doc create <slug> --title \"…\"." if pages.empty?
-
-    rows = pages.map { [ it.slug, it.title, it.crosscutting? ? "cross-cutting" : it.area.to_s ] }
-    "## Documentation
-
-#{table(rows).join("
-")}
-
-Read one with mt doc <slug>."
+    rows = documentation.map { [ it.slug, it.title, it.crosscutting? ? "cross-cutting" : it.area.to_s ] }
+    "## Documentation\n\n#{table(rows).join("\n")}\n\nRead one with mt doc <slug>."
   end
 
   # D-14  PDFs con Prawn, sin servicios externos

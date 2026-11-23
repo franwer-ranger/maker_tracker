@@ -7,7 +7,7 @@ class Api::ContextsController < Api::BaseController
                 current_milestone: milestone && { code: milestone.code, title: milestone.title },
                 ready_work: Api::Markdown::Formatting.ready_work_data(context.ready_work),
                 decisions: context.decisions.map(&:reference),
-                documentation: project.pages.documentation.ordered.map { { slug: it.slug, type: it.kind, title: it.title, area: it.area } },
+                documentation: context.documentation.map { { slug: it.slug, type: it.kind, title: it.title, area: it.area } },
                 in_progress: context.in_progress.map { { reference: it.reference, title: it.title, claimed_by: it.claimed_by&.name } },
                 markdown: context.to_s },
       summary: "Context of #{project.name}.",

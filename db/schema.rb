@@ -93,7 +93,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_000000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["project_id", "slug"], name: "index_pages_on_project_id_and_slug", unique: true
-    t.index ["project_id"], name: "index_pages_on_project_id"
     t.index ["project_id"], name: "index_pages_on_project_id_one_cover", unique: true, where: "kind = 'cover'"
   end
 
