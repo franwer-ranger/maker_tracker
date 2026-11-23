@@ -92,10 +92,18 @@ class Project < ApplicationRecord
     end
   end
 
-  def record_decision!(attributes, actor:)
+  # Una decisión rige las capacidades que se le dan (`capabilities`, páginas),
+  # las que cambia su historia y las de la que sustituye (MT-90): así una
+  # capacidad no se queda sin la decisión vigente al sustituir la anterior.
+  def record_decision!(attributes, actor:, capabilities: [])
+    attributes = attributes.to_h.symbolize_keys
+    inherited = attributes[:story]&.changed_capabilities.to_a + attributes[:supersedes]&.capabilities.to_a
+    pages = (capabilities + inherited).uniq.sort_by(&:slug)
+
     transaction do
-      decisions.create!(attributes.merge(actor: actor)).tap do |decision|
-        record_event!("decision.recorded", actor: actor, story: decision.story, data: { number: decision.number })
+      decisions.create!(attributes.merge(actor: actor, capabilities: pages)).tap do |decision|
+        data = { number: decision.number, capabilities: pages.map(&:slug).presence }.compact
+        record_event!("decision.recorded", actor: actor, story: decision.story, data: data)
       end
     end
   end

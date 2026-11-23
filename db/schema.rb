@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_24_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_010000) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -30,6 +30,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_000000) do
     t.datetime "updated_at", null: false
     t.index ["actor_id"], name: "index_comments_on_actor_id"
     t.index ["story_id"], name: "index_comments_on_story_id"
+  end
+
+  create_table "decision_capabilities", force: :cascade do |t|
+    t.integer "decision_id", null: false
+    t.integer "page_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["decision_id", "page_id"], name: "index_decision_capabilities_on_decision_id_and_page_id", unique: true
+    t.index ["page_id"], name: "index_decision_capabilities_on_page_id"
   end
 
   create_table "decisions", force: :cascade do |t|
@@ -186,6 +195,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_24_000000) do
 
   add_foreign_key "comments", "actors"
   add_foreign_key "comments", "stories"
+  add_foreign_key "decision_capabilities", "decisions"
+  add_foreign_key "decision_capabilities", "pages", on_delete: :cascade
   add_foreign_key "decisions", "actors"
   add_foreign_key "decisions", "decisions", column: "supersedes_id"
   add_foreign_key "decisions", "projects"

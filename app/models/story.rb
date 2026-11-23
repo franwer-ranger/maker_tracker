@@ -87,6 +87,27 @@ class Story < ApplicationRecord
       .reorder(:number).includes(:actor, :superseded_by)
   end
 
+  # Las capacidades que cambia la historia (MT-90): las páginas de la
+  # documentación (no la portada) cuyo slug aparece, exacto y entre backticks
+  # (`editor`), en su sección «## Qué cambia del producto». Solo el slug como
+  # código: un título o una palabra suelta («el tablero») no enlaza, porque el
+  # enlace es para siempre. Exacto es exacto: `Editor` no enlaza `editor` (se
+  # compara en Ruby, porque `where(slug:)` pasaría por `normalizes`). Ni los
+  # comentarios HTML ni los bloques de código (```) cuentan: son guía o
+  # ejemplo, no lo que cambia. Las decisiones de la historia las heredan al
+  # registrarse.
+  CHANGES_SECTION = /^\#\# Qué cambia del producto[ \t]*$(.*?)(?=^\#\# |\z)/m
+  CODE_BLOCK = /^[ \t]*(`{3,}|~{3,}).*?(?:^[ \t]*\1[ \t]*$|\z)/m
+  CODE_SPAN = /(?<!`)`([^`\n]+)`(?!`)/
+
+  def changed_capabilities
+    section = body.to_s[CHANGES_SECTION, 1].to_s.gsub(/<!--.*?-->/m, "").gsub(CODE_BLOCK, "")
+    slugs = section.scan(CODE_SPAN).flatten.map(&:strip).uniq
+    return [] if slugs.empty?
+
+    project.pages.documentation.ordered.select { slugs.include?(it.slug) }
+  end
+
   def labels = super || []
   def blocked_by = super || []
 

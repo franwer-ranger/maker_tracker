@@ -254,9 +254,11 @@ func init() {
 			body := optional(map[string]any{"result": result}, e, "note")
 			return e.storyCall("POST", e.arg(0), "/qa", body)
 		}}, "note what you saw (required with fail)", "undeployed! lists the done stories still waiting for a deploy")
-	def(&command{name: "decisions", group: readGroup, usage: "mt decisions", maxArgs: 0,
-		summary: "All decisions, newest first", example: "mt decisions",
-		run: func(e *env) error { return e.projectCall("GET", "/decisions", nil, nil) }})
+	def(&command{name: "decisions", group: readGroup, usage: "mt decisions [--capability <page>]", maxArgs: 0,
+		summary: "All decisions, newest first, or only those governing a capability", example: "mt decisions --capability board",
+		run: func(e *env) error {
+			return e.projectCall("GET", "/decisions", map[string]string{"capability": e.opts.get("capability")}, nil)
+		}}, "capability only the decisions governing this page (its slug)")
 
 	def(&command{name: "start", group: workGroup, usage: "mt start <story>", minArgs: 1, maxArgs: 1,
 		summary: "Claims the story and moves it to in progress", example: "mt start PG-49",
@@ -326,12 +328,18 @@ func init() {
 			}
 			return e.storyCall("POST", e.arg(0), "/answer", body)
 		}}, "note why (markdown)", "text your own answer, if none of the options fits", "question the question's id, if there are several open (Q12 or 12)", "decide! also record it as a decision")
-	def(&command{name: "decide", group: workGroup, usage: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", minArgs: 1, maxArgs: 1,
-		summary: "Records a decision and its why", example: "mt decide \"Templates as JSON\" --why \"No need for another table\" --story PG-49",
+	def(&command{name: "decide", group: workGroup, usage: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9] [--capability <page>]…", minArgs: 1, maxArgs: 1,
+		summary:     "Records a decision and its why",
+		description: "It governs the capabilities you name with --capability, the ones its story changes (the pages whose exact lowercase slug, as mt doc lists it, is in backticks under \"## Qué cambia del producto\", outside code blocks) and those of the decision it supersedes. mt doc <page> lists the ones in force.",
+		example:     "mt decide \"Templates as JSON\" --why \"No need for another table\" --story PG-49 --capability editor",
 		run: func(e *env) error {
 			body := optional(map[string]any{"title": e.arg(0), "body": e.opts.get("why")}, e, "story", "supersedes")
+			if capabilities := e.opts.all("capability"); len(capabilities) > 0 {
+				body["capabilities"] = capabilities
+			}
 			return e.projectCall("POST", "/decisions", nil, body)
-		}}, "why the why", "story the story it comes from", "supersedes the decision it replaces (D-9)")
+		}}, "why the why", "story the story it comes from", "supersedes the decision it replaces (D-9)",
+		"capability* a page it governs, by slug (can be repeated)")
 
 	def(&command{name: "create", group: defineGroup, usage: "mt create [\"Title\"] [--milestone M2] [--state …] [--number n] [--file f.md]", maxArgs: 1,
 		summary:     "Creates a story: from a title or from a file in the mt show format",
@@ -411,7 +419,7 @@ func init() {
 	}
 	def(&command{name: "doc", group: readGroup, usage: "mt doc [<page>]", maxArgs: 1,
 		summary:     "Lists the documentation pages or, with a slug, shows one",
-		description: "The cover is the brief (mt doc cover). A page prints in the format mt doc edit takes: mt doc board > f.md, edit it and mt doc edit board --file f.md.",
+		description: "The cover is the brief (mt doc cover). A page prints in the format mt doc edit takes: mt doc board > f.md, edit it and mt doc edit board --file f.md. After the read-only mark come the decisions in force that govern it and its history.",
 		example:     "mt doc board",
 		run: func(e *env) error {
 			if e.arg(0) == "" {

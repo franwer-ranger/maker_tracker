@@ -23,7 +23,7 @@ module Api::Operations
       description: "Lists stories with filters" },
     { method: "GET", path: "/api/projects/:key/stories/:number", params: {}, command: "mt show PG-49",
       description: "A story as markdown with frontmatter (the docs/backlog/ format), with related stories, its decisions (in force or superseded), comments and latest events" },
-    { method: "GET", path: "/api/projects/:key/decisions", params: {}, command: "mt decisions",
+    { method: "GET", path: "/api/projects/:key/decisions", params: { capability: "a page slug (optional): only the decisions governing it" }, command: "mt decisions [--capability board]",
       description: "All decisions, newest first, marking the superseded ones" },
     { method: "GET", path: "/api/projects/:key/check", params: { text: "the proposal, in free text (POST with it in the body if it is long)" },
       command: "mt check \"…\" | mt check --file f.md",
@@ -46,8 +46,8 @@ module Api::Operations
       command: "mt release PG-49 --reason \"…\"", description: "Moves it back to ready and unclaims it" },
     { method: "POST", path: "/api/projects/:key/stories/:number/comments", params: { body: "markdown" },
       command: "mt comment PG-49 \"…\"", description: "Comments on the story" },
-    { method: "POST", path: "/api/projects/:key/decisions", params: { title: "the decision", body: "the why (markdown)", story: "PG-49 (optional)", supersedes: "D-9 (optional)" },
-      command: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9]", description: "Records a decision. Returns its reference (D-15)" },
+    { method: "POST", path: "/api/projects/:key/decisions", params: { title: "the decision", body: "the why (markdown)", story: "PG-49 (optional)", supersedes: "D-9 (optional)", capabilities: "page slugs it governs (optional, a list); it also inherits its story's and those of the one it supersedes" },
+      command: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9] [--capability board]…", description: "Records a decision. Returns its reference (D-15)" },
 
     # Preguntas con opciones (MT-29). Bloquean por defecto la historia hasta que se contestan.
     { method: "POST", path: "/api/projects/:key/stories/:number/questions", command: "mt ask PG-49 \"…\" --option \"…\" --option \"…\" [--recommend 2] [--context \"…\"] [--reversible] [--no-bloqueante]",
@@ -112,7 +112,7 @@ module Api::Operations
     { method: "GET", path: "/api/projects/:key/docs", params: {}, command: "mt doc",
       description: "The documentation pages: the cover (the brief), the capabilities and the cross-cutting pages, one line each" },
     { method: "GET", path: "/api/projects/:key/docs/:slug", params: {}, command: "mt doc board",
-      description: "A page as markdown with frontmatter (slug, version, type, title, icon, area) and its latest events" },
+      description: "A page as markdown with frontmatter (slug, version, type, title, icon, area), the decisions in force that govern it and its latest events" },
     { method: "POST", path: "/api/projects/:key/docs", command: "mt doc create board --title \"Board\" [--type …] [--area …] [--icon …] [--file f.md]",
       params: { slug: "lowercase letters, numbers and hyphens", title: "", type: "capability (default) | crosscutting", area: "optional", icon: "optional", body: "markdown", markdown: "the mt doc format instead of the fields" },
       description: "Creates a capability or a cross-cutting page. Agents ask before creating, splitting, merging or deleting capabilities" },

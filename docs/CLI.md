@@ -116,7 +116,7 @@ Next:
   mt doc create <slug> --title "…"
 ```
 
-`mt doc editor` imprime la página en el formato que acepta `mt doc edit`, como `mt show` y `mt edit`: frontmatter, cuerpo y, tras la marca, el historial (10 eventos), que se ignora al editar.
+`mt doc editor` imprime la página en el formato que acepta `mt doc edit`, como `mt show` y `mt edit`: frontmatter, cuerpo y, tras la marca, las decisiones vigentes que la rigen y el historial (10 eventos), que se ignoran al editar.
 
 ```text
 $ mt doc editor
@@ -135,9 +135,16 @@ Un solo editor para escribir el post una vez.
 
 <!-- mt: read-only below this line; mt doc edit ignores it -->
 
+## Decisions in force
+
+D-17 · claude · 2026-10-20 · Variables con dólar
+     Why: las llaves chocan con el markdown de algunas redes.
+
 ## History
 
 22:31             claude  edited page editor (body)
+2026-10-20 18:05  claude  recorded D-17
+2026-10-18 09:40  claude  recorded D-15
 2026-10-15 10:02  fran    created page editor (capability)
 
 Next:
@@ -147,9 +154,10 @@ Next:
 - `mt doc edit editor --file f.md` cambia título, tipo (`capability` ↔ `crosscutting`), icono, área y cuerpo. Responde `editor · Editor (capability) edited by claude.` o `… did not change.`. El `version:` se comprueba como en `mt edit` (ver «Conflictos de edición»). Cambiar el slug es un error (`editing does not change the slug.`); la portada no deja de ser portada.
 - `mt doc cover` y `mt doc edit cover --file f.md` leen y escriben el brief, igual que `mt brief` (mismo texto, misma versión, mismo evento `brief.edited`). `mt brief` no cambia de formato. De la portada solo cambia el cuerpo: su título es el nombre del proyecto y no lleva icono ni área. Mandar los mismos `title:`, `icon:` y `area:` que imprime `mt doc cover` no cuenta como cambio; otros son un error de validación y no se guarda nada (`Title can't change on the cover: the cover only changes its body (the brief).`), como cambiar el slug o el tipo.
 - `mt doc create editor --title "Editor" [--type crosscutting] [--area Publicar] [--icon …] [--file f.md]` crea una capacidad (sin `--type`) o una transversal: `editor · Editor (capability) created.` Las opciones mandan sobre el fichero. La portada no se crea (ya existe en cada proyecto).
+- `## Decisions in force` (MT-90) son las decisiones que rigen la página y nadie ha sustituido, por número, con autor, fecha, título y el porqué en una línea (recortado a 120 caracteres, como en `mt show`). Sin ninguna: `None yet: mt decide "…" --why "…" --capability editor.` Las sustituidas no salen aquí: solo en `## History`, como `recorded D-15` (en el ejemplo, D-17 sustituye a D-15). La portada no lleva la sección: sus decisiones vigentes están en `mt context`.
 - `mt doc delete editor` la borra (`editor · Editor (capability) deleted.`); su historial sigue en los eventos (`page.deleted`). La portada no se borra.
 - **Autonomía**: un agente edita las páginas que cambia la historia en la que trabaja; crear, separar, juntar o borrar capacidades lo pregunta antes (`mt ask`). La API no lo impide: lo dicen la skill y la sección `## Autonomía` de la plantilla del brief.
-- `--json`: `pages[]` (índice) o `page` con `slug`, `type`, `title`, `icon`, `area`, `version` y `body`.
+- `--json`: `pages[]` (índice) o `page` con `slug`, `type`, `title`, `icon`, `area`, `version` y `body`; `mt doc <slug> --json` añade `decisions[]` (las vigentes, con los campos de `mt show`), salvo en la portada.
 
 ## `mt daily`
 
@@ -381,6 +389,9 @@ D-12  Imágenes en Active Storage local                 fran    2026-10-02  supe
 D-9   Imágenes en S3 desde el principio                fran    2026-09-16  superseded by D-12
       Why: para no migrar cuando crezca el número de imágenes.
 ```
+
+- `mt decisions --capability editor` (MT-90) lista solo las que rigen esa página, vigentes y sustituidas, con el mismo formato. Sin ninguna: `No decisions govern editor yet.` Un slug que no existe es `NOT_FOUND` (`no page nada in PG.`) y la portada, `VALIDATION_FAILED` (`the cover is not a capability: it is the brief.`). En `--json`, cada decisión lleva `capabilities` (los slugs, si rige alguna).
+- `mt decide "…" --why "…" --capability editor --capability calendario` (una o varias; también `--capability "editor, calendario"`) registra la decisión rigiendo esas páginas. Además hereda las capacidades que cambia su historia (`--story`: las páginas, no la portada, cuyo slug aparece exacto y entre backticks, como `` `editor` ``, en su sección `## Qué cambia del producto`; exacto es en minúsculas, tal como lo lista `mt doc`: `` `Editor` `` o `` `EDITOR` `` no enlazan; un título, el slug sin backticks, los comentarios HTML y lo que va dentro de un bloque de código (` ``` ` o `~~~`, aunque lleve backticks dentro) no cuentan, para no enlazar por accidente: el enlace no se quita; `--capability Editor`, en cambio, sí se normaliza a `editor`) y las de la decisión que sustituye (`--supersedes`), para que la página no se quede sin la vigente. `mt answer --decide` y la UI del brief heredan igual. Se fijan al registrarla: editar la historia después no las cambia. Responde `D-17 recorded by claude, superseding D-15, governing calendario and editor.` (sin capacidades, como antes) y el evento `decision.recorded` guarda los slugs en `data.capabilities`. Los mismos errores que `--capability` en `mt decisions`, sin registrar nada, y `--capability ""` es `VALIDATION_FAILED` (`--capability needs a page slug.`). Las decisiones anteriores a MT-90 no rigen ninguna: las enlaza el arranque de la documentación (MT-40), no se hace a mano.
 
 ## `mt check` (MT-79)
 
