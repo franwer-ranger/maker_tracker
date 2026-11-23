@@ -399,7 +399,7 @@ Next:
   mt show PG-43
 ```
 
-Si la historia tiene texto en `## Cómo probarlo` (sin contar la guía de la plantilla, que es un comentario HTML), sale bajo el título con `How to test` y, debajo, `Criteria` sobre los criterios (MT-52); sin él, solo los criterios numerados, sin etiqueta. En `--json`, cada historia lleva `how_to_test` (si lo tiene) y `criteria`.
+Si la historia tiene texto en `## Cómo probarlo` (sin contar la guía de la plantilla, que es un comentario HTML), sale bajo el título con `How to test` (sin sus líneas en blanco, para que no parezca que empieza otra historia) y, debajo, `Criteria` sobre los criterios (MT-52); sin él, solo los criterios numerados, sin etiqueta. En `--json`, cada historia lleva `how_to_test` (si lo tiene) y `criteria`.
 
 ```text
 $ mt qa PG-47 ok [--note "…"]

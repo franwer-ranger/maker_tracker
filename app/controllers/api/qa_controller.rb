@@ -79,7 +79,8 @@ class Api::QaController < Api::BaseController
   #        Escribe un post, espera unos segundos…
   #        Criteria
   #        1 Mientras escribes, el post se guarda solo…
-  # Sin «Cómo probarlo», solo la lista numerada, sin «Criteria» (MT-52).
+  # Sin «Cómo probarlo», solo la lista numerada, sin «Criteria» (MT-52). Sus líneas en blanco no salen:
+  # en la lista las tarjetas van seguidas y un hueco parecería otra historia.
   def list_markdown(summary, cards, undeployed = 0)
     tail = undeployed.positive? ? "\n#{undeployed} done #{undeployed == 1 ? 'story is' : 'stories are'} not deployed yet: mt qa --undeployed lists #{undeployed == 1 ? 'it' : 'them'}.\n" : ""
     return "#{summary}\n#{tail}" if cards.empty?
@@ -95,6 +96,6 @@ class Api::QaController < Api::BaseController
   def how_to_test_lines(card)
     return [] unless card.how_to_test
 
-    [ "How to test", *card.how_to_test.lines.map(&:rstrip), *("Criteria" if card.criteria.any?) ].map { "#{INDENT}#{it}".rstrip }
+    [ "How to test", *card.how_to_test.lines.map(&:rstrip).reject(&:empty?), *("Criteria" if card.criteria.any?) ].map { "#{INDENT}#{it}".rstrip }
   end
 end
