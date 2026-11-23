@@ -22,7 +22,7 @@ module Api::Operations
       params: { state: "idea | defining | ready | in_progress | done", milestone: "M2, its title or inbox", label: "a label", claimed_by: "actor name or me" },
       description: "Lists stories with filters" },
     { method: "GET", path: "/api/projects/:key/stories/:number", params: {}, command: "mt show PG-49",
-      description: "A story as markdown with frontmatter (the docs/backlog/ format), with related stories, comments and latest events" },
+      description: "A story as markdown with frontmatter (the docs/backlog/ format), with related stories, its decisions (in force or superseded), comments and latest events" },
     { method: "GET", path: "/api/projects/:key/decisions", params: {}, command: "mt decisions",
       description: "All decisions, newest first, marking the superseded ones" },
 

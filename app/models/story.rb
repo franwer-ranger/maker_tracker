@@ -78,6 +78,15 @@ class Story < ApplicationRecord
   # Las URLs usan el número de la historia en su proyecto: /p/postgram/stories/49.
   def to_param = number&.to_s
 
+  # Las decisiones que rigen la historia (MT-84): las registradas con `--story`
+  # y las citadas en el cuerpo (`D-14`), sin duplicados y por número. Incluye
+  # las sustituidas: quien lee necesita saber que ya no rigen.
+  def related_decisions
+    cited = body.to_s.scan(/(?<![\w-])D-(\d+)\b/).flatten.map(&:to_i)
+    project.decisions.where(story_id: id).or(project.decisions.where(number: cited))
+      .reorder(:number).includes(:actor, superseded_by: :actor)
+  end
+
   def labels = super || []
   def blocked_by = super || []
 

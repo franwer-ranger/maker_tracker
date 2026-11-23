@@ -225,6 +225,15 @@ Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar
 - `state` y `milestone` se pueden leer, pero `mt edit` no los cambia: para eso están `mt move` y `mt reorder` (decisión de la #018).
 - El historial muestra los 10 últimos eventos. Si un evento tiene motivo, va al final de su línea: `reordered it in its milestone: "lo pide la beta"`.
 - `## Related` lista lo que la bloquea y lo que bloquea, cada una con su estado: `Blocked by PG-45 Programar publicaciones (in progress).` / `Blocks PG-54 Reprogramar arrastrando en el calendario (defining).` Una pregunta abierta que bloquea sale aquí con el comando para contestarla: `Blocked by fran: Q12 from codex, asked 2026-10-21 10:12. Answer it with mt answer PG-50 <option>.`
+- `### Decisions` (MT-84), dentro de `## Related`, lista las decisiones que rigen la historia: las registradas con `--story` (`mt decide`, `mt answer --decide`) y las citadas en el cuerpo (`D-14`), sin duplicados y por número. Una vigente lleva autor, fecha y título, y debajo el porqué en una línea, recortado a 120 caracteres (`mt decisions` lo da entero). Una sustituida no lleva el suyo: dice cuál la sustituye y su título. Una `D-n` del cuerpo que no existe no sale. Sin decisiones no hay sección; si no hay nada más, tampoco `## Related`. En `--json`, `decisions[]` con `reference`, `number`, `title`, `actor`, `date`, `why`, `state` (`in_force` o `superseded`) y, si está sustituida, `superseded_by` y `superseded_by_title`.
+
+  ```markdown
+  ### Decisions
+
+  D-9 → superseded by D-12 · Imágenes en Active Storage local
+  D-14 · claude · 2026-10-16 · PDFs con Prawn, sin servicios externos
+       Why: autoalojado y sin coste por documento.
+  ```
 - `## Questions` (MT-29) sale de la tabla `questions`, no del cuerpo, y es solo lectura (`mt edit` no la toca). Primero las abiertas, con su comando `mt answer`; después las respondidas, con la opción elegida y la nota. La reversibilidad solo aparece si se indicó.
 
 ## `mt roadmap`

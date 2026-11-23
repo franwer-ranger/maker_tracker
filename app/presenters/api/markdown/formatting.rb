@@ -131,6 +131,19 @@ module Api::Markdown::Formatting
       blocked_by_questions: story.blocking_questions.map(&:reference).presence, qa: story.qa }.compact
   end
 
+  # El porqué de una decisión en una línea y recortado (MT-84): `mt decisions` lo da entero.
+  WHY_LENGTH = 120
+
+  def decision_why(decision) = decision.body.to_s.squish.truncate(WHY_LENGTH, omission: "…").presence
+
+  # Una decisión de la historia en datos (MT-84): vigente o sustituida, y por cuál.
+  def decision_data(decision)
+    newer = decision.superseded_by
+    { reference: decision.reference, number: decision.number, title: decision.title, actor: decision.actor.name,
+      date: date(decision.created_at), why: decision_why(decision), state: newer ? "superseded" : "in_force",
+      superseded_by: newer&.reference, superseded_by_title: newer&.title }.compact
+  end
+
   # Avisos al pasar a ready (Story#readiness_problems), en inglés.
   def readiness_warnings(story)
     story.readiness_problems.map do |problem|

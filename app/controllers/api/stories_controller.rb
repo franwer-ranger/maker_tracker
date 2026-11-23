@@ -25,6 +25,7 @@ class Api::StoriesController < Api::BaseController
   # `mt show PG-49`: la historia en el formato de docs/backlog/.
   def show
     render_ok({ story: Api::Markdown::Formatting.story_data(story, done_numbers: project.stories.done.pluck(:number)),
+                decisions: story.related_decisions.map { Api::Markdown::Formatting.decision_data(it) },
                 markdown: Api::Markdown::Story.new(story).to_s },
       summary: "#{story.reference} · #{story.title} (#{state_words(story.state)})",
       breadcrumbs: story_breadcrumbs)
