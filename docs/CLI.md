@@ -220,7 +220,7 @@ Hint: 2 stories are being defined (PG-51, PG-54). See them with mt list --state 
 
 Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar (frontmatter y cuerpo); debajo de la marca `<!-- mt: … -->`, lo que es solo lectura. Así `mt show PG-49 > f.md`, editar `f.md` y `mt edit PG-49 --file f.md` funciona sin limpiar nada.
 
-- `milestone` es el título del hito, sin el código (`M2`), porque el código cambia al reordenar. En la bandeja de ideas, vacío.
+- `milestone` es el título del hito, sin el código (`M2`). En la bandeja de ideas, vacío.
 - `version` sube cada vez que alguien edita el contenido (título, cuerpo, mockup, labels, bloqueos). `mt edit` la manda de vuelta y, si ya no es la actual, no guarda nada (ver «Conflictos de edición»). Mover, reordenar o cerrar no la cambian.
 - `state` y `milestone` se pueden leer, pero `mt edit` no los cambia: para eso están `mt move` y `mt reorder` (decisión de la #018).
 - El historial muestra los 10 últimos eventos. Si un evento tiene motivo, va al final de su línea: `reordered it in its milestone: "lo pide la beta"`.
@@ -292,6 +292,7 @@ Next:
 - Las Hechas de un hito abierto van en una sola línea (en la app también van plegadas).
 - La bandeja enseña las 3 primeras: es lo que menos importa al decidir qué hacer.
 - Los anchos de columna son mínimos (título 42 en roadmap y `list`): si un título es más largo, la columna crece en ese listado y no se corta nada. Así se alinean las filas sin perder texto.
+- El código de un hito (`M3`) es estable (MT-61): un número propio por proyecto, asignado al crearlo y que nunca se reutiliza. **No indica el orden**: el roadmap va por posición, y `mt milestone reorder` cambia la posición, no el código. `mt` y la API aceptan el código o el título y resuelven siempre al mismo hito.
 
 ## `mt list`
 

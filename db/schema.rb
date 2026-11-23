@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_22_224800) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_23_230000) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -75,6 +75,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_224800) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "version", default: 1, null: false
+    t.integer "number", null: false
+    t.index ["project_id", "number"], name: "index_milestones_on_project_id_and_number", unique: true
     t.index ["project_id", "position"], name: "index_milestones_on_project_id_and_position", unique: true
     t.index ["project_id"], name: "index_milestones_on_project_id"
   end
@@ -92,6 +94,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_22_224800) do
     t.integer "brief_version", default: 1, null: false
     t.datetime "last_pushed_at"
     t.datetime "ready_low_notified_at"
+    t.integer "last_milestone_number", default: 0, null: false
     t.index ["key"], name: "index_projects_on_key", unique: true
     t.index ["slug"], name: "index_projects_on_slug", unique: true
   end

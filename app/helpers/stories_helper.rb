@@ -67,7 +67,7 @@ module StoriesHelper
 
   # "M2", o "un hito borrado" si ya no existe.
   def milestone_event_ref(event)
-    @milestone_codes ||= Milestone.pluck(:id, :position).to_h { |id, position| [ id, "M#{position}" ] }
+    @milestone_codes ||= Milestone.pluck(:id, :number).to_h { |id, number| [ id, "M#{number}" ] }
     @milestone_codes.fetch(event.data["milestone_id"], "un hito borrado")
   end
 

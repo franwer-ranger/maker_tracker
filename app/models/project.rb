@@ -148,7 +148,7 @@ class Project < ApplicationRecord
     nil
   end
 
-  # Reserva el siguiente número de historia o decisión (o respeta uno dado)
+  # Reserva el siguiente número de historia, decisión o hito (o respeta uno dado)
   # sin reutilizar nunca uno anterior. Ver NumberedInProject.
   def reserve_number!(kind, number = nil)
     column = "last_#{kind}_number"

@@ -435,7 +435,7 @@ func init() {
 		}},
 		"title new title", "goal new goal (markdown)", "version the version you read (mt milestone show)")
 	def(&command{name: "milestone reorder", group: defineGroup, usage: "mt milestone reorder <milestone> --position n --reason \"…\"", minArgs: 1, maxArgs: 1,
-		summary: "Changes a milestone's position (and with it, its code)", example: "mt milestone reorder M4 --position 3 --reason \"Teams before analytics\"",
+		summary: "Changes a milestone's position; its code stays the same", example: "mt milestone reorder M4 --position 3 --reason \"Teams before analytics\"",
 		run: func(e *env) error {
 			n, err := strconv.Atoi(e.opts.get("position"))
 			if err != nil {

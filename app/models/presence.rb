@@ -128,8 +128,8 @@ module Presence
       return "brief" if event.action == "brief.edited"
       return "decision" if event.action == "decision.recorded"
 
-      position = Milestone.where(id: event.data["milestone_id"]).pick(:position) if event.action.start_with?("milestone.")
-      "#{event.project.key} M#{position}" if position
+      number = Milestone.where(id: event.data["milestone_id"]).pick(:number) if event.action.start_with?("milestone.")
+      "#{event.project.key} M#{number}" if number
     end
 
     # Lo que la UI enseña de una entrada: si cambia, se emite. Que siga activo,
