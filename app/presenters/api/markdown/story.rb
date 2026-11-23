@@ -86,7 +86,7 @@ class Api::Markdown::Story
 
   # Las decisiones que rigen la historia (MT-84), registradas o citadas:
   #   D-90 · fran · 2026-11-17 · Las decisiones se leen en mt show
-  #          Why: el agente construye con el porqué sin buscarlo aparte.
+  #        Why: el agente construye con el porqué sin buscarlo aparte.
   #   D-25 → superseded by D-30 · Imágenes en Active Storage local
   def decisions
     decisions = @story.related_decisions.to_a

@@ -84,7 +84,7 @@ class Story < ApplicationRecord
   def related_decisions
     cited = body.to_s.scan(/(?<![\w-])D-(\d+)\b/).flatten.map(&:to_i)
     project.decisions.where(story_id: id).or(project.decisions.where(number: cited))
-      .reorder(:number).includes(:actor, superseded_by: :actor)
+      .reorder(:number).includes(:actor, :superseded_by)
   end
 
   def labels = super || []
