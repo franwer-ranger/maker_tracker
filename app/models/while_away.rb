@@ -6,8 +6,9 @@
 #   WhileAway.story(story, since:)  # los eventos de una historia
 class WhileAway
   # Lo que un agente decide o cambia del producto y Fran debería poder revisar
-  # (MT-31): sus decisiones, el orden del roadmap, qué pasa a Lista y el brief.
-  PRODUCT_ACTIONS = %w[decision.recorded story.reordered story.moved brief.edited
+  # (MT-31): sus decisiones, el orden del roadmap, qué pasa a Lista, el brief y
+  # qué capacidades se crean o se borran (MT-89).
+  PRODUCT_ACTIONS = %w[decision.recorded story.reordered story.moved brief.edited page.created page.deleted
                        milestone.created milestone.edited milestone.closed milestone.reopened milestone.reordered].freeze
   SUMMARY_CLAUSES = 2
 
@@ -72,7 +73,7 @@ class WhileAway
       closed = events.select { state_to.(it, "done") }
       started = events.select { state_to.(it, "in_progress") }
       other = events.select { it.action == "story.state_changed" } - closed - started
-      roadmap = events.select { it.action.match?(/\A(story\.(reordered|moved)|milestone\.|brief\.)/) }
+      roadmap = events.select { it.action.match?(/\A(story\.(reordered|moved)|milestone\.|brief\.|page\.)/) }
 
       [
         closed.any? && "cerró #{stories_phrase(closed)}",
@@ -83,7 +84,7 @@ class WhileAway
         count_phrase(of.("comment.added"), "comentó en", "escribió", "comentarios"),
         of.("story.edited").any? && "editó #{stories_phrase(of.('story.edited'))}",
         other.any? && "movió #{stories_phrase(other)}",
-        roadmap.any? && "tocó el roadmap o el brief"
+        roadmap.any? && "tocó el roadmap, el brief o la documentación"
       ].select(&:itself)
     end
 

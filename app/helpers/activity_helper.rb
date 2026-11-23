@@ -90,6 +90,7 @@ module ActivityHelper
     when "story.state_changed" then "a Lista"
     when "story.reordered", "story.moved" then "orden"
     when "brief.edited" then "brief"
+    when "page.created", "page.deleted" then "documentación"
     else "hito"
     end
   end
@@ -106,7 +107,7 @@ module ActivityHelper
   def decided_path(event)
     project = event.project
     return project_story_path(project, event.story) if event.story
-    return project_brief_path(project, anchor: ("D-#{event.data['number']}" if event.action == "decision.recorded")) if event.action.start_with?("decision", "brief")
+    return project_brief_path(project, anchor: ("D-#{event.data['number']}" if event.action == "decision.recorded")) if event.action.start_with?("decision", "brief", "page")
 
     project_roadmap_path(project)
   end

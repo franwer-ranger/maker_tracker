@@ -126,6 +126,7 @@ module Presence
     def written_target(event)
       return event.story.reference if event.story
       return "brief" if event.action == "brief.edited"
+      return "page" if event.action.start_with?("page.")
       return "decision" if event.action == "decision.recorded"
 
       number = Milestone.where(id: event.data["milestone_id"]).pick(:number) if event.action.start_with?("milestone.")

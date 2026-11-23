@@ -19,6 +19,11 @@ es:
       missing_stories: "incluye historias que no existen en el proyecto (%{numbers})"
       key_format: "tiene que tener de 2 a 5 letras"
       name_format: "solo admite minúsculas, números, - y _"
+      slug_format: "solo admite minúsculas, números y guiones sueltos (tablero, edicion-de-posts)"
+      cover_slug: "es cover solo en la portada, que cada proyecto tiene una vez"
+      reserved_slug: "es un subcomando de mt doc (%{value}); elige otro"
+      cover_kind: "no puede pasar a portada ni dejar de serlo: la portada es el brief"
+      cover_body_only: "no cambia en la portada: de la portada solo cambia el cuerpo (el brief)"
       too_few: "necesita al menos 2 opciones"
       not_an_option: "tiene que ser el número de una de las %{count} opciones"
       required_when_non_blocking: "es obligatoria si la pregunta no bloquea: es la que sigue el agente"
@@ -38,6 +43,11 @@ es:
         key: "La clave"
         slug: "El slug"
         brief: "El brief"
+      page:
+        slug: "El slug"
+        title: "El título"
+        kind: "El tipo"
+        body: "El cuerpo"
       milestone:
         title: "El título"
         goal: "El objetivo"

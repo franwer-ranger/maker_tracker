@@ -34,7 +34,7 @@ module PresenceHelper
     case entry.target.to_s
     when /\A[A-Z0-9]+-\d+\z/ then :board
     when /\A[A-Z0-9]+ M\d+\z/, "milestone", "roadmap", "next_story" then :roadmap
-    when "brief", "decision", "context" then :brief
+    when "brief", "decision", "context", "page" then :brief
     end
   end
 
@@ -46,6 +46,7 @@ module PresenceHelper
     when /\A[A-Z0-9]+-\d+\z/ then target
     when /\A[A-Z0-9]+ (M\d+)\z/ then $1
     when "brief", "context" then "el brief"
+    when "page" then "la documentación"
     when "decision" then "las decisiones"
     when "milestone", "roadmap", "next_story" then "el roadmap"
     end
@@ -105,6 +106,9 @@ module PresenceHelper
     when "question.asked" then "Preguntó en #{ref} · #{data['title']}"
     when "decision.recorded" then [ "Registró D-#{data['number']}", decision_title(event) ].compact.join(" · ")
     when "brief.edited" then "Editó el brief"
+    when "page.created" then "Creó la página #{data['slug']}"
+    when "page.edited" then "Editó la página #{data['slug']}"
+    when "page.deleted" then "Borró la página #{data['slug']}"
     when "milestone.created" then "Creó el hito #{data['title']}"
     when "milestone.edited" then "Editó #{milestone_event_ref(event)}"
     when "milestone.closed" then "Cerró #{milestone_event_ref(event)}"

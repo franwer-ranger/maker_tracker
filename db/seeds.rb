@@ -41,6 +41,29 @@ postgram.update!(name: "Postgram", brief: <<~MARKDOWN)
     Post: lo que escribe el maker, una vez. Publicación: cada copia de un post en una red.
 MARKDOWN
 
+# Documentación (MT-89): la portada es el brief de arriba; dos capacidades y una transversal.
+{ "editor" => [ :capability, "Editor", "Publicar", "pencil-square", <<~MARKDOWN ],
+    ## Qué hace hoy
+
+    Un solo editor para escribir el post una vez. Al publicar, cada red recibe su copia adaptada (longitud, enlaces, imágenes).
+
+    ## Reglas
+
+    - Si falta `{enlace}`, avisa antes de publicar y deja seguir.
+  MARKDOWN
+  "calendario" => [ :capability, "Calendario", "Publicar", "calendar", <<~MARKDOWN ],
+    ## Qué hace hoy
+
+    Programa publicaciones por red y día. Lo programado se puede mover hasta que se publica.
+  MARKDOWN
+  "redes" => [ :crosscutting, "Redes conectadas", nil, "link", <<~MARKDOWN ] }.each do |slug, (kind, title, area, icon, body)|
+    ## Qué hace hoy
+
+    Cada cuenta conecta sus redes una vez; el editor y el calendario las usan todas.
+  MARKDOWN
+  postgram.pages.find_or_create_by!(slug: slug) { it.assign_attributes(kind: kind, title: title, area: area, icon: icon, body: body) }
+end
+
 # Hitos (4.2) -----------------------------------------------------------------
 
 def seed_milestone(project, title, goal, closed_at: nil)

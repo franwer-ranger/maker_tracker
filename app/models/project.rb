@@ -1,8 +1,12 @@
-# Un producto. Su contexto vive en `brief` (markdown) y su roadmap son los
-# hitos ordenados, cada uno con sus historias ordenadas.
+# Un producto. Su contexto vive en su documentación (`pages`, MT-89), cuya
+# portada es el brief (D-92), y su roadmap son los hitos ordenados, cada uno con
+# sus historias ordenadas.
 class Project < ApplicationRecord
   include Eventable
-  include Versioned
+
+  # El brief vivía aquí hasta MT-89; ahora es la portada (Page). Las columnas se
+  # quedan en la tabla, sin uso, para poder deshacer la migración.
+  self.ignored_columns += %w[brief brief_version]
 
   BRIEF_TEMPLATE = <<~MARKDOWN.freeze
     ## Visión
@@ -11,7 +15,7 @@ class Project < ApplicationRecord
 
     ## Autonomía
 
-    Los agentes pueden crear ideas y historias en Definiendo, escribir el cuerpo de las historias, comentar y reordenar dentro de un hito con motivo. Preguntan antes de marcar una historia como Lista, tocar el brief, crear o reordenar hitos, o cerrar un hito.
+    Los agentes pueden crear ideas y historias en Definiendo, escribir el cuerpo de las historias, comentar, reordenar dentro de un hito con motivo y editar las páginas de la documentación que cambia la historia en la que trabajan. Preguntan antes de marcar una historia como Lista, tocar el brief, crear o reordenar hitos, cerrar un hito, o crear, separar, juntar o borrar capacidades.
 
     ## Fuera de alcance
 
@@ -27,6 +31,8 @@ class Project < ApplicationRecord
   has_many :questions, through: :stories
   has_many :decisions, -> { order(:number) }, inverse_of: :project
   has_many :events, inverse_of: :project
+  has_many :pages, inverse_of: :project
+  has_one :cover, -> { where(kind: :cover) }, class_name: "Page", inverse_of: :project, autosave: true
 
   normalizes :key, with: -> { it.strip.upcase }
 
@@ -35,8 +41,16 @@ class Project < ApplicationRecord
   validates :slug, presence: true, uniqueness: true, if: -> { name.present? }
   validates :key, presence: true, uniqueness: true, format: { with: /\A[A-Z]{2,5}\z/, message: :key_format }
 
-  attribute :brief, default: BRIEF_TEMPLATE
   before_validation :generate_slug, on: :create
+  before_validation -> { self.brief = BRIEF_TEMPLATE unless cover }, on: :create
+
+  # El brief es la portada (D-92): se lee y se escribe en ella.
+  def brief = cover&.body.to_s
+  def brief_version = cover&.version || 1
+
+  def brief=(text)
+    (cover || build_cover(kind: :cover, slug: Page::COVER_SLUG)).body = text.to_s
+  end
 
   def to_param = slug
 
@@ -67,16 +81,14 @@ class Project < ApplicationRecord
 
   # Con `version:` (la del brief que leyó quien edita) falla con
   # Versioned::Conflict si el brief ya cambió.
-  def edit_brief!(text, actor:, version: nil)
+  def edit_brief!(text, actor:, version: nil) = cover.edit!({ body: text.to_s }, actor: actor, version: version)
+
+  # Una página nueva de la documentación (la portada ya existe).
+  def create_page!(attributes, actor:)
     transaction do
-      lock!
-      next false if text == brief
-
-      check_version!(version, attribute: :brief_version)
-
-      bump_version(:brief_version)
-      update!(brief: text)
-      record_event!("brief.edited", actor: actor)
+      pages.create!(attributes).tap do |page|
+        record_event!("page.created", actor: actor, data: { page_id: page.id, slug: page.slug, kind: page.kind, title: page.title })
+      end
     end
   end
 
@@ -124,10 +136,7 @@ class Project < ApplicationRecord
     nil
   end
 
-  def last_editor
-    event = events.where(action: "brief.edited").recent_first.includes(:actor).first
-    [ event&.actor, event&.occurred_at ]
-  end
+  def last_editor = cover.last_editor
 
   # El hito en el que se trabaja: el primero abierto.
   def current_milestone = milestones.open.first

@@ -13,7 +13,7 @@ module Api::Operations
 
     # Leer (#016). Lo que lee un agente va también en data.markdown (docs/CLI.md).
     { method: "GET", path: "/api/projects/:key/context", params: {}, command: "mt context",
-      description: "Brief, latest decisions in force, current milestone and what is in progress" },
+      description: "Brief (the cover), the index of the documentation, latest decisions in force, current milestone and what is in progress" },
     { method: "GET", path: "/api/projects/:key/next", params: {}, command: "mt next",
       description: "First ready, unblocked story of the open milestones, whole and with why. NOTHING_READY if there is none" },
     { method: "GET", path: "/api/projects/:key/roadmap", params: { closed: "true to include closed milestones" }, command: "mt roadmap [--closed]",
@@ -103,6 +103,19 @@ module Api::Operations
     { method: "POST", path: "/api/projects/:key/milestones/:code/reopen", params: {}, command: "mt milestone reopen M2", description: "Reopens a milestone" },
     { method: "GET", path: "/api/projects/:key/brief", params: {}, command: "mt brief", description: "The brief as markdown, with its version in a frontmatter" },
     { method: "PUT", path: "/api/projects/:key/brief", params: { markdown: "the whole brief; a leading version: frontmatter is checked", version: "optional, instead of the frontmatter" },
-      command: "mt brief --file f.md", description: "Replaces the brief. CONFLICT (409, nothing saved) if the version is not the current one" }
+      command: "mt brief --file f.md", description: "Replaces the brief. CONFLICT (409, nothing saved) if the version is not the current one" },
+
+    # Documentación (MT-89): la portada (el brief, slug cover), capacidades y transversales.
+    { method: "GET", path: "/api/projects/:key/docs", params: {}, command: "mt doc",
+      description: "The documentation pages: the cover (the brief), the capabilities and the cross-cutting pages, one line each" },
+    { method: "GET", path: "/api/projects/:key/docs/:slug", params: {}, command: "mt doc board",
+      description: "A page as markdown with frontmatter (slug, version, type, title, icon, area) and its latest events" },
+    { method: "POST", path: "/api/projects/:key/docs", command: "mt doc create board --title \"Board\" [--type …] [--area …] [--icon …] [--file f.md]",
+      params: { slug: "lowercase letters, numbers and hyphens", title: "", type: "capability (default) | crosscutting", area: "optional", icon: "optional", body: "markdown", markdown: "the mt doc format instead of the fields" },
+      description: "Creates a capability or a cross-cutting page. Agents ask before creating, splitting, merging or deleting capabilities" },
+    { method: "PATCH", path: "/api/projects/:key/docs/:slug", params: { markdown: "the page in the mt doc format; its version: is checked", title: "", type: "", area: "", icon: "", body: "", version: "optional, instead of the frontmatter" },
+      command: "mt doc edit board --file f.md", description: "Edits a page (the cover is the brief). CONFLICT (409, nothing saved) if the version is not the current one" },
+    { method: "DELETE", path: "/api/projects/:key/docs/:slug", params: {}, command: "mt doc delete board",
+      description: "Deletes a capability or cross-cutting page; the cover is not deleted. Agents ask first" }
   ].freeze
 end

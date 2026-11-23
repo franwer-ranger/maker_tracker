@@ -405,6 +405,55 @@ func init() {
 			return e.projectCall("PUT", "/brief", nil, map[string]any{"markdown": text})
 		}}, "file file with the brief (- for standard input)")
 
+	// La documentación (MT-89): la portada (cover, el brief), capacidades y transversales.
+	doc := func(e *env, method string, body map[string]any) error {
+		return e.projectCall(method, "/docs/"+url.PathEscape(e.arg(0)), nil, body)
+	}
+	def(&command{name: "doc", group: readGroup, usage: "mt doc [<page>]", maxArgs: 1,
+		summary:     "Lists the documentation pages or, with a slug, shows one",
+		description: "The cover is the brief (mt doc cover). A page prints in the format mt doc edit takes: mt doc board > f.md, edit it and mt doc edit board --file f.md.",
+		example:     "mt doc board",
+		run: func(e *env) error {
+			if e.arg(0) == "" {
+				return e.projectCall("GET", "/docs", nil, nil)
+			}
+			return doc(e, "GET", nil)
+		}})
+	def(&command{name: "doc edit", group: defineGroup, usage: "mt doc edit <page> --file f.md", minArgs: 1, maxArgs: 1,
+		summary:     "Edits a page's title, type, icon, area and body from a file in the mt doc format",
+		description: "The version: in the file is checked like in mt edit: if someone changed the page since, CONFLICT and nothing is saved. The slug does not change. What comes after the read-only mark is ignored. Agents edit the pages their story changes.",
+		example:     "mt doc board > f.md && $EDITOR f.md && mt doc edit board --file f.md",
+		run: func(e *env) error {
+			if !e.opts.has("file") {
+				return usageHint("mt doc edit board --file f.md (- for standard input)", "missing --file.")
+			}
+			text, err := readFileArg(e, e.opts.get("file"))
+			if err != nil {
+				return err
+			}
+			return doc(e, "PATCH", map[string]any{"markdown": text})
+		}}, "file file with the page (- for standard input)")
+	def(&command{name: "doc create", group: defineGroup, usage: "mt doc create <slug> [--title …] [--type capability|crosscutting] [--area …] [--icon …] [--file f.md]", minArgs: 1, maxArgs: 1,
+		summary:     "Creates a capability or a cross-cutting page",
+		description: "Without --type it is a capability. The options win over the file. Agents ask before creating, splitting, merging or deleting capabilities (mt ask).",
+		example:     "mt doc create board --title \"Board\" --area Plan",
+		run: func(e *env) error {
+			body := optional(map[string]any{"slug": e.arg(0)}, e, "title", "type", "area", "icon")
+			if e.opts.has("file") {
+				text, err := readFileArg(e, e.opts.get("file"))
+				if err != nil {
+					return err
+				}
+				body["markdown"] = text
+			}
+			return e.projectCall("POST", "/docs", nil, body)
+		}}, "title the page's title", "type capability (default) or crosscutting", "area the product area it belongs to", "icon an icon name", "file file with the page (- for standard input)")
+	def(&command{name: "doc delete", group: defineGroup, usage: "mt doc delete <page>", minArgs: 1, maxArgs: 1,
+		summary:     "Deletes a capability or a cross-cutting page",
+		description: "The cover is not deleted: it is the brief. Agents ask first (mt ask).",
+		example:     "mt doc delete old-board",
+		run:         func(e *env) error { return doc(e, "DELETE", nil) }})
+
 	milestone := func(e *env, suffix string, body map[string]any) error {
 		return e.projectCall(map[bool]string{true: "PATCH", false: "POST"}[suffix == ""], "/milestones/"+url.PathEscape(e.arg(0))+suffix, nil, body)
 	}
