@@ -405,7 +405,7 @@ MT-66 · claude · 2026-11-09 · story idea · inbox
   Excerpt: …el aviso dice cuántas están casi…
   Matches: avisar, historias, casi, listas (title, body, comments)
 
-D-79 · claude · 2026-11-09 · decision superseded by D-91 (Maker Tracker hace tres cosas: definir el producto, conocerlo…)
+D-79 · claude · 2026-11-09 · decision superseded by D-91 (Maker Tracker hace tres cosas: definir el producto,…)
   Maker Tracker hace tres cosas: definir, repartir y atender
   Why: Repartir y atender son el producto: avisar a Fran de lo que espera…
   Matches: avisar, historias (why)
@@ -423,11 +423,11 @@ Next:
 
 - Busca en el servidor con **FTS5 de SQLite** (bm25) sobre títulos, cuerpos y comentarios de las historias de cualquier estado, títulos y porqués de las decisiones (vigentes y sustituidas) y el brief partido en fragmentos (un párrafo o un elemento de lista, con su sección). El título pesa más que el cuerpo y los comentarios menos; los fragmentos de `Principios` y `Fuera de alcance` pesan más y las decisiones sustituidas algo menos. Cada palabra se busca por su raíz (sin tildes, plurales, género ni infinitivo: «listas» encuentra «lista» y «listo»); no cuentan las palabras vacías ni el nombre del proyecto.
 - Como mucho **10 resultados**, ordenados por relevancia y premiando los que coinciden en más palabras; los que no llegan al 15 % del primero no salen. Pocos y densos, no un volcado.
-- Cada resultado: referencia completa, quién y cuándo (en una decisión, quien la tomó; en una historia hecha, quien la cerró, y si no, quien la creó; en el brief, su última edición), qué es (`decision in force`, `decision superseded by D-12 (título)`, `story <estado> · <hito>`), el título, el porqué o un extracto y `Matches:` con las palabras que coinciden y dónde (`title`, `why`, `body`, `comments`, `section`, `text`).
+- Cada resultado: referencia completa, quién y cuándo (en una decisión, quien la tomó; en una historia hecha, quien la cerró, y si no, quien la creó; en el brief, su última edición), qué es (`decision in force`, `decision superseded by D-12 (título)`, con el título recortado a 60 caracteres por palabra, `story <estado> · <hito>`), el título, el porqué o un extracto y `Matches:` con las palabras que coinciden y dónde (`title`, `why`, `body`, `comments`, `section`, `text`).
 - Si ningún resultado coincide en más de la mitad de las palabras, lo dice (`the proposal may be new`) y `Next:` empieza por `mt create`.
 - `Next:` según lo que sale: `mt show` de la primera historia, `mt decide --supersedes` si hay una decisión vigente entre las tres primeras, `mt comment` en la primera historia sin hacer y `mt create`.
 - Sin resultados: `Nothing in the decisions, the stories or the brief matches. Try other words: …` y `Next:` con `mt check "<other words>"`, `mt decisions`, `mt roadmap` y `mt create "…"`. Si la propuesta no tiene palabras que cuenten (`que de la`), `VALIDATION_FAILED`.
-- En `--json`, `data.terms` y `data.results`: cada uno con `type` (`decision`, `story` o `brief`), su referencia o sección, `actor`, `date`, `state`, `superseded_by` y `superseded_by_title`, `milestone`, `why` o `excerpt`, `matches`, `matched_in` y `score`. Es el mismo endpoint (`GET`/`POST /api/projects/:key/check`) que usará el MCP.
+- En `--json`, `data.terms` y `data.results`: cada uno con `type` (`decision`, `story` o `brief`), su referencia o sección, `actor`, `date`, `state`, `superseded_by` y `superseded_by_title` (entero), `milestone`, `why` o `excerpt`, `matches`, `matched_in` y `score`. Es el mismo endpoint (`GET`/`POST /api/projects/:key/check`) que usará el MCP.
 
 ## Preguntas (MT-29)
 

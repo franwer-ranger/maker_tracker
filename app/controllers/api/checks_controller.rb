@@ -19,9 +19,5 @@ class Api::ChecksController < Api::BaseController
   private
 
   # Un POST de check solo lee: para la presencia (MT-36) cuenta como «leyendo».
-  # La respuesta ya está hecha cuando corre, así que tratarlo como GET no cambia nada más.
-  def record_presence
-    request.request_method = "GET" if request.post?
-    super
-  end
+  def reading_request? = true
 end

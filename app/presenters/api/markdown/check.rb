@@ -5,6 +5,8 @@ class Api::Markdown::Check
   include Api::Markdown::Formatting
 
   EXCERPT_LENGTH = 240
+  # En la cabecera, el título de la decisión que sustituye va recortado (en el JSON, entero).
+  SUPERSEDED_TITLE_LENGTH = 60
 
   def initialize(check)
     @check = check
@@ -74,9 +76,12 @@ class Api::Markdown::Check
   end
 
   def brief_result(doc)
-    actor, at = @project.last_editor
+    actor, at = brief_editor
     { type: "brief", section: doc.section, actor: actor&.name, date: at && date(at), excerpt: excerpt(doc.body) }.compact
   end
+
+  # La última edición del brief: la misma para todos sus fragmentos.
+  def brief_editor = @brief_editor ||= @project.last_editor
 
   # Los eventos de creación y cierre de las historias que han salido, de una vez.
   def story_events
@@ -97,6 +102,8 @@ class Api::Markdown::Check
     end
   end
 
+  def superseded_title(data) = data[:superseded_by_title].to_s.truncate(SUPERSEDED_TITLE_LENGTH, separator: " ", omission: "…")
+
   def excerpt(text) = text.to_s.squish.truncate(EXCERPT_LENGTH, omission: "…").presence
 
   # D-80 · claude · 2026-11-09 · decision in force
@@ -106,7 +113,7 @@ class Api::Markdown::Check
   def item(data)
     head, title, text = case data[:type]
     when "decision"
-      state = data[:superseded_by] ? "decision superseded by #{data[:superseded_by]} (#{data[:superseded_by_title]})" : "decision in force"
+      state = data[:superseded_by] ? "decision superseded by #{data[:superseded_by]} (#{superseded_title(data)})" : "decision in force"
       [ [ data[:reference], data[:actor], data[:date], state, data[:story] ], data[:title], data[:why] && "Why: #{data[:why]}" ]
     when "story"
       milestone = data[:milestone] ? "#{data[:milestone]} · #{data[:milestone_title]}" : "inbox"
