@@ -20,7 +20,7 @@ class Api::Markdown::Story
 
   private
 
-  # `milestone` es el título del hito: el código (M2) cambia al reordenar.
+  # `milestone` es el título del hito, sin el código (docs/CLI.md → mt show).
   def frontmatter
     <<~YAML.strip
       ---
