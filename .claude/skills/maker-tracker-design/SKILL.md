@@ -19,7 +19,7 @@ La fuente de verdad es `docs/DESIGN.md` y el archivo de Paper que enlaza. Esta s
 
 ## En el código
 
-- Tokens como variables CSS en `app/assets/stylesheets/application.tailwind.css`, expuestos en `config/tailwind.config.js` con los mismos nombres que en Paper: `bg-accent`, `text-muted`, `border-strong`, `text-control`, `font-display`… No escribas colores ni tamaños sueltos (`#FF3F01`, `text-[13px]`). Si falta un token, va primero a Paper y a `DESIGN.md`.
+- Tokens en el `@theme` de `app/assets/tailwind/application.css` (Tailwind 4), con los mismos nombres que en Paper: `bg-accent`, `text-muted`, `border-strong`, `text-control`, `font-display`… No escribas colores ni tamaños sueltos (`#FF3F01`, `text-[13px]`). Si falta un token, va primero a Paper y a `DESIGN.md`.
 - Componentes propios, al estilo shadcn, en `app/helpers/components_helper.rb` y `app/views/components/`:
   - controles: `ui_button`, `nav_item`, `ui_field`;
   - estado: `state_dot`, `state_selector`;

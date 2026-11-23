@@ -11,6 +11,6 @@
     <span class="font-mono text-xs text-text-subtle">markdown</span>
   </div>
   <%= form.text_area attribute, rows: 18, "aria-label": label, data: { markdown_target: "source", editor_target: "input" },
-        class: "min-h-96 w-full resize-y border-0 bg-transparent p-4 [field-sizing:content] font-mono text-control leading-[22px] text-text-soft focus:outline-none focus:ring-0" %>
+        class: "min-h-96 w-full resize-y border-0 bg-transparent p-4 [field-sizing:content] font-mono text-control leading-[22px] text-text-soft focus:outline-hidden focus:ring-0" %>
   <div class="<%= class_names("markdown hidden p-4", "markdown-doc": local_assigns[:doc]) %>" data-markdown-target="output" data-editor-target="preview"></div>
 </div>

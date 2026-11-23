@@ -73,6 +73,24 @@ Escala: 11 · 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 11 es `
 - Sin degradados de fondo ni sombras decorativas (la única sombra es la del menú, funcional). Foco visible siempre: anillo de 2px del fondo + 2px de color. Naranja en el botón primario, blanco en el resto de controles.
 - Hover: primario a `accent-hover`; secundario a fondo `surface`; fantasma y nav item, texto a `text`.
 
+### Los mismos tokens con nombres de shadcn
+
+La base de componentes es la de shadcn sin React: [Basecoat](https://basecoatui.com/) 1.3.0 (MIT), copiado en `vendor/basecoat` (base y componentes, sin paquete de estilos). Sus componentes leen las variables estándar de shadcn, que en `app/assets/tailwind/application.css` apuntan a los tokens de arriba. El tema se cambia en los tokens; las variables de shadcn solo dicen qué papel tiene cada uno:
+
+| shadcn | Token |
+|---|---|
+| `--background` / `--foreground` | `bg` / `text` |
+| `--card` | `surface-raised` |
+| `--popover`, `--secondary`, `--muted`, `--accent` | `surface` |
+| `--muted-foreground` | `text-muted` |
+| `--primary` / `--primary-foreground` | `accent` / `bg` (texto oscuro sobre naranja) |
+| `--border` / `--input` | `border` / `border-strong` |
+| `--ring` | `text` (foco blanco) |
+| `--radius` | 8 (`radius-lg`; de ahí salen 4 · 6 · 8 · 12) |
+| `--sidebar-*` | `bg`, `text-muted`, `accent`, `surface`, `border` |
+
+`--destructive` y `--chart-*` no tienen token y se quedan con los de Basecoat. Ojo con `accent`: en las clases (`bg-accent`, `text-accent`) sigue siendo el naranja de Paper, mientras que el `--accent` de shadcn es el fondo de hover (`surface`); un componente de Basecoat que pinte `bg-accent` sale naranja.
+
 ## Iconos
 
 **Heroicons** (MIT), versión outline de 24, trazo 1.5, a 20px en interfaz y 16px dentro de botones, color heredado del texto, en SVG en línea. **Font Awesome se elimina.** En código: helper `icon "arrow-right", size: 16` y solo los SVG que se usan, en `app/assets/icons/`. Heroicons no tiene icono de PR: "Ver PR" usa `arrow-top-right-on-square`.

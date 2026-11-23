@@ -1,12 +1,12 @@
 # Componentes del sistema de diseño v3 (Paper → v3 · Sistema → 03 · Componentes).
 # Código propio al estilo de shadcn: helpers y partials pequeños que usan los
-# tokens de config/tailwind.config.js. Se ven todos juntos en /design (development).
+# tokens de app/assets/tailwind/application.css. Se ven todos juntos en /design (development).
 module ComponentsHelper
   STATES = Story::STATE_NAMES
 
   # Foco: anillo de 2px del color del control, separado 2px del fondo.
-  FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]".freeze
-  ACCENT_FOCUS_RING = "focus-visible:outline-none focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-accent)]".freeze
+  FOCUS_RING = "focus-visible:outline-hidden focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-text)]".freeze
+  ACCENT_FOCUS_RING = "focus-visible:outline-hidden focus-visible:shadow-[0_0_0_2px_var(--color-bg),0_0_0_4px_var(--color-accent)]".freeze
   HALO = "shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-accent)_25%,transparent)]".freeze
   # Zona táctil de 44px de alto, centrada, para un control que se ve más pequeño
   # (p. ej. «Editar», de 32, o un enlace de una línea): solo en el móvil.
@@ -135,7 +135,7 @@ module ComponentsHelper
   end
 
   # Agente trabajando (7.4, MT-38): matriz de puntos naranjas con una ola de
-  # opacidad hecha solo con CSS (`.agent-dots` en application.tailwind.css); con
+  # opacidad hecha solo con CSS (`.agent-dots` en app/assets/tailwind/application.css); con
   # prefers-reduced-motion se queda quieta en el dibujo del mockup.
   #   agent_dots           → 9×3 de 3px (cabecera)
   #   agent_dots size: :sm → 4×3 de 2px (etiqueta «editando»)

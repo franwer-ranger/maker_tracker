@@ -28,7 +28,7 @@
     </summary>
     <%= form_with url: project_stories_path(@project), scope: :story do |form| %>
       <%= form.text_field :title, required: true, autofocus: true, placeholder: "Título de la idea", "aria-label": "Título de la idea", enterkeyhint: "done",
-            class: "h-11 w-full rounded-md border border-strong bg-surface-sunken px-3.5 text-[15px] leading-5 text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+            class: "h-11 w-full rounded-md border border-strong bg-surface-sunken px-3.5 text-[15px] leading-5 text-text placeholder:text-text-subtle focus:border-strong focus:outline-hidden focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
     <% end %>
   </details>
   <p class="text-control leading-5 text-text-subtle">Para cambiar el orden, en el escritorio o con <span class="font-mono">mt reorder</span>.</p>

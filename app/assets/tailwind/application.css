@@ -1,9 +1,25 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+ * CSS de la app: Tailwind 4 (tailwindcss-rails, sin Node) + la base y los componentes de Basecoat
+ * (shadcn sin React, copiado en vendor/basecoat) + el tema de Maker Tracker (docs/DESIGN.md).
+ */
+@import "tailwindcss" source(none);
+@import "../../../vendor/basecoat/basecoat-base.css";
 
-/* Tokens del sistema de diseño v3: mismos nombres y valores que en Paper (docs/DESIGN.md). */
-:root {
+@source "../../views";
+@source "../../helpers";
+@source "../../javascript";
+@source "../../../public/*.html";
+
+@plugin "@tailwindcss/forms";
+
+/* Como en Tailwind 3: hover también en pantallas táctiles (Tailwind 4 lo limita a @media (hover: hover)). */
+@custom-variant hover (&:hover);
+
+/* Tokens del sistema de diseño v3: mismos nombres y valores que en Paper (docs/DESIGN.md).
+   Van después de Basecoat para que, donde coinciden los nombres (--color-accent, --color-border,
+   --radius-*, --font-*), manden los de DESIGN.md. `static`: se emiten todas, también las que
+   solo se usan desde un style="" o desde JS. */
+@theme static {
   --color-bg: #111113;
   --color-surface-sunken: #0B0B0C;
   --color-surface-raised: #18181B;
@@ -20,24 +36,88 @@
   --color-state-idea: #6B6B6B;
   --color-state-defining: #E8B04A;
   --color-state-ready: #F5F5F5;
+  --color-state-in-progress: var(--color-accent);
   --color-state-done: #5FB37A;
 
   --font-display: "Instrument Serif", ui-serif, Georgia, serif;
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
+  /* Tamaño / interlineado de 01 · Tipografía. */
   --text-label: 11px;
+  --text-label--line-height: 14px;
   --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  /* Controles pequeños, selector de estado, actor, metadatos y ayudas de campo. */
   --text-control: 13px;
+  --text-control--line-height: 16px;
   --text-sm: 14px;
+  --text-sm--line-height: 20px;
   --text-base: 16px;
+  --text-base--line-height: 24px;
   --text-lg: 18px;
+  --text-lg--line-height: 28px;
   --text-xl: 20px;
+  --text-xl--line-height: 28px;
   --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
   --text-3xl: 32px;
+  --text-3xl--line-height: 36px;
   --text-display-sm: 48px;
+  --text-display-sm--line-height: 52px;
   --text-display: 72px;
+  --text-display--line-height: 72px;
+  --text-display--letter-spacing: -0.01em;
   --text-display-lg: 112px;
+  --text-display-lg--line-height: 104px;
+  --text-display-lg--letter-spacing: -0.02em;
+
+  --tracking-label: 0.08em;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  --ease-brand: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Los de Tailwind 3 que pinta @tailwindcss/forms (bordes y marca de inputs sin estilo propio). */
+  --color-gray-500: #6b7280;
+  --color-blue-600: #2563eb;
+}
+
+/* Los mismos tokens con los nombres de shadcn, que usan los componentes de Basecoat. El tema se
+   cambia arriba, en los tokens de DESIGN.md; aquí solo se dice qué token es cada papel.
+   Ojo: en Tailwind, `accent` (bg-accent, text-accent) sigue siendo el naranja de DESIGN.md; el
+   `--accent` de shadcn (fondo de hover) es otra cosa y aquí es `surface`. */
+:root {
+  --radius: var(--radius-lg);
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --card: var(--color-surface-raised);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-text);
+  --primary: var(--color-accent);
+  --primary-foreground: var(--color-bg);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-text);
+  --muted: var(--color-surface);
+  --muted-foreground: var(--color-text-muted);
+  --accent: var(--color-surface);
+  --accent-foreground: var(--color-text);
+  --border: var(--color-border);
+  --input: var(--color-border-strong);
+  --ring: var(--color-text);
+  --sidebar: var(--color-bg);
+  --sidebar-foreground: var(--color-text-muted);
+  --sidebar-primary: var(--color-accent);
+  --sidebar-primary-foreground: var(--color-bg);
+  --sidebar-accent: var(--color-surface);
+  --sidebar-accent-foreground: var(--color-text);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--color-text);
 
   --spacing-1: 4px;
   --spacing-2: 8px;
@@ -50,13 +130,36 @@
   --spacing-24: 96px;
   --spacing-32: 128px;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
-  --radius-full: 9999px;
-
   color-scheme: dark;
+}
+
+/* Alturas de control (la escala de espaciado de Paper, base 4, coincide con la de Tailwind). Son
+   utilidades y no tokens de tema para que, como con Tailwind 3, solo exista h-*: min-h-control no. */
+@utility h-control-sm {
+  height: 32px;
+}
+@utility h-nav {
+  height: 36px;
+}
+@utility h-control {
+  height: 40px;
+}
+@utility h-control-lg {
+  height: 44px;
+}
+
+/* Atajos: text-soft, text-muted, text-subtle y border-strong (el borde por defecto ya es `border`). */
+@utility text-soft {
+  color: var(--color-text-soft);
+}
+@utility text-muted {
+  color: var(--color-text-muted);
+}
+@utility text-subtle {
+  color: var(--color-text-subtle);
+}
+@utility border-strong {
+  border-color: var(--color-border-strong);
 }
 
 @layer base {
@@ -66,6 +169,38 @@
   }
 }
 
+/* Para que la app se vea y se comporte como con Tailwind 3 (MT-86). Lo que cambiaría de hoy la base
+   de Tailwind 4 o de Basecoat; el rediseño decide qué se queda. */
+@layer base {
+  /* Tailwind 4 quita el relleno de todo, también de las <option> de un <select> nativo. */
+  option {
+    padding: revert;
+  }
+  /* Tailwind 4 deja los botones con el cursor por defecto. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+  /* Basecoat: anillo de foco por defecto (el del navegador), scroll sin animar y sin bloquear el
+     gesto de recargar del móvil. */
+  * {
+    outline-color: revert;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  body {
+    overscroll-behavior: auto;
+  }
+}
+@layer components {
+  /* Basecoat (collapsible) pone todos los <summary> en inline-flex. */
+  details summary {
+    display: revert-layer;
+    align-items: revert-layer;
+    cursor: revert-layer;
+  }
+}
 /* Markdown pintado (cuerpo de una historia, brief, previsualización). */
 @layer components {
   .markdown {

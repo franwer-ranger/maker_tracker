@@ -12,7 +12,7 @@
     <div class="flex flex-col gap-2.5 max-md:gap-1.5">
       <%= section_label board_heading_label(@filter, @milestone), class: "max-md:hidden" %>
       <%= render "boards/milestone_menu", mobile: true %>
-      <h1 class="font-display text-display-sm tracking-[-0.01em] max-md:text-[44px] max-md:leading-12 max-md:tracking-[-0.015em]">
+      <h1 class="font-display text-display-sm tracking-[-0.01em] max-md:text-[44px] max-md:tracking-[-0.015em]">
         <%= { milestone: @milestone&.title, ideas: "Bandeja de ideas", all: "Todos los hitos" }.fetch(@filter) %>
       </h1>
       <% if @filter == :milestone && @milestone.goal.present? %>
