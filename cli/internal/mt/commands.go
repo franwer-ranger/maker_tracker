@@ -330,7 +330,7 @@ func init() {
 		}}, "note why (markdown)", "text your own answer, if none of the options fits", "question the question's id, if there are several open (Q12 or 12)", "decide! also record it as a decision")
 	def(&command{name: "decide", group: workGroup, usage: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9] [--capability <page>]…", minArgs: 1, maxArgs: 1,
 		summary:     "Records a decision and its why",
-		description: "It governs the capabilities you name with --capability, the ones its story changes (the pages whose slug is in backticks under \"## Qué cambia del producto\") and those of the decision it supersedes. mt doc <page> lists the ones in force.",
+		description: "It governs the capabilities you name with --capability, the ones its story changes (the pages whose exact lowercase slug, as mt doc lists it, is in backticks under \"## Qué cambia del producto\", outside code blocks) and those of the decision it supersedes. mt doc <page> lists the ones in force.",
 		example:     "mt decide \"Templates as JSON\" --why \"No need for another table\" --story PG-49 --capability editor",
 		run: func(e *env) error {
 			body := optional(map[string]any{"title": e.arg(0), "body": e.opts.get("why")}, e, "story", "supersedes")
