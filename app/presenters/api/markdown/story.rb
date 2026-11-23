@@ -80,7 +80,28 @@ class Api::Markdown::Story
     end
     lines += @story.blocking.order(:number).map { "Blocks #{story_label(it)}." }
     lines += question_blockers
-    "## Related\n\n#{lines.join("\n")}" if lines.any?
+    parts = [ lines.join("\n").presence, decisions ].compact
+    "## Related\n\n#{parts.join("\n\n")}" if parts.any?
+  end
+
+  # Las decisiones que rigen la historia (MT-84), registradas o citadas:
+  #   D-90 · fran · 2026-11-17 · Las decisiones se leen en mt show
+  #        Why: el agente construye con el porqué sin buscarlo aparte.
+  #   D-25 → superseded by D-30 · Imágenes en Active Storage local
+  def decisions
+    decisions = @story.related_decisions.to_a
+    return if decisions.empty?
+
+    indent = " " * (decisions.map { it.reference.length }.max + 1)
+    items = decisions.map do |decision|
+      if (newer = decision.superseded_by)
+        "#{decision.reference} → superseded by #{newer.reference} · #{newer.title}"
+      else
+        why = decision_why(decision)
+        "#{decision.reference} · #{decision.actor.name} · #{date(decision.created_at)} · #{decision.title}#{"\n#{indent}Why: #{why}" if why}"
+      end
+    end
+    "### Decisions\n\n#{items.join("\n")}"
   end
 
   # "Blocked by fran: Q12 from codex, asked 2026-10-21 10:12. Answer it with mt answer PG-49 <option>."
