@@ -75,7 +75,7 @@ Escala: 11 · 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 11 es `
 
 ### Los mismos tokens con nombres de shadcn
 
-La base de componentes es la de shadcn sin React: [Basecoat](https://basecoatui.com/) 1.3.0 (MIT), copiado en `vendor/basecoat` (base y componentes, sin paquete de estilos). Sus componentes leen las variables estándar de shadcn, que en `app/assets/tailwind/application.css` apuntan a los tokens de arriba. El tema se cambia en los tokens; las variables de shadcn solo dicen qué papel tiene cada uno:
+La base de componentes es la de shadcn sin React: [Basecoat](https://basecoatui.com/) 1.3.0 (MIT), copiado en `vendor/basecoat` (base y componentes, sin paquete de estilos). Sus componentes leen las variables estándar de shadcn, que en `app/assets/tailwind/application.css` apuntan a los tokens de arriba. El tema se cambia en los tokens; las variables de shadcn solo dicen qué papel tiene cada uno. Sin paquete de estilos, los componentes de Basecoat (`.btn`, `.card`, `.badge`…) traen la estructura (disposición, estados, accesibilidad) pero casi nada del aspecto: ese lo pone el tema propio cuando se use. Hoy ninguna pantalla los usa:
 
 | shadcn | Token |
 |---|---|
