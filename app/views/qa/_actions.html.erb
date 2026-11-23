@@ -21,7 +21,7 @@
   <%= form_with url: project_story_qa_path(story.project, story), class: "hidden basis-full flex-col gap-2 pt-1 peer-checked:flex #{'max-md:col-span-2' if compact}" do %>
     <%= hidden_field_tag :result, "fail" %>
     <%= text_area_tag :note, nil, rows: 3, required: true, "aria-label": "Qué falla", placeholder: "Qué falla, para que quien lo arregle lo vea…",
-          class: "w-full rounded-md border border-strong bg-surface-sunken px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+          class: "w-full rounded-md border border-strong bg-surface-sunken px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-hidden focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
     <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
       <p class="text-control text-text-muted">Crea una historia en Definiendo <%= story.milestone ? "en #{story.milestone.code}" : "en la bandeja" %>, enlazada a esta.</p>
       <%= ui_button "Falla: crear historia", variant: :secondary, size: :sm, type: "submit", class: "max-md:h-11 max-md:w-full" %>

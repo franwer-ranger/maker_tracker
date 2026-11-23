@@ -9,19 +9,19 @@
     <div class="flex flex-col gap-2">
       <%= form.label :body, "Por qué", class: "text-sm font-medium leading-[18px] text-text" %>
       <%= form.text_area :body, rows: 3, required: true, placeholder: "Autoalojado y sin coste por documento.",
-            class: "w-full rounded-md border border-strong bg-bg px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+            class: "w-full rounded-md border border-strong bg-bg px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-hidden focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
     </div>
     <div class="flex gap-3">
       <div class="flex grow flex-col gap-2">
         <%= form.label :story_number, "Historia", class: "text-sm font-medium leading-[18px] text-text" %>
         <%= form.text_field :story_number, placeholder: "48 (opcional)", inputmode: "numeric",
-              class: "h-control w-full rounded-md border border-strong bg-bg px-3 font-mono text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+              class: "h-control w-full rounded-md border border-strong bg-bg px-3 font-mono text-sm text-text placeholder:text-text-subtle focus:border-strong focus:outline-hidden focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
       </div>
       <div class="flex grow flex-col gap-2">
         <%= form.label :supersedes_id, "Sustituye a", class: "text-sm font-medium leading-[18px] text-text" %>
         <%= form.select :supersedes_id, options_for_select(@project.decisions.reorder(number: :desc).map { [ it.reference, it.id ] }),
               { include_blank: "Ninguna" },
-              class: "h-control w-full rounded-md border border-strong bg-bg pl-3 font-mono text-sm text-text focus:border-strong focus:outline-none focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
+              class: "h-control w-full rounded-md border border-strong bg-bg pl-3 font-mono text-sm text-text focus:border-strong focus:outline-hidden focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
       </div>
     </div>
     <p class="text-control text-text-muted">Se guarda como <%= Current.actor.name %> y no se puede editar después: para cambiarla, se escribe otra que la sustituya.</p>
