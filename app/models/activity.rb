@@ -23,8 +23,9 @@ class Activity
   end
 
   # Una historia Hecha que Fran aún no ha probado (MT-32). `done_at` y `done_by`
-  # salen de su evento de Hecha; `url`, de la línea «Dónde se prueba» del brief.
-  QaCard = Data.define(:story, :project, :done_at, :done_by, :commits, :url, :criteria) do
+  # salen de su evento de Hecha; `url`, de la línea «Dónde se prueba» del brief;
+  # `how_to_test`, de la sección «Cómo probarlo» de la historia (MT-52).
+  QaCard = Data.define(:story, :project, :done_at, :done_by, :commits, :url, :criteria, :how_to_test) do
     def host = (URI.parse(url).host if url)
   end
 
@@ -72,7 +73,8 @@ class Activity
     stories.map do |story|
       event = done[story.id]
       QaCard.new(story: story, project: story.project, done_at: event&.occurred_at || story.updated_at, done_by: event&.actor,
-        commits: event&.commits || [], url: story.project.qa_url, criteria: story.criteria_list)
+        commits: event&.commits || [], url: story.project.qa_url, criteria: story.criteria_list,
+        how_to_test: story.how_to_test)
     end.sort_by { [ it.done_at, it.story.id ] }
   end
 

@@ -114,9 +114,7 @@ class Daily
     raise NotHeld unless self.class.last_held(project, actor)
     raise IdeaLimit if ideas.size >= MAX_IDEAS
 
-    body = Story::BODY_TEMPLATE
-    # Con bloque: el replacement como cadena interpretaría las barras del texto.
-    body = body.sub("## Contexto\n") { "## Contexto\n\n#{why.strip}\n" } if why.present?
+    body = why.present? ? Story.body_with_context(why) : Story::BODY_TEMPLATE
     project.create_story!({ title: title, body: body, state: "idea", milestone: nil }, actor: actor, data: { daily: true })
   end
 

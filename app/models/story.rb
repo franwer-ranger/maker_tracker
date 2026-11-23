@@ -9,12 +9,25 @@ class Story < ApplicationRecord
     "done" => "Hecha"
   }.freeze
 
+  # La plantilla de una historia nueva (MT-52). Las guías van como comentarios
+  # HTML: no se pintan y una sección que solo tiene su guía se oculta como las
+  # vacías. Ninguna lleva una casilla (`- [ ]`): contaría como criterio.
+  CONTEXT_GUIDE = "<!-- Por qué ahora y qué existe ya. -->".freeze
   BODY_TEMPLATE = <<~MARKDOWN.freeze
     ## Contexto
+    #{CONTEXT_GUIDE}
 
     ## Historia
+    Como (usuario), quiero (hacer algo), para (cumplir un objetivo).
 
     ## Criterios de aceptación
+    <!-- Uno por línea, comprobable, como casilla de markdown. -->
+
+    ## Cómo probarlo
+    <!-- Dónde y qué pasos sigue Fran para comprobarla. -->
+
+    ## Qué cambia del producto
+    <!-- Qué capacidades toca esta historia y cómo quedan. Al cerrarla, se confirma. -->
 
     ## Fuera de alcance
 
@@ -22,6 +35,13 @@ class Story < ApplicationRecord
 
     ## Preguntas abiertas
   MARKDOWN
+
+  # La plantilla con `text` en «Contexto», en lugar de su guía (las ideas de la
+  # daily y las historias que crea un fallo de QA).
+  def self.body_with_context(text)
+    # Con bloque: el replacement como cadena interpretaría las barras del texto.
+    BODY_TEMPLATE.sub("## Contexto\n#{CONTEXT_GUIDE}\n") { "## Contexto\n\n#{text.strip}\n" }
+  end
 
   belongs_to :project
   belongs_to :milestone, optional: true
@@ -132,9 +152,10 @@ class Story < ApplicationRecord
   end
 
   # El texto bajo «## Preguntas abiertas» del cuerpo, o nil si está vacío.
-  def open_questions_text
-    body.to_s[/^## Preguntas abiertas\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip.presence
-  end
+  def open_questions_text = section_text("Preguntas abiertas")
+
+  # El texto bajo «## Cómo probarlo», sin la guía, o nil si está vacío (MT-52).
+  def how_to_test = section_text("Cómo probarlo")
 
   # Las historias que tienen a esta en su `blocked_by`.
   def blocking
@@ -144,6 +165,11 @@ class Story < ApplicationRecord
   end
 
   private
+
+  # El texto de una sección `##` del cuerpo sin comentarios HTML, o nil si está vacía.
+  def section_text(heading)
+    body.to_s[/^## #{Regexp.escape(heading)}\s*$(.*?)(?=^## |\z)/m, 1].to_s.gsub(/<!--.*?-->/m, "").strip.presence
+  end
 
   def milestone_in_same_project
     errors.add(:milestone, :other_project) if milestone && milestone.project_id != project_id

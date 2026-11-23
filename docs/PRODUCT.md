@@ -41,7 +41,30 @@ Definir tiene que ser sencillo, pero ahí no competimos: Obsidian o el markdown 
 - **Ligero**: pocas entidades, pocas pantallas y cero configuración. Ante la duda, quitar. Sin campos ni flujos que no use nadie.
 - **El contexto vive con el proyecto**: la visión, las decisiones y los principios de cada proyecto se guardan en Maker Tracker y los agentes los cargan antes de recomendar nada.
 - **La autonomía de los agentes se escribe en el brief** (D-48): la sección `## Autonomía` de cada proyecto dice qué pueden decidir solos. Lo que permite lo hacen, y queda registrado; lo demás lo preguntan en la historia. Los cambios de producto de un agente no pasan a ser propuestas, y no hay un motor de reglas: es texto que `mt context` carga en cada sesión.
-- **Las historias se escriben para ser ejecutadas**: qué, por qué y criterios de aceptación, con enlaces a mockups de Paper.
+- **Las historias se escriben para ser ejecutadas**: qué, por qué y criterios de aceptación, con enlaces a mockups de Paper. Una historia nueva (desde la UI, la API, `mt create`, la daily o un fallo de QA) trae esta plantilla (MT-52); las guías son comentarios HTML, que no se pintan, y una sección que solo tiene su guía se oculta como las vacías. Ninguna guía lleva una casilla: una historia recién creada sigue sin criterios. «Cómo probarlo» sale en «Por probar» y en `mt qa`.
+
+  ```markdown
+  ## Contexto
+  <!-- Por qué ahora y qué existe ya. -->
+
+  ## Historia
+  Como (usuario), quiero (hacer algo), para (cumplir un objetivo).
+
+  ## Criterios de aceptación
+  <!-- Uno por línea, comprobable, como casilla de markdown. -->
+
+  ## Cómo probarlo
+  <!-- Dónde y qué pasos sigue Fran para comprobarla. -->
+
+  ## Qué cambia del producto
+  <!-- Qué capacidades toca esta historia y cómo quedan. Al cerrarla, se confirma. -->
+
+  ## Fuera de alcance
+
+  ## Notas para quien lo construya
+
+  ## Preguntas abiertas
+  ```
 - **Dogfooding**: Maker Tracker se construye usando Maker Tracker.
 
 ## Ecosistema: Maker Tracker y wflow

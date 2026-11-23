@@ -2,6 +2,7 @@
 # `mt qa PG-49 ok|fail` lo cierra. Solo una persona prueba (como las preguntas).
 class Api::QaController < Api::BaseController
   Formatting = Api::Markdown::Formatting
+  INDENT = " " * 7 # bajo el título, tras la referencia
 
   # `mt qa [--undeployed] [--project PG]`: lo pendiente de todos los proyectos, lo más antiguo
   # primero. En un proyecto que despliega con `mt deployed` (MT-46) solo sale lo
@@ -70,19 +71,31 @@ class Api::QaController < Api::BaseController
 
   def qa_data(card)
     { reference: card.story.reference, title: card.story.title, project: card.project.key, done_at: card.done_at.iso8601,
-      done_by: card.done_by&.name, commits: card.commits.map { { sha: it.sha, message: it.message }.compact }, url: card.url, criteria: card.criteria }.compact
+      done_by: card.done_by&.name, commits: card.commits.map { { sha: it.sha, message: it.message }.compact }, url: card.url, how_to_test: card.how_to_test, criteria: card.criteria }.compact
   end
 
   # PG-47  Borradores automáticos  done 2026-10-20 18:40 by codex  https://testing.postgram.app
+  #        How to test
+  #        Escribe un post, espera unos segundos…
+  #        Criteria
   #        1 Mientras escribes, el post se guarda solo…
+  # Sin «Cómo probarlo», solo la lista numerada, sin «Criteria» (MT-52). Sus líneas en blanco no salen:
+  # en la lista las tarjetas van seguidas y un hueco parecería otra historia.
   def list_markdown(summary, cards, undeployed = 0)
     tail = undeployed.positive? ? "\n#{undeployed} done #{undeployed == 1 ? 'story is' : 'stories are'} not deployed yet: mt qa --undeployed lists #{undeployed == 1 ? 'it' : 'them'}.\n" : ""
     return "#{summary}\n#{tail}" if cards.empty?
 
     rows = cards.map { [ it.story.reference, it.story.title, "done #{Formatting.datetime(it.done_at)}#{" by #{it.done_by.name}" if it.done_by}", it.url || "no \"Dónde se prueba\" line in the brief" ] }
     items = Formatting.table(rows, min: [ 0, Formatting::TITLE_WIDTH ]).zip(cards).map do |line, card|
-      [ line, *card.criteria.each_with_index.map { |text, i| "#{' ' * 7}#{i + 1} #{text}" }, *card.commits.map { "#{' ' * 7}#{it.label}" } ].join("\n")
+      [ line, *how_to_test_lines(card), *card.criteria.each_with_index.map { |text, i| "#{INDENT}#{i + 1} #{text}" },
+        *card.commits.map { "#{INDENT}#{it.label}" } ].join("\n")
     end
     "#{summary}\n\n#{items.join("\n")}\n#{tail}"
+  end
+
+  def how_to_test_lines(card)
+    return [] unless card.how_to_test
+
+    [ "How to test", *card.how_to_test.lines.map(&:rstrip).reject(&:empty?), *("Criteria" if card.criteria.any?) ].map { "#{INDENT}#{it}".rstrip }
   end
 end

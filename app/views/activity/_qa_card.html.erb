@@ -1,4 +1,4 @@
-<%# Una historia hecha por probar: plegada, su título y cuándo se hizo; desplegada, sus criterios, dónde probarla y «Probada» / «Falla…». Locals: card (Activity::QaCard), open. %>
+<%# Una historia hecha por probar: plegada, su título y cuándo se hizo; desplegada, «Cómo probarlo» si lo tiene, sus criterios, dónde probarla y «Probada» / «Falla…». Locals: card (Activity::QaCard), open. %>
 <% story = card.story %>
 <%= tag.details id: "por-probar-#{story.id}", open: open, class: "group/card" do %>
   <summary class="flex min-h-14 cursor-pointer list-none items-center gap-4 px-4 py-2 md:pl-5 md:pr-6 [&::-webkit-details-marker]:hidden <%= ComponentsHelper::FOCUS_RING %>">
@@ -23,11 +23,18 @@
         <%= link_to "Sin «Dónde se prueba» en el brief", project_brief_path(card.project), class: "rounded-sm text-control text-text-muted underline decoration-border-strong underline-offset-[3px] hover:text-text #{ComponentsHelper::FOCUS_RING}" %>
       <% end %>
     </div>
+    <% if card.how_to_test %>
+      <div class="flex flex-col gap-1.5 pt-2">
+        <%= section_label "Cómo probarlo" %>
+        <p class="whitespace-pre-line text-sm leading-5 text-text-soft"><%= card.how_to_test %></p>
+      </div>
+    <% end %>
     <% if card.commits.any? %>
       <ul class="flex flex-col gap-1 pt-1"><% card.commits.each do |commit| %><li><%= render "stories/commit", commit: commit, class: "text-xs leading-[18px]" %></li><% end %></ul>
     <% end %>
     <% if card.criteria.any? %>
-      <ol class="flex flex-col gap-1.5 pt-1 md:pt-0.5">
+      <%= section_label "Criterios", class: "pt-3" if card.how_to_test %>
+      <ol class="<%= class_names("flex flex-col gap-1.5", "pt-1 md:pt-0.5" => !card.how_to_test) %>">
         <% card.criteria.each_with_index do |criterion, index| %>
           <li class="flex gap-2.5"><span class="w-4 shrink-0 font-mono text-xs leading-5 text-text-subtle"><%= index + 1 %></span><span class="text-sm leading-5 text-text-soft"><%= criterion %></span></li>
         <% end %>
