@@ -15,6 +15,10 @@ class Api::BaseController < ActionController::API
   after_action :record_presence, unless: -> { Current.actor.nil? }
 
   rescue_from StandardError, with: :render_internal_error
+  # Parámetros o cabeceras que Rails no puede leer (bytes que no son UTF-8, un
+  # %-escape mal hecho): es la petición, no un bug. Va detrás de StandardError
+  # porque gana el último rescue_from declarado que case.
+  rescue_from ActionController::BadRequest, with: :render_bad_request
   rescue_from Api::Error, with: :render_error
   rescue_from ActiveRecord::RecordNotFound do |e|
     render_error Api::Error.not_found(e.model ? "#{e.model.underscore.humanize.downcase} not found." : "#{e.message}.")
@@ -46,7 +50,13 @@ class Api::BaseController < ActionController::API
 
   # La API habla inglés aunque la UI vaya en castellano (docs/CLI.md → Idioma).
   # Envuelve también los rescue_from, que construyen los mensajes de error.
-  def process_action(...) = I18n.with_locale(:en) { super }
+  # Rails lee los parámetros ya al instrumentar la acción, fuera del alcance de
+  # rescue_from: un BadRequest de ahí se recoge aquí, con el mismo sobre.
+  def process_action(...)
+    I18n.with_locale(:en) { super }
+  rescue ActionController::BadRequest => e
+    I18n.with_locale(:en) { render_bad_request(e) }
+  end
 
   # /api/<lo que sea que no existe>
   def route_not_found
@@ -74,13 +84,16 @@ class Api::BaseController < ActionController::API
   def record_presence
     return if Current.presence_written || !response.successful?
 
-    reading = request.get? || request.head?
+    reading = reading_request?
     key = params[:project_key].to_s.upcase.presence
     Presence.touch(Current.actor, project: (@project || Project.find_by(key: key) if key), project_key: key, target: presence_target(key),
       mode: reading ? :reading : :writing, detail: reading ? nil : "#{controller_name}##{action_name}")
   rescue => e
     Rails.error.report(e, handled: true) # la presencia nunca rompe una petición
   end
+
+  # Para la presencia, ¿la petición lee? Un controlador cuyo POST solo lee lo sobrescribe.
+  def reading_request? = request.get? || request.head?
 
   def presence_target(key)
     if key && (number = params[:story_number] || params[:number])
@@ -100,6 +113,12 @@ class Api::BaseController < ActionController::API
 
   def render_error(error)
     render json: { ok: false, error: error }, status: error.status
+  end
+
+  def render_bad_request(exception)
+    response.set_header("X-MT-API-Version", Api::Operations::VERSION.to_s)
+    render_error Api::Error.validation("the request could not be read (#{exception.message.delete_suffix('.')}).",
+      hint: "send the parameters as UTF-8 and percent-encode them.")
   end
 
   def render_internal_error(exception)

@@ -25,6 +25,9 @@ module Api::Operations
       description: "A story as markdown with frontmatter (the docs/backlog/ format), with related stories, its decisions (in force or superseded), comments and latest events" },
     { method: "GET", path: "/api/projects/:key/decisions", params: {}, command: "mt decisions",
       description: "All decisions, newest first, marking the superseded ones" },
+    { method: "GET", path: "/api/projects/:key/check", params: { text: "the proposal, in free text (POST with it in the body if it is long)" },
+      command: "mt check \"…\" | mt check --file f.md",
+      description: "Checks a proposal against the project: up to 10 candidates, decisions (in force or superseded, with the one that supersedes them), stories of any state and fragments of the brief, most relevant first (SQLite FTS5 over titles, bodies, whys, comments and the brief), each with who, when, an excerpt and the words that match. Judging whether it clashes is the agent's job" },
 
     # La daily (MT-42). Es un POST porque deja constancia de la daily del actor.
     { method: "POST", path: "/api/projects/:key/daily", params: { since: "a date like 2026-10-15 or 2026-10-15 22:40; without it, since the actor's last daily (or the last 7 days if none)" },

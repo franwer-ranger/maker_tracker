@@ -46,6 +46,7 @@ Rails.application.routes.draw do
         resources :questions, only: :create
       end
       resources :decisions, only: %i[index create]
+      match "check", to: "checks#show", via: %i[get post]
       resources :milestones, param: :code, only: %i[create show update] do
         member do
           post :reorder

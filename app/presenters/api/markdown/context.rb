@@ -64,7 +64,7 @@ class Api::Markdown::Context
       "#{decision.reference.ljust(width)}  #{decision.title}\n#{' ' * (width + 2)}#{tags.join(' · ')}"
     end
     more = in_force.count - decisions.size
-    items << "… and #{more} more: mt decisions" if more.positive?
+    items << "… and #{more} more: check a proposal against them with mt check \"…\" before proposing (all of them: mt decisions)" if more.positive?
     "## Decisions in force\n\n#{items.join("\n")}"
   end
 

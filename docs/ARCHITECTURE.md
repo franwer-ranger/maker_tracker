@@ -104,6 +104,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 | `mt next` | Primera historia **Lista** y no bloqueada (`blocked_by` sin terminar) del primer hito abierto, entera y con el motivo de que sea esa |
 | `mt roadmap` | El roadmap en markdown, generado en vivo |
 | `mt show <n>` | Una historia completa en markdown |
+| `mt check "…"` | Contrasta una propuesta con las decisiones, las historias y el brief (MT-79): unos 10 candidatos por relevancia, con FTS5 de SQLite sobre un índice en memoria que se construye en cada consulta (sin tabla ni migración; el brief se lee por `Project#brief`). El juicio es del agente |
 | `mt start <n>` | Reclama la historia y la pasa a En curso |
 | `mt done <n> --commit <sha>` | La cierra enlazando commits o PR |
 | `mt comment <n> "…"` | Comenta en la historia |

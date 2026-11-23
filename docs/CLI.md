@@ -92,7 +92,7 @@ Next:
   mt roadmap
 ```
 
-- Las decisiones sustituidas no salen. Los objetivos de hito y los porqués son contenido: salen tal cual, sin cambiar mayúsculas. Si hay más de 5 vigentes, se añade `… and 8 more: mt decisions`.
+- Las decisiones sustituidas no salen. Los objetivos de hito y los porqués son contenido: salen tal cual, sin cambiar mayúsculas. Si hay más de 5 vigentes, se añade `… and 8 more: check a proposal against them with mt check "…" before proposing (all of them: mt decisions)` (MT-79).
 - `## Open questions` (MT-29) solo sale si el proyecto tiene preguntas abiertas: historia, id de la pregunta, quién la hizo, cuánto lleva esperando y si bloquea. Las opciones están en `mt show`.
 - `## Ready work` (MT-33) es la misma cifra que «Trabajo listo» en la app (Actividad y cabeceras del tablero y del roadmap): historias Listas y desbloqueadas (sin `blocked by`, ni historia pendiente ni pregunta bloqueante abierta, como `mt next`) en **todos** los hitos abiertos, no solo el actual, y cuántas hay en Definiendo. En el ejemplo: PG-49 y PG-31 (PG-50 espera a una pregunta). Con 2 o menos, la app avisa a fran en «Te toca». `mt roadmap` la repite bajo el título. En `--json`, `ready_work: { ready, defining }`.
 - Sin hito abierto, `## Current milestone` dice `No open milestone.` y sugiere `mt roadmap`.
@@ -381,6 +381,53 @@ D-12  Imágenes en Active Storage local                 fran    2026-10-02  supe
 D-9   Imágenes en S3 desde el principio                fran    2026-09-16  superseded by D-12
       Why: para no migrar cuando crezca el número de imágenes.
 ```
+
+## `mt check` (MT-79)
+
+Contrasta una propuesta con lo que ya está decidido, hecho o planificado, para que el agente avise a su persona **antes** de construir o proponer algo que choca. `mt check "texto libre"`, o `mt check --file f.md` (`-` lee de stdin; va por `POST` porque puede ser largo). Maker Tracker da los candidatos; el juicio (¿lo contradice?, ¿ya está hecho?) es del agente.
+
+```text
+$ mt check "avisar de historias casi listas"
+# Check · Maker Tracker · MT
+
+Proposal: avisar de historias casi listas
+Searched for: avisar, historias, casi, listas
+
+4 results, most relevant first. They are candidates: whether the proposal clashes with them is for you to judge.
+
+D-80 · claude · 2026-11-09 · decision in force
+  Una historia está en Definiendo o Lista: no hay estados intermedios ni avisos de «casi lista»
+  Why: Fran: lo que le falta a una historia ya se ve al definirla. Un estado o una tarjeta intermedia añade una tercera categoría sin cambiar lo que hay que hacer. Se descarta MT-66.
+  Matches: avisar, historias, casi, listas (title, why)
+
+MT-66 · claude · 2026-11-09 · story idea · inbox
+  «Casi listas» · qué le falta a cada historia para estar Lista
+  Excerpt: …el aviso dice cuántas están casi…
+  Matches: avisar, historias, casi, listas (title, body, comments)
+
+D-79 · claude · 2026-11-09 · decision superseded by D-91 (Maker Tracker hace tres cosas: definir el producto,…)
+  Maker Tracker hace tres cosas: definir, repartir y atender
+  Why: Repartir y atender son el producto: avisar a Fran de lo que espera…
+  Matches: avisar, historias (why)
+
+Brief · Fuera de alcance · fran · 2026-10-13
+  - Construir y probar: repartir trabajo entre agentes, reservas, paradas, avisos de construcción y QA son de Relay (D-91, D-97).
+  Matches: avisar (text)
+
+Next:
+  mt show MT-66
+  mt decide "…" --why "…" --supersedes D-80
+  mt comment MT-66 "…"
+  mt create "…"
+```
+
+- Busca en el servidor con **FTS5 de SQLite** (bm25) sobre títulos, cuerpos y comentarios de las historias de cualquier estado, títulos y porqués de las decisiones (vigentes y sustituidas) y el brief partido en fragmentos (un párrafo o un elemento de lista, con su sección). El título pesa más que el cuerpo y los comentarios menos; los fragmentos de `Principios` y `Fuera de alcance` pesan más y las decisiones sustituidas algo menos. Cada palabra se busca por su raíz (sin tildes, plurales, género ni infinitivo: «listas» encuentra «lista» y «listo»); no cuentan las palabras vacías ni el nombre del proyecto.
+- Como mucho **10 resultados**, ordenados por relevancia y premiando los que coinciden en más palabras; los que no llegan al 15 % del primero no salen. Pocos y densos, no un volcado.
+- Cada resultado: referencia completa, quién y cuándo (en una decisión, quien la tomó; en una historia hecha, quien la cerró, y si no, quien la creó; en el brief, su última edición), qué es (`decision in force`, `decision superseded by D-12 (título)`, con el título recortado a 60 caracteres por palabra, `story <estado> · <hito>`), el título, el porqué o un extracto y `Matches:` con las palabras que coinciden y dónde (`title`, `why`, `body`, `comments`, `section`, `text`).
+- Si ningún resultado coincide en más de la mitad de las palabras, lo dice (`the proposal may be new`) y `Next:` empieza por `mt create`.
+- `Next:` según lo que sale: `mt show` de la primera historia, `mt decide --supersedes` si hay una decisión vigente entre las tres primeras, `mt comment` en la primera historia sin hacer y `mt create`.
+- Sin resultados: `Nothing in the decisions, the stories or the brief matches. Try other words: …` y `Next:` con `mt check "<other words>"`, `mt decisions`, `mt roadmap` y `mt create "…"`. Si la propuesta no tiene palabras que cuenten (`que de la`), `VALIDATION_FAILED`.
+- En `--json`, `data.terms` y `data.results`: cada uno con `type` (`decision`, `story` o `brief`), su referencia o sección, `actor`, `date`, `state`, `superseded_by` y `superseded_by_title` (entero), `milestone`, `why` o `excerpt`, `matches`, `matched_in` y `score`. Es el mismo endpoint (`GET`/`POST /api/projects/:key/check`) que usará el MCP.
 
 ## Preguntas (MT-29)
 
