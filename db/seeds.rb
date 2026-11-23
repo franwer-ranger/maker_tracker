@@ -71,7 +71,7 @@ def seed_story(project, number, title, milestone: nil, state: :idea, claimed_by:
   story
 end
 
-def story_body(historia: "", criterios: [], fuera: "", notas: "")
+def story_body(historia: "", criterios: [], probarlo: "", fuera: "", notas: "")
   <<~MARKDOWN
     ## Contexto
 
@@ -82,6 +82,12 @@ def story_body(historia: "", criterios: [], fuera: "", notas: "")
     ## Criterios de aceptación
 
     #{criterios.each_with_index.map { |c, i| "#{i + 1}. #{c}" }.join("\n")}
+
+    ## Cómo probarlo
+
+    #{probarlo}
+
+    ## Qué cambia del producto
 
     ## Fuera de alcance
 
@@ -135,7 +141,10 @@ m2_done = [
   seed_story(postgram, 47, "Borradores automáticos", milestone: m2, state: :done, labels: %w[editor],
              body: story_body(historia: "Como maker, quiero que mi post se guarde solo, para no perder lo que escribo.",
                               criterios: [ "Mientras escribes, el post se guarda solo cada pocos segundos.", "Si cierras la pestaña y vuelves, el borrador sigue ahí.",
-                                           "Los borradores salen en la lista de posts con la etiqueta «Borrador»." ])),
+                                           "Los borradores salen en la lista de posts con la etiqueta «Borrador»." ],
+                              # El texto de la tarjeta de PG-47 en 5.9 Actividad (MT-52).
+                              probarlo: "Abre un post nuevo, escribe dos líneas y espera unos segundos sin guardar. Cierra la pestaña y vuelve a Posts: " \
+                                        "el post sigue ahí con la etiqueta «Borrador».")),
   seed_story(postgram, 43, "Subir varias imágenes a la vez", milestone: m2, state: :done, labels: %w[editor],
              body: story_body(historia: "Como maker, quiero subir varias imágenes de una vez, para no repetir el gesto.",
                               criterios: [ "Puedo elegir varias imágenes en un solo selector.", "Cada imagen sale en el post en el orden en que la elegí." ])),

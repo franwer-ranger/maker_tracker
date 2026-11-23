@@ -385,6 +385,9 @@ $ mt qa
 2 stories waiting for QA.
 
 PG-47  Borradores automáticos          done 2026-10-20 18:40 by codex  https://testing.postgram.app
+       How to test
+       Abre un post nuevo, escribe dos líneas y espera unos segundos sin guardar. Cierra la pestaña y vuelve a Posts: el post sigue ahí con la etiqueta «Borrador».
+       Criteria
        1 Mientras escribes, el post se guarda solo cada pocos segundos.
        2 Si cierras la pestaña y vuelves, el borrador sigue ahí.
        4f3e2a1 · Guarda el borrador cada pocos segundos
@@ -395,6 +398,8 @@ Next:
   mt show PG-47
   mt show PG-43
 ```
+
+Si la historia tiene texto en `## Cómo probarlo` (sin contar la guía de la plantilla, que es un comentario HTML), sale bajo el título con `How to test` y, debajo, `Criteria` sobre los criterios (MT-52); sin él, solo los criterios numerados, sin etiqueta. En `--json`, cada historia lleva `how_to_test` (si lo tiene) y `criteria`.
 
 ```text
 $ mt qa PG-47 ok [--note "…"]
