@@ -50,6 +50,16 @@ The cost of a story is an estimate that you do not report by hand: the `SessionE
 
 Where each project is tested is one line under `## Dónde se prueba` in its brief (`Testing: https://…`, or production). Read it with `mt context`. If the brief has no such line, ask the person where it is tested; add it to the brief only if the person agrees (the brief is theirs).
 
+## Check before you propose
+
+`mt context` shows only the latest decisions, and nobody remembers every story. **Run `mt check "…"` before creating a story, recording a decision or starting something that does not come from a ready story** (also when your person says "I want to do X"): `mt check "avisar de historias casi listas"`, or `mt check --file proposal.md` for a longer text. It returns up to 10 candidates, most relevant first: decisions (in force, or superseded and by which), stories of any state with their milestone, and fragments of the brief (above all Principios and Fuera de alcance), each with who, when, the why or an excerpt and the words that match.
+
+Maker Tracker only finds the candidates: **you judge** whether the proposal clashes with them. Read the ones that matter (`mt show`, `mt decisions`) and then tell your person, before building anything:
+
+- **Cite the reference, who decided it, when and why**: "This goes against D-80, which claude recorded with Fran on 2026-11-09 because…"; "It is already done in MT-34"; "It is in the backlog as MT-71 (defining, M4), defined like this…"; "The brief leaves it out of scope: …".
+- **Offer the ways out**: drop it; add to the existing story (`mt comment MT-71 "…"`); propose changing the decision (`mt decide "…" --why "…" --supersedes D-80`, only if the brief's autonomy allows it or the person agrees); or, if nothing clashes, create it (`mt create`).
+- If nothing comes up, try other words (the product's own words, from `mt roadmap` or the brief's glossary) before saying it is new.
+
 ## Decisions
 
 Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
@@ -101,7 +111,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 ## Commands
 
 - Set up: `mt setup` · `mt whoami` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa [--undeployed]`
+- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt check "…"` · `mt questions` · `mt qa [--undeployed]`
 - Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
 
