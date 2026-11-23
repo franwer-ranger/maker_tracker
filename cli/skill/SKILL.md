@@ -1,6 +1,6 @@
 ---
 name: maker-tracker
-description: How to work with Maker Tracker using the mt CLI. Use it when asked "what's next?", when picking up, building or closing a story, when leaving a question or a decision, when writing or reordering the backlog (stories, milestones, brief), and when asked to bring a project to Maker Tracker ("lleva este proyecto a Maker Tracker", "onboard this repo").
+description: How to work with Maker Tracker using the mt CLI. Use it when asked "what's next?", when picking up, building or closing a story, when leaving a question or a decision, when writing or reordering the backlog (stories, milestones, brief), when reading or updating the product documentation (mt doc), and when asked to bring a project to Maker Tracker ("lleva este proyecto a Maker Tracker", "onboard this repo").
 ---
 
 # Maker Tracker with `mt`
@@ -61,6 +61,7 @@ The brief's `## Autonomía` section (or its equivalent in the project's language
 - **What it allows, do it.** If it is a choice someone would want to know about later, record it with `mt decide … --story PG-49`.
 - **Everything else, ask** in the story (`mt comment`) and wait for the answer, even if `mt` would let you do it.
 - If the brief has no such section, ask before marking a story as ready, editing the brief, or creating, reordering or closing milestones.
+- **Documentation pages**: you may edit the pages (`mt doc edit`) that the story you work on changes. Creating, splitting, merging or deleting a capability is a product decision: ask first (`mt ask`), whatever the brief says.
 
 ## Writing the product
 
@@ -73,6 +74,7 @@ Agents also write the backlog, directly and on the record (every change is logge
 - **State**: `mt move PG-49 ready` only if it has no open questions and, if it is UI work (label `ui`), it has a mockup. If `mt` warns that it doesn't meet the rule, move it back to defining or fix it.
 - **Order**: order is priority. `mt reorder PG-49 --position 1 [--milestone M3] --reason "…"` and `mt milestone reorder M3 --position 2 --reason "…"`. A milestone's code (`M3`) is stable: it is its own number, it never changes when reordering and **doesn't tell the order** (the roadmap does). **Always with a reason**: it's what gets read later. If the change matters, also record it with `mt decide`.
 - **Milestones and brief**: `mt milestone create|edit|close|reopen`, `mt brief` to read it and `mt brief --file f.md` to replace it (keep its `version:` frontmatter), `mt milestone show M2` to read a milestone with its version.
+- **Documentation** (how the product is today, by capability): `mt doc` lists the pages (the cover, which is the brief, the capabilities and the cross-cutting pages) and `mt context` ends the brief with their index. `mt doc board > f.md`, change it and `mt doc edit board --file f.md` (same `version:` and `CONFLICT` as `mt edit`). When a story changes how a capability works, update its page in the same story. `mt doc create <slug> --title "…" [--type crosscutting] [--area …]` and `mt doc delete <slug>` only after asking.
 
 ## Onboard an existing project
 
@@ -101,8 +103,8 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 ## Commands
 
 - Set up: `mt setup` · `mt whoami` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa [--undeployed]`
+- Read: `mt context` · `mt doc [<page>]` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt questions` · `mt qa [--undeployed]`
 - Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
-- Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt milestone …`
+- Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt doc edit|create|delete` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

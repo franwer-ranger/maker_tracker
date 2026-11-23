@@ -26,7 +26,7 @@ La app sigue en español. Si enseña un comando o una clave (`mt next`, `ready`)
 
 ## `mt context`
 
-El onboarding del agente. Lo inyecta el hook `SessionStart`, así que tiene que caber en poco: brief entero, 5 decisiones vigentes, hito actual y lo que está en curso.
+El onboarding del agente. Lo inyecta el hook `SessionStart`, así que tiene que caber en poco: brief entero (la portada de la documentación), el índice de capacidades, 5 decisiones vigentes, hito actual y lo que está en curso.
 
 ```markdown
 # Postgram · PG
@@ -50,6 +50,14 @@ Agencias y gestión de clientes. Generar contenido con IA por el usuario.
 ## Glosario
 
 Post: lo que escribe el maker, una vez. Publicación: cada copia de un post en una red.
+
+## Documentation
+
+calendario  Calendario        Publicar
+editor      Editor            Publicar
+redes       Redes conectadas  cross-cutting
+
+Read one with mt doc <slug>.
 
 ## Decisions in force
 
@@ -88,6 +96,60 @@ Next:
 - `## Open questions` (MT-29) solo sale si el proyecto tiene preguntas abiertas: historia, id de la pregunta, quién la hizo, cuánto lleva esperando y si bloquea. Las opciones están en `mt show`.
 - `## Ready work` (MT-33) es la misma cifra que «Trabajo listo» en la app (Actividad y cabeceras del tablero y del roadmap): historias Listas y desbloqueadas (sin `blocked by`, ni historia pendiente ni pregunta bloqueante abierta, como `mt next`) en **todos** los hitos abiertos, no solo el actual, y cuántas hay en Definiendo. En el ejemplo: PG-49 y PG-31 (PG-50 espera a una pregunta). Con 2 o menos, la app avisa a fran en «Te toca». `mt roadmap` la repite bajo el título. En `--json`, `ready_work: { ready, defining }`.
 - Sin hito abierto, `## Current milestone` dice `No open milestone.` y sugiere `mt roadmap`.
+- `## Documentation` (MT-89) es el índice de la documentación: una línea por capacidad (slug, título y área) y por página transversal (`cross-cutting` en lugar del área), por área y título. La portada no sale: es el brief de arriba. Sin páginas: `No capabilities yet. Create one with mt doc create <slug> --title "…".` En `--json`, `documentation[]` con `slug`, `type`, `title` y `area`.
+
+## `mt doc` (MT-89)
+
+La documentación del producto por capacidades: cómo es hoy, sin leer el código ni las historias. Tres tipos de página: la portada (`cover`, que **es el brief**, D-92), las capacidades (`capability`) y las transversales (`crosscutting`). Se citan por su slug (minúsculas, números y guiones), que no cambia. `create`, `edit`, `delete`, `list` y `show` no pueden ser slugs.
+
+```text
+$ mt doc
+4 pages in PG: the cover, 2 capabilities and 1 cross-cutting.
+
+cover       cover          Postgram
+calendario  capability     Calendario        Publicar
+editor      capability     Editor            Publicar
+redes       cross-cutting  Redes conectadas
+
+Next:
+  mt doc <slug>
+  mt doc create <slug> --title "…"
+```
+
+`mt doc editor` imprime la página en el formato que acepta `mt doc edit`, como `mt show` y `mt edit`: frontmatter, cuerpo y, tras la marca, el historial (10 eventos), que se ignora al editar.
+
+```text
+$ mt doc editor
+---
+slug: editor
+version: 2
+type: capability
+title: Editor
+icon: pencil-square
+area: Publicar
+---
+
+## Qué hace hoy
+
+Un solo editor para escribir el post una vez.
+
+<!-- mt: read-only below this line; mt doc edit ignores it -->
+
+## History
+
+22:31             claude  edited page editor (body)
+2026-10-15 10:02  fran    created page editor (capability)
+
+Next:
+  mt doc edit editor --file <f.md>
+```
+
+- `mt doc edit editor --file f.md` cambia título, tipo (`capability` ↔ `crosscutting`), icono, área y cuerpo. Responde `editor · Editor (capability) edited by claude.` o `… did not change.`. El `version:` se comprueba como en `mt edit` (ver «Conflictos de edición»). Cambiar el slug es un error (`editing does not change the slug.`); la portada no deja de ser portada.
+- `mt doc cover` y `mt doc edit cover --file f.md` leen y escriben el brief, igual que `mt brief` (mismo texto, misma versión, mismo evento `brief.edited`). `mt brief` no cambia de formato.
+- `mt doc create editor --title "Editor" [--type crosscutting] [--area Publicar] [--icon …] [--file f.md]` crea una capacidad (sin `--type`) o una transversal: `editor · Editor (capability) created.` Las opciones mandan sobre el fichero. La portada no se crea (ya existe en cada proyecto).
+- `mt doc delete editor` la borra (`editor · Editor (capability) deleted.`); su historial sigue en los eventos (`page.deleted`). La portada no se borra.
+- **Autonomía**: un agente edita las páginas que cambia la historia en la que trabaja; crear, separar, juntar o borrar capacidades lo pregunta antes (`mt ask`). La API no lo impide: lo dicen la skill y la sección `## Autonomía` de la plantilla del brief.
+- `--json`: `pages[]` (índice) o `page` con `slug`, `type`, `title`, `icon`, `area`, `version` y `body`.
 
 ## `mt daily`
 
@@ -598,7 +660,7 @@ Hint: mt reorder PG-50 --position 1 --reason "why it goes first"
 
 ## Conflictos de edición
 
-Historias, brief y hitos llevan una versión (MT-37, decisión D-43: la protección está en la API; la UI nunca se bloquea). Se lee en `mt show` (`version:` del frontmatter), en `mt brief` (frontmatter `---\nversion: 3\n---` encima del texto) y en `mt milestone show M2`. `mt edit --file` y `mt brief --file` la mandan sin que el agente haga nada, porque ya va en el fichero; `mt milestone edit M2 --version 3 …` la lleva como opción. Si no se manda versión no se comprueba.
+Historias, brief, páginas de la documentación y hitos llevan una versión (MT-37, decisión D-43: la protección está en la API; la UI nunca se bloquea). Se lee en `mt show` (`version:` del frontmatter), en `mt brief` (frontmatter `---\nversion: 3\n---` encima del texto), en `mt doc editor` y en `mt milestone show M2`. `mt edit --file`, `mt doc edit --file` y `mt brief --file` la mandan sin que el agente haga nada, porque ya va en el fichero; `mt milestone edit M2 --version 3 …` la lleva como opción. Si no se manda versión no se comprueba.
 
 Si la versión no es la actual, la API responde `CONFLICT` (HTTP 409, no reintentable tal cual) y no guarda nada. Quién cambió y cuándo salen del último evento de edición:
 
@@ -608,7 +670,7 @@ Error: PG-49 changed since you read it: fran edited it at 10:42 (you had version
 Hint: Someone changed it (fran, 10:42). Read it again with mt show PG-49 and apply your changes on top.
 ```
 
-El mismo error en `mt brief --file` (`Read it again with mt brief …`) y `mt milestone edit` (`… mt milestone show M2 …`). Con `--json`, `error.details` trae `expected_version` y `current_version`. `mt milestone show` imprime:
+El mismo error en `mt brief --file` (`Read it again with mt brief …`), `mt doc edit` (`page editor changed since you read it …`, `… mt doc editor …`) y `mt milestone edit` (`… mt milestone show M2 …`). Con `--json`, `error.details` trae `expected_version` y `current_version`. `mt milestone show` imprime:
 
 ```text
 $ mt milestone show M2
