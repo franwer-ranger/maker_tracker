@@ -14,7 +14,7 @@ class Api::PagesController < Api::BaseController
   end
 
   def show
-    render_ok({ page: page_data(page), markdown: Api::Markdown::Page.new(page).to_s },
+    render_ok({ page: page_data(page, decisions: true), markdown: Api::Markdown::Page.new(page).to_s },
       summary: "#{label(page)} (version #{page.version}).", breadcrumbs: [ "mt doc edit #{page.slug} --file <f.md>" ])
   end
 
@@ -93,7 +93,11 @@ class Api::PagesController < Api::BaseController
     "#{Api::Markdown::Formatting.plural(pages.size, 'page')} in #{project.key}: #{Api::Markdown::Formatting.sentence(parts)}."
   end
 
-  def page_data(page)
-    { slug: page.slug, type: page.kind, title: page.title, icon: page.icon, area: page.area, version: page.version, body: page.body }
+  # Con `decisions:`, las vigentes que la rigen (MT-90), como en `mt doc <slug>`.
+  def page_data(page, decisions: false)
+    data = { slug: page.slug, type: page.kind, title: page.title, icon: page.icon, area: page.area, version: page.version, body: page.body }
+    return data unless decisions && !page.cover?
+
+    data.merge(decisions: Api::Markdown::Page.decisions_in_force(page).map { Api::Markdown::Formatting.decision_data(it) })
   end
 end

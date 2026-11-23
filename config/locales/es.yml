@@ -24,6 +24,7 @@ es:
       reserved_slug: "es un subcomando de mt doc (%{value}); elige otro"
       cover_kind: "no puede pasar a portada ni dejar de serlo: la portada es el brief"
       cover_body_only: "no cambia en la portada: de la portada solo cambia el cuerpo (el brief)"
+      cover_not_capability: "no puede incluir la portada: una decisión rige capacidades y páginas transversales"
       too_few: "necesita al menos 2 opciones"
       not_an_option: "tiene que ser el número de una de las %{count} opciones"
       required_when_non_blocking: "es obligatoria si la pregunta no bloquea: es la que sigue el agente"

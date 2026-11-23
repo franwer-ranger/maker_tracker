@@ -87,6 +87,21 @@ class Story < ApplicationRecord
       .reorder(:number).includes(:actor, :superseded_by)
   end
 
+  # Las capacidades que cambia la historia (MT-90): las páginas de la
+  # documentación (no la portada) que su sección «## Qué cambia del producto»
+  # nombra por slug o por título, como palabra entera. Las decisiones de la
+  # historia las heredan al registrarse.
+  CHANGES_SECTION = /^\#\# Qué cambia del producto[ \t]*$(.*?)(?=^\#\# |\z)/m
+
+  def changed_capabilities
+    section = body.to_s[CHANGES_SECTION, 1].to_s.gsub(/<!--.*?-->/m, "")
+    return [] if section.blank?
+
+    project.pages.documentation.ordered.select do |page|
+      [ page.slug, page.title ].any? { section.match?(/(?<![\p{Word}-])#{Regexp.escape(it)}(?![\p{Word}-])/i) }
+    end
+  end
+
   def labels = super || []
   def blocked_by = super || []
 

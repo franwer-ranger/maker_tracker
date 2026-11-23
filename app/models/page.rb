@@ -17,6 +17,9 @@ class Page < ApplicationRecord
   EDITABLE_FIELDS = %w[title icon area body kind].freeze
 
   belongs_to :project
+  # Las decisiones que rigen la página (MT-90). Al borrarla se va el enlace, no la decisión.
+  has_many :decision_capabilities, dependent: :delete_all
+  has_many :decisions, through: :decision_capabilities
 
   enum :kind, { cover: "cover", capability: "capability", crosscutting: "crosscutting" }, default: :capability, validate: true
 
@@ -38,10 +41,15 @@ class Page < ApplicationRecord
   scope :ordered, -> { in_order_of(:kind, kinds.values).order(Arel.sql("area IS NULL"), :area, :title) }
   scope :documentation, -> { where.not(kind: :cover) }
 
-  # Sus eventos, del más reciente al más antiguo. Los de la portada son los del brief.
+  # Sus eventos, del más reciente al más antiguo. Los de la portada son los del
+  # brief; los de las demás, sus cambios y el registro de las decisiones que la
+  # rigen (MT-90), también las ya sustituidas.
   def history
     events = project.events.recent_first
-    cover? ? events.where(action: "brief.edited") : events.where("json_extract(data, '$.page_id') = ?", id)
+    return events.where(action: "brief.edited") if cover?
+
+    events.where("json_extract(data, '$.page_id') = ?", id)
+      .or(events.where(action: "decision.recorded").where("json_extract(data, '$.number') IN (?)", decisions.pluck(:number)))
   end
 
   # Título, icono, área, tipo y cuerpo. Con `version:` (la que leyó quien edita)

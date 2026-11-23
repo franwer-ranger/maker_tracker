@@ -17,6 +17,7 @@ en:
       reserved_slug: "is a subcommand of mt doc (%{value}); pick another"
       cover_kind: "can't change to or from cover: the cover is the brief"
       cover_body_only: "can't change on the cover: the cover only changes its body (the brief)"
+      cover_not_capability: "can't include the cover: a decision governs capabilities and cross-cutting pages"
       too_few: "needs at least 2 options"
       not_an_option: "must be the number of one of the %{count} options"
       required_when_non_blocking: "is required when the question is non-blocking: the agent carries on with it"
