@@ -25,6 +25,9 @@ module StoriesHelper
     when "project.deployed" then deployed_sentence(event)
     when "decision.recorded" then "Se decide D-#{data['number']}"
     when "brief.edited" then "#{event.actor.name} edita el brief"
+    when "page.created" then "#{event.actor.name} crea la página #{data['slug']}"
+    when "page.edited" then "#{event.actor.name} edita la página #{data['slug']}"
+    when "page.deleted" then "#{event.actor.name} borra la página #{data['slug']}"
     when "milestone.created" then "#{event.actor.name} crea el hito #{data['title']}"
     when "milestone.edited" then "#{event.actor.name} edita #{milestone_event_ref(event)}"
     when "milestone.closed" then "#{event.actor.name} cierra #{milestone_event_ref(event)}"

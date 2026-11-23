@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_23_230000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_000000) do
   create_table "actors", force: :cascade do |t|
     t.string "name", null: false
     t.string "kind", null: false
@@ -79,6 +79,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_230000) do
     t.index ["project_id", "number"], name: "index_milestones_on_project_id_and_number", unique: true
     t.index ["project_id", "position"], name: "index_milestones_on_project_id_and_position", unique: true
     t.index ["project_id"], name: "index_milestones_on_project_id"
+  end
+
+  create_table "pages", force: :cascade do |t|
+    t.integer "project_id", null: false
+    t.string "kind", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.string "icon"
+    t.string "area"
+    t.text "body", default: "", null: false
+    t.integer "version", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["project_id", "slug"], name: "index_pages_on_project_id_and_slug", unique: true
+    t.index ["project_id"], name: "index_pages_on_project_id"
+    t.index ["project_id"], name: "index_pages_on_project_id_one_cover", unique: true, where: "kind = 'cover'"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -179,6 +195,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_23_230000) do
   add_foreign_key "events", "projects"
   add_foreign_key "events", "stories"
   add_foreign_key "milestones", "projects"
+  add_foreign_key "pages", "projects"
   add_foreign_key "push_subscriptions", "actors"
   add_foreign_key "questions", "actors"
   add_foreign_key "questions", "actors", column: "answered_by_id"

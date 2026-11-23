@@ -54,6 +54,7 @@ Rails.application.routes.draw do
         end
       end
       resource :brief, only: %i[show update]
+      resources :pages, path: "docs", param: :slug, only: %i[index show create update destroy]
     end
     match "*path", to: "base#route_not_found", via: :all
   end

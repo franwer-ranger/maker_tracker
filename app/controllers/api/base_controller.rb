@@ -145,6 +145,7 @@ class Api::BaseController < ActionController::API
     subject, reread = case record
     when Story then [ record.reference, "mt show #{record.reference}" ]
     when Milestone then [ record.code, "mt milestone show #{record.code}" ]
+    when Page then record.cover? ? [ "the brief of #{record.project.name}", "mt brief" ] : [ "page #{record.slug}", "mt doc #{record.slug}" ]
     else [ "the brief of #{record.name}", "mt brief" ]
     end
     Api::Error.new("CONFLICT", "#{subject} changed since you read it (you had version #{conflict.expected}, it is on #{conflict.current}). Nothing was saved.",

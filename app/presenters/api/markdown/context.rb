@@ -21,7 +21,7 @@ class Api::Markdown::Context
   def ready_work = @ready_work ||= ReadyWork.for(@project)
 
   def to_s
-    [ "# #{@project.name} · #{@project.key}", edited_line, brief, decisions_section,
+    [ "# #{@project.name} · #{@project.key}", edited_line, brief, documentation_section, decisions_section,
       milestone_section, ready_work_section, in_progress_section, questions_section ].compact.join("\n\n") + "\n"
   end
 
@@ -35,6 +35,25 @@ class Api::Markdown::Context
   end
 
   def brief = @project.brief.strip.presence || "No brief yet. Write it with mt brief --file <f.md>."
+
+  # El índice de la documentación (MT-89): una línea por capacidad o
+  # transversal, con su área. La portada es el brief de arriba.
+  #   board    Tablero  Planificar
+  #   agents   Agentes  cross-cutting
+  def documentation_section
+    pages = @project.pages.documentation.ordered.to_a
+    return "## Documentation
+
+No capabilities yet. Create one with mt doc create <slug> --title \"…\"." if pages.empty?
+
+    rows = pages.map { [ it.slug, it.title, it.crosscutting? ? "cross-cutting" : it.area.to_s ] }
+    "## Documentation
+
+#{table(rows).join("
+")}
+
+Read one with mt doc <slug>."
+  end
 
   # D-14  PDFs con Prawn, sin servicios externos
   #       Why: autoalojado y sin coste por documento. · claude · 2026-10-16 · PG-48
