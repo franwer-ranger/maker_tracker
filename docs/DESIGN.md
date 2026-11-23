@@ -89,7 +89,7 @@ La base de componentes es la de shadcn sin React: [Basecoat](https://basecoatui.
 | `--radius` | 8 (`radius-lg`; de ahí salen 4 · 6 · 8 · 12) |
 | `--sidebar-*` | `bg`, `text-muted`, `accent`, `surface`, `border` |
 
-`--destructive` y `--chart-*` no tienen token y se quedan con los de Basecoat. Ojo con `accent`: en las clases (`bg-accent`, `text-accent`) sigue siendo el naranja de Paper, mientras que el `--accent` de shadcn es el fondo de hover (`surface`); un componente de Basecoat que pinte `bg-accent` sale naranja.
+`--destructive` y `--chart-*` no tienen token y se quedan con los de Basecoat. Ojo con `accent`: en las clases (`bg-accent`, `text-accent`) sigue siendo el naranja de Paper, mientras que el `--accent` de shadcn es el fondo de hover (`surface`); un componente de Basecoat que pinte `bg-accent` sale naranja. Lo mismo con `muted`: la clase del texto atenuado es `text-text-muted`, porque `text-muted` es el `--muted` de shadcn (`surface`) y saldría casi invisible.
 
 ## Iconos
 

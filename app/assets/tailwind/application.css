@@ -148,12 +148,10 @@
   height: 44px;
 }
 
-/* Atajos: text-soft, text-muted, text-subtle y border-strong (el borde por defecto ya es `border`). */
+/* Atajos: text-soft, text-subtle y border-strong (el borde por defecto ya es `border`). Sin atajo
+   text-muted: chocaría con el `--color-muted` de Basecoat (fondo `surface`); se escribe text-text-muted. */
 @utility text-soft {
   color: var(--color-text-soft);
-}
-@utility text-muted {
-  color: var(--color-text-muted);
 }
 @utility text-subtle {
   color: var(--color-text-subtle);
@@ -194,7 +192,9 @@
   }
 }
 @layer components {
-  /* Basecoat (collapsible) pone todos los <summary> en inline-flex. */
+  /* Basecoat (collapsible) pone todos los <summary> en inline-flex.
+     revert-layer: vuelve al valor de antes de la capa components (preflight); las clases de utilidad
+     siguen mandando. */
   details summary {
     display: revert-layer;
     align-items: revert-layer;
