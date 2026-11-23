@@ -1,0 +1,12 @@
+/* Collapsible */
+@layer components {
+  details {
+    summary {
+      @apply inline-flex items-center cursor-pointer;
+    }
+  }
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
