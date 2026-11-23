@@ -466,6 +466,38 @@ A mano hace lo mismo y sirve para una sesión cuyo hook no se disparó (SIGKILL,
 
 `POST /api/projects/:key/usage` (`source`, `session_id`, `started_at`, `ended_at`, `models: [{ model, input, output, cache_read, cache_write_5m, cache_write_1h }]`, `story` opcional). wflow usará el mismo endpoint con `source: wflow`.
 
+## `mt whoami` (MT-83)
+
+Con qué actor firmas, en qué instancia y de dónde salen la URL y el token. Es lo que hay que mirar antes de crear un token «por si acaso»: un token nuevo es un actor nuevo. Usa la misma llamada que el `Connected as` de `mt setup` (`GET /api/projects`, que devuelve `actor` y `actor_kind`). Con `MT_URL` o `MT_TOKEN` en el entorno, el origen lo dice y, si el fichero también tiene valor, que el entorno manda (`over …`). `Project:` sale solo si hay un `.mt` hacia arriba desde el directorio actual.
+
+```text
+$ mt whoami
+claude (agent) at https://tower.your-tailnet.ts.net
+
+URL from:    ~/.config/mt/config
+Token from:  MT_TOKEN (environment), over ~/.config/mt/config
+Project:     PG (~/code/postgram/.mt)
+
+Next:
+  mt context
+```
+
+Fuera de un repo con `.mt` no hay línea `Project:` y el `Next:` es `mt projects`. Con una instancia que aún no devuelve `actor_kind`, la primera línea va sin `(agent)`.
+
+Errores, con código 1 y siempre sugiriendo `mt setup`:
+
+```text
+$ mt whoami
+Error: the token from MT_TOKEN (environment) is not valid on https://tower.your-tailnet.ts.net.
+Hint: MT_TOKEN takes precedence over ~/.config/mt/config: fix or unset it, or run mt setup <url> <token>. Create the token on the server with bin/rails "mt:token[your-name]" only if you don't have one yet.
+
+$ mt whoami
+Error: mt is not configured: no url in ~/.config/mt/config and no MT_URL.
+Hint: run mt setup <url> <token>. Create the token on the server with bin/rails "mt:token[your-name]" only if you don't have one yet.
+```
+
+`--json` imprime el sobre de la API, que aquí arma `mt`: `data` lleva `actor: {name, kind}`, `url`, `url_source` y `token_source` (`env` o `file`; vacío si no hay), `config_path` (la ruta completa) y `project: {key, file}` o `null`. Si falla, `ok: false`, el mismo `data` sin `actor` y `error.code`: `UNAUTHORIZED`, `NOT_CONFIGURED`, `UNREACHABLE` (no hay conexión; el único con `retryable: true`) o `UNEXPECTED_RESPONSE` (la URL no responde como Maker Tracker o no dice el actor del token: revisa la URL, reintentar no lo arregla). Los avisos (un `.mt` sin `project:`) salen también si falla: en `warnings` con `--json` y como `Warning:` por stderr, antes del `Error:`, sin él.
+
 ## Escribir
 
 Una línea con lo que ha pasado, los avisos y `Next:`. Con una historia con la label `ui` y sin mockup, `move … ready` añade también `Warning: it has the ui label but no mockup.`

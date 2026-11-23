@@ -92,7 +92,7 @@ func (c *Client) Do(method, path string, query url.Values, body any) (*Envelope,
 
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
-		return nil, &hintedError{msg: fmt.Sprintf("can't connect to %s: %v.", c.URL, err), hint: "check that the instance is up and Tailscale is on."}
+		return nil, &hintedError{msg: fmt.Sprintf("can't connect to %s: %v.", c.URL, err), hint: "check that the instance is up and Tailscale is on.", retryable: true}
 	}
 	defer resp.Body.Close()
 
