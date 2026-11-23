@@ -1,4 +1,4 @@
-# El onboarding de un agente (`mt context`, docs/CLI.md): brief entero, las
+# El onboarding de un agente (`mt context`, docs/CLI.md): brief entero (la portada), el índice de la documentación, las
 # decisiones vigentes más recientes, hito actual, trabajo listo y lo que está en curso.
 class Api::Markdown::Context
   include Api::Markdown::Formatting

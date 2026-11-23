@@ -13,7 +13,7 @@ module Api::Operations
 
     # Leer (#016). Lo que lee un agente va también en data.markdown (docs/CLI.md).
     { method: "GET", path: "/api/projects/:key/context", params: {}, command: "mt context",
-      description: "Brief, latest decisions in force, current milestone and what is in progress" },
+      description: "Brief (the cover), the index of the documentation, latest decisions in force, current milestone and what is in progress" },
     { method: "GET", path: "/api/projects/:key/next", params: {}, command: "mt next",
       description: "First ready, unblocked story of the open milestones, whole and with why. NOTHING_READY if there is none" },
     { method: "GET", path: "/api/projects/:key/roadmap", params: { closed: "true to include closed milestones" }, command: "mt roadmap [--closed]",

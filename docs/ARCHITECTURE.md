@@ -100,7 +100,7 @@ Inspirada en las CLIs de 37signals para agentes y en el MCP de Paper.
 
 | Comando | Qué hace |
 |---|---|
-| `mt context` | Brief, últimas decisiones, hito actual y lo que está en curso, en markdown compacto. Es el onboarding del agente |
+| `mt context` | Brief (la portada), índice de la documentación, últimas decisiones, hito actual y lo que está en curso, en markdown compacto. Es el onboarding del agente |
 | `mt next` | Primera historia **Lista** y no bloqueada (`blocked_by` sin terminar) del primer hito abierto, entera y con el motivo de que sea esa |
 | `mt roadmap` | El roadmap en markdown, generado en vivo |
 | `mt show <n>` | Una historia completa en markdown |
