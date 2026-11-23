@@ -26,10 +26,9 @@ class Api::MilestonesController < Api::BaseController
     position = Integer(params.require(:position).to_s, exception: false)
     raise Api::Error.validation("position must be a number from 1.", hint: "--position 1 puts it first.") unless position&.positive?
 
-    from = milestone.code
     changed = milestone.reorder!(position: position, actor: Current.actor, reason: params[:reason])
     render_ok(milestone_data(milestone),
-      summary: changed ? "#{from} is now #{label(milestone)}." : "#{label(milestone)} was already there.",
+      summary: changed ? "#{label(milestone)} is now number #{milestone.position} in the roadmap." : "#{label(milestone)} was already there.",
       breadcrumbs: [ "mt roadmap" ])
   end
 

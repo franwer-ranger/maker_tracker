@@ -1,5 +1,5 @@
-# Número correlativo por proyecto que nunca se reutiliza (PG-48, D-14). Usa un
-# contador en el proyecto (`last_<modelo>_number`) reservado con un bloqueo.
+# Número correlativo por proyecto que nunca se reutiliza (PG-48, D-14), para
+# historias, decisiones e hitos (MT-61). Usa un contador en el proyecto (`last_<modelo>_number`) reservado con un bloqueo.
 module NumberedInProject
   extend ActiveSupport::Concern
 

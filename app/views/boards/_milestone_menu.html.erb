@@ -17,11 +17,11 @@
 <% } do %>
   <% @milestones.reject(&:closed?).each do |milestone| %>
     <% done, total = milestone.progress %>
-    <%= menu_item milestone.title, project_path(@project, hito: milestone.position), code: milestone.code,
+    <%= menu_item milestone.title, project_path(@project, hito: milestone.number), code: milestone.code,
                   meta: "#{done}/#{total}", active: milestone == @milestone %>
   <% end %>
   <% @milestones.select(&:closed?).each do |milestone| %>
-    <%= menu_item milestone.title, project_path(@project, hito: milestone.position), code: milestone.code,
+    <%= menu_item milestone.title, project_path(@project, hito: milestone.number), code: milestone.code,
                   meta: "cerrado", meta_class: "text-state-done", muted: true, active: milestone == @milestone %>
   <% end %>
   <%= menu_separator %>

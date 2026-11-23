@@ -2,7 +2,7 @@
 <nav class="flex items-center gap-2 text-control max-md:h-9 max-md:gap-1 max-md:px-2 max-md:text-sm" aria-label="Miga de pan">
   <%= link_to "Roadmap", project_roadmap_path(@project), class: "rounded-sm text-text-muted hover:text-text max-md:hidden #{ComponentsHelper::FOCUS_RING}" %>
   <span class="text-text-subtle max-md:hidden">/</span>
-  <%= link_to project_path(@project, hito: story.milestone ? story.milestone.position : "ideas"),
+  <%= link_to project_path(@project, hito: story.milestone ? story.milestone.number : "ideas"),
         class: "flex items-center gap-1 rounded-sm text-text-muted hover:text-text #{ComponentsHelper::FOCUS_RING} #{ComponentsHelper::TOUCH_TARGET}" do %>
     <%= icon "chevron-left", size: 18, class: "md:hidden" %>
     <span class="md:hidden"><%= story.milestone ? story.milestone.code : "Ideas" %></span>

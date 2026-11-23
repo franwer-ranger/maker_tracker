@@ -125,7 +125,7 @@ class Api::BaseController < ActionController::API
   # Hito por su código (M2) o su título.
   def find_milestone(value)
     value = value.to_s.strip
-    milestone = project.milestones.find_by(position: value[/\AM(\d+)\z/i, 1]) if value.match?(/\AM\d+\z/i)
+    milestone = project.milestones.find_by(number: value[/\AM(\d+)\z/i, 1]) if value.match?(/\AM\d+\z/i)
     milestone ||= project.milestones.find_by("LOWER(title) = ?", value.downcase)
     milestone || raise(Api::Error.not_found("no milestone #{value} in #{project.key}.", hint: "see them with mt roadmap --closed."))
   end

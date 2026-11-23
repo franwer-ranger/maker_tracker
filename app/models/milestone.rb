@@ -1,6 +1,8 @@
-# Un paso del roadmap. Su posición dentro del proyecto es su prioridad.
+# Un paso del roadmap. Su posición dentro del proyecto es su prioridad; su
+# número (M4), propio y estable: no cambia al reordenar (MT-61).
 class Milestone < ApplicationRecord
   include Eventable
+  include NumberedInProject
   include Versioned
 
   belongs_to :project
@@ -15,8 +17,8 @@ class Milestone < ApplicationRecord
 
   def closed? = closed_at.present?
 
-  # "M2": su número es su posición en el roadmap.
-  def code = "M#{position}"
+  # "M2": su número, que no dice el orden ni cambia al reordenar.
+  def code = "M#{number}"
 
   # [hechas, total]
   def progress = [ stories.done.count, stories.count ]

@@ -21,7 +21,7 @@ class BoardsController < ApplicationController
     when "ideas" then @filter = :ideas
     when "todos" then @filter = :all
     else
-      @milestone = @milestones.find { it.position.to_s == params[:hito] } || @project.current_milestone
+      @milestone = @milestones.find { it.number.to_s == params[:hito] } || @project.current_milestone
       @filter = @milestone ? :milestone : :ideas
     end
   end

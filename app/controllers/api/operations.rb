@@ -98,7 +98,7 @@ module Api::Operations
     { method: "PATCH", path: "/api/projects/:key/milestones/:code", params: { title: "", goal: "markdown", version: "the version you read; optional" },
       command: "mt milestone edit M2 [--title …] [--goal …] [--version n]", description: "Edits a milestone's title or goal. CONFLICT (409, nothing saved) if the version is not the current one" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/reorder", params: { position: "from 1", reason: "required for agents" },
-      command: "mt milestone reorder M3 --position 2 --reason \"…\"", description: "Changes a milestone's position (and with it, its code)" },
+      command: "mt milestone reorder M3 --position 2 --reason \"…\"", description: "Changes a milestone's position; its code stays the same" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/close", params: {}, command: "mt milestone close M2", description: "Closes a milestone" },
     { method: "POST", path: "/api/projects/:key/milestones/:code/reopen", params: {}, command: "mt milestone reopen M2", description: "Reopens a milestone" },
     { method: "GET", path: "/api/projects/:key/brief", params: {}, command: "mt brief", description: "The brief as markdown, with its version in a frontmatter" },
