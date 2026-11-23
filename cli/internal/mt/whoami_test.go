@@ -135,3 +135,70 @@ func TestWhoamiInHelp(t *testing.T) {
 		t.Errorf("whoami not in Set up:\n%s", setup)
 	}
 }
+
+// whoamiJSONError ejecuta mt whoami --json contra url y devuelve el error del sobre.
+func whoamiJSONError(t *testing.T, dir, url string) (*APIError, []string) {
+	t.Helper()
+	t.Setenv("MT_URL", "")
+	t.Setenv("MT_TOKEN", "")
+	out, _, code := runWhoamiIn(t, dir, url, "good", "--json")
+	var envl struct {
+		OK       bool
+		Warnings []string
+		Error    *APIError
+	}
+	if err := json.Unmarshal([]byte(out), &envl); err != nil {
+		t.Fatalf("%v in:\n%s", err, out)
+	}
+	if code != 1 || envl.OK || envl.Error == nil {
+		t.Fatalf("code %d, out:\n%s", code, out)
+	}
+	return envl.Error, envl.Warnings
+}
+
+func TestWhoamiJSONErrorCodes(t *testing.T) {
+	notMT := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("<html>not here</html>"))
+	}))
+	t.Cleanup(notMT.Close)
+	noActor := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"ok":true,"data":{"projects":[]}}`))
+	}))
+	t.Cleanup(noActor.Close)
+	down := httptest.NewServer(http.NotFoundHandler())
+	down.Close()
+
+	for name, tc := range map[string]struct {
+		url       string
+		code      string
+		retryable bool
+	}{
+		"not maker tracker": {notMT.URL, "UNEXPECTED_RESPONSE", false},
+		"no actor":          {noActor.URL, "UNEXPECTED_RESPONSE", false},
+		"down":              {down.URL, "UNREACHABLE", true},
+	} {
+		t.Run(name, func(t *testing.T) {
+			got, _ := whoamiJSONError(t, t.TempDir(), tc.url)
+			if got.Code != tc.code || got.Retryable != tc.retryable {
+				t.Errorf("got %+v, want %s retryable=%v", got, tc.code, tc.retryable)
+			}
+		})
+	}
+}
+
+func TestWhoamiErrorKeepsWarnings(t *testing.T) {
+	repo := t.TempDir()
+	os.WriteFile(filepath.Join(repo, ".mt"), []byte("nothing here\n"), 0o644)
+	srv := whoamiServer(t)
+
+	_, warnings := whoamiJSONError(t, repo, "")
+	if len(warnings) != 1 || !strings.Contains(warnings[0], "no \"project: KEY\" line") {
+		t.Errorf("warnings %q", warnings)
+	}
+
+	_, errOut, code := runWhoamiIn(t, repo, srv.URL, "bad")
+	warning, failure := strings.Index(errOut, "Warning: "), strings.Index(errOut, "Error: ")
+	if code != 1 || warning < 0 || failure < warning {
+		t.Errorf("code %d, stderr:\n%s", code, errOut)
+	}
+}

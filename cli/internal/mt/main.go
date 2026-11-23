@@ -125,8 +125,6 @@ func fail(stderr io.Writer, err error) int {
 		hint = e.Hint
 	case *hintedError:
 		hint = e.hint
-	case *whoamiErr:
-		hint = e.hint
 	default:
 		if errors.As(err, &usage) {
 			hint, code = usage.hint, 2

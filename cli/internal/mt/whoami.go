@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -47,8 +48,9 @@ func runWhoami(e *env) error {
 
 	if err := e.whoamiActor(&info); err != nil {
 		if e.opts.has("json") {
-			return e.printJSON(whoamiEnvelope{OK: false, Data: info, Error: whoamiError(err)})
+			return whoamiEnvelope{OK: false, Data: info, Warnings: warnings, Error: whoamiError(err)}.print(e.stdout)
 		}
+		printFooter(e.stderr, warnings, nil)
 		return err
 	}
 
@@ -62,7 +64,7 @@ func runWhoami(e *env) error {
 		next = []string{"mt context"}
 	}
 	if e.opts.has("json") {
-		return e.printJSON(whoamiEnvelope{OK: true, Data: info, Summary: summary + ".", Breadcrumbs: next, Warnings: warnings})
+		return whoamiEnvelope{OK: true, Data: info, Summary: summary + ".", Breadcrumbs: next, Warnings: warnings}.print(e.stdout)
 	}
 
 	fmt.Fprintf(e.stdout, "%s\n\n", summary)
@@ -82,9 +84,9 @@ func (e *env) whoamiActor(info *whoami) error {
 	file := displayPath(e.cfg.Path)
 	switch {
 	case e.cfg.URL == "":
-		return &whoamiErr{code: "NOT_CONFIGURED", msg: fmt.Sprintf("mt is not configured: no url in %s and no MT_URL.", file), hint: setupHint}
+		return &APIError{Code: "NOT_CONFIGURED", Message: fmt.Sprintf("mt is not configured: no url in %s and no MT_URL.", file), Hint: setupHint}
 	case e.cfg.Token == "":
-		return &whoamiErr{code: "NOT_CONFIGURED", msg: fmt.Sprintf("mt has no token: none in %s and no MT_TOKEN.", file), hint: setupHint}
+		return &APIError{Code: "NOT_CONFIGURED", Message: fmt.Sprintf("mt has no token: none in %s and no MT_TOKEN.", file), Hint: setupHint}
 	}
 
 	envl, err := e.client.Do("GET", "/api/projects", nil, nil)
@@ -97,7 +99,7 @@ func (e *env) whoamiActor(info *whoami) error {
 			if e.cfg.TokenFrom == SourceEnv {
 				hint = "MT_TOKEN takes precedence over " + file + ": fix or unset it, or " + setupHint
 			}
-			return &whoamiErr{code: "UNAUTHORIZED", msg: fmt.Sprintf("the token from %s is not valid on %s.", e.cfg.describeSource("MT_TOKEN", e.cfg.TokenFrom, false), e.cfg.URL), hint: hint}
+			return &APIError{Code: "UNAUTHORIZED", Message: fmt.Sprintf("the token from %s is not valid on %s.", e.cfg.describeSource("MT_TOKEN", e.cfg.TokenFrom, false), e.cfg.URL), Hint: hint}
 		}
 		return envl.Error
 	}
@@ -106,7 +108,7 @@ func (e *env) whoamiActor(info *whoami) error {
 		ActorKind string `json:"actor_kind"`
 	}
 	if err := jsonUnmarshal(envl.Data, &data); err != nil || data.Actor == "" {
-		return &hintedError{msg: e.cfg.URL + " did not say which actor the token belongs to.", hint: "update the instance, or check the url with mt setup <url> <token>."}
+		return &APIError{Code: "UNEXPECTED_RESPONSE", Message: e.cfg.URL + " did not say which actor the token belongs to.", Hint: "update the instance, or check the url with mt setup <url> <token>."}
 	}
 	info.Actor = &whoamiActor{Name: data.Actor, Kind: data.ActorKind}
 	return nil
@@ -127,22 +129,19 @@ func (c Config) describeSource(variable, source string, fileHas bool) string {
 	return "nowhere"
 }
 
-// whoamiErr: un error de mt whoami con el código que lleva en --json.
-type whoamiErr struct{ code, msg, hint string }
-
-func (e *whoamiErr) Error() string { return e.msg }
-
+// whoamiError: el error que va en el sobre de --json. Solo el fallo de
+// conexión es UNREACHABLE (y retryable); una respuesta que no es de Maker
+// Tracker es UNEXPECTED_RESPONSE, que no se arregla reintentando.
 func whoamiError(err error) *APIError {
 	var apiErr *APIError
-	var own *whoamiErr
 	var hinted *hintedError
 	switch {
-	case errors.As(err, &own):
-		return &APIError{Code: own.code, Message: own.msg, Hint: own.hint}
 	case errors.As(err, &apiErr):
 		return apiErr
-	case errors.As(err, &hinted):
+	case errors.As(err, &hinted) && hinted.retryable:
 		return &APIError{Code: "UNREACHABLE", Message: hinted.msg, Hint: hinted.hint, Retryable: true}
+	case errors.As(err, &hinted):
+		return &APIError{Code: "UNEXPECTED_RESPONSE", Message: hinted.msg, Hint: hinted.hint}
 	}
 	return &APIError{Code: "ERROR", Message: err.Error()}
 }
@@ -157,9 +156,9 @@ type whoamiEnvelope struct {
 	Error       *APIError `json:"error,omitempty"`
 }
 
-// printJSON imprime el sobre. Si no es ok, sale con 1.
-func (e *env) printJSON(envl whoamiEnvelope) error {
-	encoder := json.NewEncoder(e.stdout)
+// print imprime el sobre en out. Si no es ok, sale con 1.
+func (envl whoamiEnvelope) print(out io.Writer) error {
+	encoder := json.NewEncoder(out)
 	encoder.SetEscapeHTML(false)
 	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(envl); err != nil {

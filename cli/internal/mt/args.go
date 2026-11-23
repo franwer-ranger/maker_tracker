@@ -19,8 +19,12 @@ func usageHint(hint, format string, args ...any) error {
 	return &UsageError{msg: fmt.Sprintf(format, args...), hint: hint}
 }
 
-// hintedError: un error que no es de uso (código 1) con su Hint.
-type hintedError struct{ msg, hint string }
+// hintedError: un error que no es de uso (código 1) con su Hint. retryable
+// marca los que se arreglan reintentando (no hay conexión con la instancia).
+type hintedError struct {
+	msg, hint string
+	retryable bool
+}
 
 func (e *hintedError) Error() string { return e.msg }
 

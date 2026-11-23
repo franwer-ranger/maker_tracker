@@ -496,7 +496,7 @@ Error: mt is not configured: no url in ~/.config/mt/config and no MT_URL.
 Hint: run mt setup <url> <token>. Create the token on the server with bin/rails "mt:token[your-name]" only if you don't have one yet.
 ```
 
-`--json` imprime el sobre de la API, que aquí arma `mt`: `data` lleva `actor: {name, kind}`, `url`, `url_source` y `token_source` (`env` o `file`; vacío si no hay), `config_path` (la ruta completa) y `project: {key, file}` o `null`. Si falla, `ok: false`, el mismo `data` sin `actor` y `error.code`: `UNAUTHORIZED`, `NOT_CONFIGURED` o `UNREACHABLE` (este, `retryable: true`).
+`--json` imprime el sobre de la API, que aquí arma `mt`: `data` lleva `actor: {name, kind}`, `url`, `url_source` y `token_source` (`env` o `file`; vacío si no hay), `config_path` (la ruta completa) y `project: {key, file}` o `null`. Si falla, `ok: false`, el mismo `data` sin `actor` y `error.code`: `UNAUTHORIZED`, `NOT_CONFIGURED`, `UNREACHABLE` (no hay conexión; el único con `retryable: true`) o `UNEXPECTED_RESPONSE` (la URL no responde como Maker Tracker o no dice el actor del token: revisa la URL, reintentar no lo arregla). Los avisos (un `.mt` sin `project:`) salen también si falla: en `warnings` con `--json` y como `Warning:` por stderr, antes del `Error:`, sin él.
 
 ## Escribir
 
