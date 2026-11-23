@@ -62,7 +62,7 @@ Maker Tracker only finds the candidates: **you judge** whether the proposal clas
 
 ## Decisions
 
-Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. If it governs a capability, `--capability board` (repeatable); with `--story` it already takes the capabilities the story changes (those named under `## Qué cambia del producto`), and with `--supersedes` those of the old one. `mt doc board` lists the decisions in force for that page: read them before changing it. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
+Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. If it governs a capability, `--capability board` (repeatable); with `--story` it already takes the capabilities the story changes (the pages whose slug is written in backticks, like `` `board` ``, under `## Qué cambia del producto`; titles and bare words don't count), and with `--supersedes` those of the old one. `mt doc board` lists the decisions in force for that page: read them before changing it. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
 
 ## Autonomy
 

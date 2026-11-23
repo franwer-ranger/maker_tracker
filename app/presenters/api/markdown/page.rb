@@ -48,11 +48,7 @@ class Api::Markdown::Page
     return "## Decisions in force\n\nNone yet: mt decide \"…\" --why \"…\" --capability #{@page.slug}." if decisions.empty?
 
     indent = " " * (decisions.map { it.reference.length }.max + 1)
-    items = decisions.map do |decision|
-      why = decision_why(decision)
-      "#{decision.reference} · #{decision.actor.name} · #{date(decision.created_at)} · #{decision.title}#{"\n#{indent}Why: #{why}" if why}"
-    end
-    "## Decisions in force\n\n#{items.join("\n")}"
+    "## Decisions in force\n\n#{decisions.map { decision_line(it, indent) }.join("\n")}"
   end
 
   def history

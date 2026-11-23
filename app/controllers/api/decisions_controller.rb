@@ -38,8 +38,13 @@ class Api::DecisionsController < Api::BaseController
 
   private
 
-  # `capabilities` como lista o como texto ("tablero, editor").
+  # `capabilities` como lista o como texto ("tablero, editor"). Un
+  # `--capability ""` es un error, no una decisión sin capacidades.
   def capability_slugs
+    if Array(params[:capabilities]).any? { it.to_s.split(",").map(&:strip).compact_blank.empty? }
+      raise Api::Error.validation("--capability needs a page slug.", hint: "see them with mt doc.")
+    end
+
     Array(params[:capabilities]).flat_map { it.to_s.split(",") }.map { it.strip.downcase }.compact_blank.uniq
   end
 

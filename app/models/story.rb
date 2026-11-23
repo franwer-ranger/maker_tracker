@@ -88,18 +88,20 @@ class Story < ApplicationRecord
   end
 
   # Las capacidades que cambia la historia (MT-90): las páginas de la
-  # documentación (no la portada) que su sección «## Qué cambia del producto»
-  # nombra por slug o por título, como palabra entera. Las decisiones de la
-  # historia las heredan al registrarse.
+  # documentación (no la portada) cuyo slug aparece, exacto y entre backticks
+  # (`editor`), en su sección «## Qué cambia del producto». Solo el slug como
+  # código: un título o una palabra suelta («el tablero») no enlaza, porque el
+  # enlace es para siempre. Las decisiones de la historia las heredan al
+  # registrarse.
   CHANGES_SECTION = /^\#\# Qué cambia del producto[ \t]*$(.*?)(?=^\#\# |\z)/m
+  CODE_SPAN = /(?<!`)`([^`\n]+)`(?!`)/
 
   def changed_capabilities
     section = body.to_s[CHANGES_SECTION, 1].to_s.gsub(/<!--.*?-->/m, "")
-    return [] if section.blank?
+    slugs = section.scan(CODE_SPAN).flatten.map(&:strip).uniq
+    return [] if slugs.empty?
 
-    project.pages.documentation.ordered.select do |page|
-      [ page.slug, page.title ].any? { section.match?(/(?<![\p{Word}-])#{Regexp.escape(it)}(?![\p{Word}-])/i) }
-    end
+    project.pages.documentation.where(slug: slugs).ordered.to_a
   end
 
   def labels = super || []

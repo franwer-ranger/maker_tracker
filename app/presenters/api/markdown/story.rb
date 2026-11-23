@@ -97,8 +97,7 @@ class Api::Markdown::Story
       if (newer = decision.superseded_by)
         "#{decision.reference} → superseded by #{newer.reference} · #{newer.title}"
       else
-        why = decision_why(decision)
-        "#{decision.reference} · #{decision.actor.name} · #{date(decision.created_at)} · #{decision.title}#{"\n#{indent}Why: #{why}" if why}"
+        decision_line(decision, indent)
       end
     end
     "### Decisions\n\n#{items.join("\n")}"

@@ -136,6 +136,14 @@ module Api::Markdown::Formatting
 
   def decision_why(decision) = decision.body.to_s.squish.truncate(WHY_LENGTH, omission: "…").presence
 
+  # Una decisión vigente en una línea, y su porqué debajo, sangrado con `indent`:
+  #   D-14 · claude · 2026-10-16 · PDFs con Prawn, sin servicios externos
+  #        Why: autoalojado y sin coste por documento.
+  def decision_line(decision, indent)
+    why = decision_why(decision)
+    "#{decision.reference} · #{decision.actor.name} · #{date(decision.created_at)} · #{decision.title}#{"\n#{indent}Why: #{why}" if why}"
+  end
+
   # Una decisión de la historia en datos (MT-84): vigente o sustituida, y por cuál.
   def decision_data(decision)
     newer = decision.superseded_by

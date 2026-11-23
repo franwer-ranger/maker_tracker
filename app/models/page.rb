@@ -49,7 +49,7 @@ class Page < ApplicationRecord
     return events.where(action: "brief.edited") if cover?
 
     events.where("json_extract(data, '$.page_id') = ?", id)
-      .or(events.where(action: "decision.recorded").where("json_extract(data, '$.number') IN (?)", decisions.pluck(:number)))
+      .or(events.where(action: "decision.recorded").where("json_extract(data, '$.number') IN (?)", decisions.select(:number)))
   end
 
   # Título, icono, área, tipo y cuerpo. Con `version:` (la que leyó quien edita)
