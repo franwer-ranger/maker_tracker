@@ -31,10 +31,12 @@ class Api::StoryWorkController < Api::BaseController
     warnings = []
     warnings << "it has no commits or PR: nobody will know where the code is. Use --commit <sha> or --pr <url>." if commits.empty? && pr.nil?
 
-    story.move_to!(:done, actor: Current.actor, data: { commits: commits, pr: pr })
+    # Si otro la cerró entre la comprobación y el lock, es la de una ya Hecha.
+    return document unless story.move_to!(:done, actor: Current.actor, data: { commits: commits, pr: pr })
+
     pending = story.pending_documentation
     warnings << pending_warning(pending) if pending.any?
-    render_ok(story_data, summary: done_summary(commits, pr, story.history.first.data["docs"]), warnings: warnings,
+    render_ok(story_data, summary: done_summary(commits, pr, story.last_close.data["docs"]), warnings: warnings,
       breadcrumbs: pending.any? ? [ "mt doc edit #{pending.first.slug} --file <f.md>", "mt done #{story.reference}" ] : [ "mt next" ])
   end
 

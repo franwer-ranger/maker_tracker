@@ -25,7 +25,7 @@ module StoriesHelper
     when "project.deployed" then deployed_sentence(event)
     when "decision.recorded" then "Se decide D-#{data['number']}"
     when "brief.edited" then "#{event.actor.name} edita el brief"
-    when "story.documented" then "#{event.actor.name} #{data['marked'] ? 'da por al día' : 'actualiza'} la documentación: #{Array(data['docs']).map { it['slug'] }.join(', ')}"
+    when "story.documented" then "#{event.actor.name} actualiza la documentación: #{Array(data['docs']).map { it['slug'] }.join(', ')}"
     when "page.created" then "#{event.actor.name} crea la página #{data['slug']}"
     when "page.edited" then "#{event.actor.name} edita la página #{data['slug']}"
     when "page.deleted" then "#{event.actor.name} borra la página #{data['slug']}"

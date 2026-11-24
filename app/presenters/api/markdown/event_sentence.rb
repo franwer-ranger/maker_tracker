@@ -23,7 +23,7 @@ class Api::Markdown::EventSentence
     case @event.action
     when "story.created" then "created as #{state_words(@data['state'] || 'idea')}#{' (proposed in a daily)' if @data['daily']}"
     when "story.state_changed" then "moved to #{state_words(@data['to'])}#{work}#{' · QA pending' if @data['qa'] == 'pending'}#{docs}"
-    when "story.documented" then "#{@data['marked'] ? 'marked as up to date' : 'updated'} the documentation: #{doc_slugs(@data['docs'])}"
+    when "story.documented" then "updated the documentation: #{doc_slugs(@data['docs'])}"
     when "story.edited" then "edited #{Array(@data['fields']).join(', ')}"
     when "story.claimed" then "claimed it"
     when "story.released" then @data["from"] ? "released it from #{@data['from']}" : "released it"

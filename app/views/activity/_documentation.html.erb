@@ -11,7 +11,7 @@
         <span class="text-accent"><span class="hidden md:inline">Hecha · </span>documentación pendiente · <%= short_time_ago(card.since) %></span>
       </div>
       <h2 class="text-[17px] font-medium leading-6 md:text-base"><%= story.title %></h2>
-      <p class="text-sm text-text-muted">Se cerró sin actualizar <span class="font-mono text-xs text-text"><%= slugs.join(", ") %></span>. Pídeselo a un agente o, si ya está al día, márcalo en la historia.</p>
+      <p class="text-sm text-text-muted">Se cerró sin actualizar <span class="font-mono text-xs text-text"><%= slugs.join(", ") %></span>. Pídeselo a un agente (<span class="font-mono text-xs">mt doc edit</span> y otra vez <span class="font-mono text-xs">mt done</span>) o, si al final no <%= slugs.one? ? "la cambió, quítala" : "las cambió, quítalas" %> de Capacidades en la historia.</p>
     </div>
     <div class="pt-2 md:shrink-0 md:pt-0">
       <%= ui_button "Abrir historia", variant: :secondary, href: project_story_path(card.project, story, anchor: "documentacion"), class: "w-full max-md:h-11 md:h-control-sm md:w-auto md:px-3 md:text-control md:leading-4" %>

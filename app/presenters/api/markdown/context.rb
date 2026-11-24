@@ -25,7 +25,7 @@ class Api::Markdown::Context
 
   # Las Hechas con documentación pendiente (MT-91), con sus páginas: [[story, pages]].
   def documentation_pending
-    @documentation_pending ||= @project.stories.documentation_pending.map { [ it, it.pending_documentation ] }
+    @documentation_pending ||= @project.stories.documentation_pending
   end
 
   def to_s

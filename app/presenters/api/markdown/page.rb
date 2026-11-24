@@ -62,8 +62,7 @@ class Api::Markdown::Page
 
     rows = events.map do |event|
       doc = Array(event.data["docs"]).find { it["page_id"] == @page.id }
-      [ datetime(event.occurred_at), event.actor.name, "#{event.story.reference} #{event.story.title}",
-        [ ("version #{doc['version']}" if doc&.dig("version")), ("marked as up to date" if event.data["marked"]) ].compact.join(" · ") ]
+      [ datetime(event.occurred_at), event.actor.name, "#{event.story.reference} #{event.story.title}", ("version #{doc['version']}" if doc&.dig("version")) ]
     end
     "## How it has changed\n\n#{table(rows).join("\n")}"
   end

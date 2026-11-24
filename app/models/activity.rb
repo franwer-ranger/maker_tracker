@@ -103,9 +103,8 @@ class Activity
   # Hechas que se cerraron sin actualizar las páginas de sus capacidades
   # (MT-91): esperan desde su cierre.
   def documentation_cards
-    Story.documentation_pending.map do |story|
-      closed_at = story.events.where(action: "story.state_changed").recent_first.first&.occurred_at || story.updated_at
-      Card.new(kind: :documentation, project: story.project, story: story, since: closed_at, options: story.pending_documentation)
+    Story.documentation_pending.map do |story, pages|
+      Card.new(kind: :documentation, project: story.project, story: story, since: story.last_close.occurred_at, options: pages)
     end
   end
 
