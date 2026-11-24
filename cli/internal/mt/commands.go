@@ -264,7 +264,9 @@ func init() {
 		summary: "Claims the story and moves it to in progress", example: "mt start PG-49",
 		run: func(e *env) error { return e.storyCall("POST", e.arg(0), "/start", map[string]any{}) }})
 	def(&command{name: "done", group: workGroup, usage: "mt done <story> [--commit sha]… [--pr url]", minArgs: 1, maxArgs: 1,
-		summary: "Moves it to done, linking its commits or PR", example: "mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63",
+		summary:     "Moves it to done, linking its commits or PR",
+		description: "If the story changes capabilities (capabilities: in mt show), update their pages with mt doc edit first: done links the pages edited since it started and marks the rest documentation pending (it still closes). Run it again on a done story once you update them.",
+		example:     "mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63",
 		run: func(e *env) error {
 			body := map[string]any{"commits": commitsWithSubject(e.opts.all("commit"))}
 			return e.storyCall("POST", e.arg(0), "/done", optional(body, e, "pr"))
@@ -330,7 +332,7 @@ func init() {
 		}}, "note why (markdown)", "text your own answer, if none of the options fits", "question the question's id, if there are several open (Q12 or 12)", "decide! also record it as a decision")
 	def(&command{name: "decide", group: workGroup, usage: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9] [--capability <page>]…", minArgs: 1, maxArgs: 1,
 		summary:     "Records a decision and its why",
-		description: "It governs the capabilities you name with --capability, the ones its story changes (the pages whose exact lowercase slug, as mt doc lists it, is in backticks under \"## Qué cambia del producto\", outside code blocks) and those of the decision it supersedes. mt doc <page> lists the ones in force.",
+		description: "It governs the capabilities you name with --capability, the ones its story changes (its capabilities: in mt show) and those of the decision it supersedes. mt doc <page> lists the ones in force.",
 		example:     "mt decide \"Templates as JSON\" --why \"No need for another table\" --story PG-49 --capability editor",
 		run: func(e *env) error {
 			body := optional(map[string]any{"title": e.arg(0), "body": e.opts.get("why")}, e, "story", "supersedes")

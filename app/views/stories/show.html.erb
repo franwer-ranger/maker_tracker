@@ -1,7 +1,7 @@
 <% content_for :title, "#{@story.reference} · #{@story.title}" %>
 <%# En escritorio, dos columnas: la historia y, a la derecha, la columna lateral (estado, propiedades, historial).
     En el móvil (5.4 · Móvil) es una sola columna: las dos se deshacen (max-md:contents) y cada bloque toma su sitio con `order`:
-    miga y «Editar» · título · estado · avisos (QA, cambios, preguntas) · propiedades · cuerpo y comentarios · historial. %>
+    miga y «Editar» · título · estado · avisos (QA, documentación pendiente, cambios, preguntas) · propiedades · cuerpo y comentarios · historial. %>
 <div class="flex flex-col gap-6 px-4 pb-10 md:flex-row md:items-start md:gap-16 md:px-12 md:py-10">
   <article class="flex min-w-0 grow basis-0 flex-col gap-7 max-md:contents">
     <div class="flex items-center justify-between gap-6 max-md:order-1 max-md:-mx-4 max-md:h-[52px] max-md:pl-2 max-md:pr-4">
@@ -27,6 +27,10 @@
 
     <% if @story.qa_pending? %>
       <div class="max-md:order-4"><%= render "stories/qa", story: @story %></div>
+    <% end %>
+
+    <% if (pending_docs = @story.pending_documentation).any? %>
+      <div class="max-md:order-4"><%= render "stories/documentation", story: @story, pages: pending_docs %></div>
     <% end %>
 
     <% if @changes&.any? %>

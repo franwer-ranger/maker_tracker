@@ -7,7 +7,7 @@ module Story::Operations
   include Eventable
   include Versioned
 
-  EDITABLE_FIELDS = %w[title body mockup labels blocked_by].freeze
+  EDITABLE_FIELDS = %w[title body mockup labels blocked_by capabilities].freeze
 
   # Otro actor ya tiene la historia.
   class ClaimedByOther < StandardError
@@ -90,8 +90,10 @@ module Story::Operations
       end
 
       # Hecha deja QA pendiente (MT-32) y sin desplegar (MT-46); salir de Hecha lo quita.
+      # Y enlaza las páginas de sus capacidades que se actualizaron (MT-91).
       if new_state == "done"
         data[:qa] = "pending"
+        data.merge!(documentation_on_close)
         update!(state: new_state, qa: "pending", deployed_at: nil)
       else
         update!(state: new_state, qa: nil, deployed_at: nil)

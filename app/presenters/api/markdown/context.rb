@@ -23,8 +23,13 @@ class Api::Markdown::Context
 
   def ready_work = @ready_work ||= ReadyWork.for(@project)
 
+  # Las Hechas con documentación pendiente (MT-91), con sus páginas: [[story, pages]].
+  def documentation_pending
+    @documentation_pending ||= @project.stories.documentation_pending
+  end
+
   def to_s
-    [ "# #{@project.name} · #{@project.key}", edited_line, brief, documentation_section, decisions_section,
+    [ "# #{@project.name} · #{@project.key}", edited_line, brief, documentation_section, documentation_pending_section, decisions_section,
       milestone_section, ready_work_section, in_progress_section, questions_section ].compact.join("\n\n") + "\n"
   end
 
@@ -48,6 +53,16 @@ class Api::Markdown::Context
 
     rows = documentation.map { [ it.slug, it.title, it.crosscutting? ? "cross-cutting" : it.area.to_s ] }
     "## Documentation\n\n#{table(rows).join("\n")}\n\nRead one with mt doc <slug>."
+  end
+
+  # Las Hechas cerradas sin actualizar las páginas de sus capacidades (MT-91).
+  # Sin ninguna, no hay sección.
+  #   PG-49  Plantillas de post reutilizables  calendario
+  def documentation_pending_section
+    return if documentation_pending.empty?
+
+    rows = documentation_pending.map { |story, pages| [ story.reference, story.title, pages.map(&:slug).join(", ") ] }
+    "## Documentation pending\n\n#{table(rows, min: [ 0, TITLE_MIN ]).join("\n")}\n\nUpdate each page with mt doc edit <slug> --file <f.md>, then run mt done <story> again."
   end
 
   # D-14  PDFs con Prawn, sin servicios externos

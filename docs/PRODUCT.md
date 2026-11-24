@@ -42,6 +42,7 @@ Definir tiene que ser sencillo, pero ahí no competimos: Obsidian o el markdown 
 - **El contexto vive con el proyecto**: la visión, las decisiones y los principios de cada proyecto se guardan en Maker Tracker y los agentes los cargan antes de recomendar nada.
 - **La autonomía de los agentes se escribe en el brief** (D-48): la sección `## Autonomía` de cada proyecto dice qué pueden decidir solos. Lo que permite lo hacen, y queda registrado; lo demás lo preguntan en la historia. Los cambios de producto de un agente no pasan a ser propuestas, y no hay un motor de reglas: es texto que `mt context` carga en cada sesión.
 - **Las historias se escriben para ser ejecutadas**: qué, por qué y criterios de aceptación, con enlaces a mockups de Paper. Una historia nueva (desde la UI, la API, `mt create`, la daily o un fallo de QA) trae esta plantilla (MT-52); las guías son comentarios HTML, que no se pintan, y una sección que solo tiene su guía se oculta como las vacías. Ninguna guía lleva una casilla: una historia recién creada sigue sin criterios. «Cómo probarlo» sale en «Por probar» y en `mt qa`.
+- **La historia es el diff del producto** (MT-91, D-91): una historia declara qué capacidades cambia (la propiedad `capabilities`, slugs de páginas de la documentación) y «Qué cambia del producto» cuenta cómo quedan. Al cerrarla, el agente actualiza esas páginas y `mt done` las enlaza al cierre; si no, la historia se cierra igual y queda «documentación pendiente» (en la historia, en «Te toca» y en `mt context`) hasta que se actualicen. Cada página enseña «Cómo ha cambiado» con esos cierres.
 
   ```markdown
   ## Contexto
@@ -57,7 +58,7 @@ Definir tiene que ser sencillo, pero ahí no competimos: Obsidian o el markdown 
   <!-- Dónde y qué pasos sigue Fran para comprobarla. -->
 
   ## Qué cambia del producto
-  <!-- Qué capacidades toca esta historia y cómo quedan. Al cerrarla, se confirma. -->
+  <!-- Cómo quedan las capacidades que cambia (las de «capabilities» arriba). Al cerrarla, se actualizan sus páginas. -->
 
   ## Fuera de alcance
 

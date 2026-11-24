@@ -80,7 +80,7 @@ module PresenceHelper
     AgentSession.new(entry: entry, now: now, events: events.first(SESSION_EVENTS))
   end
 
-  EDITED_SHORT = { "title" => "título", "body" => "cuerpo", "mockup" => "mockup", "labels" => "labels", "blocked_by" => "bloqueos" }.freeze
+  EDITED_SHORT = { "title" => "título", "body" => "cuerpo", "mockup" => "mockup", "labels" => "labels", "blocked_by" => "bloqueos", "capabilities" => "capacidades" }.freeze
 
   # "criterios" si marcó o desmarcó criterios; si no, los campos: "título y cuerpo".
   def edited_what(event)

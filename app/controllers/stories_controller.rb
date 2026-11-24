@@ -45,7 +45,7 @@ class StoriesController < ApplicationController
     @story = @project.stories.find_by!(number: params[:number])
   end
 
-  FIELD_LABELS = { "title" => "Título", "body" => "Cuerpo", "mockup" => "Mockup", "labels" => "Labels", "blocked_by" => "Bloqueada por" }.freeze
+  FIELD_LABELS = { "title" => "Título", "body" => "Cuerpo", "mockup" => "Mockup", "labels" => "Labels", "blocked_by" => "Bloqueada por", "capabilities" => "Capacidades" }.freeze
 
   # Lo que escribió quien edita, en el formato del formulario.
   def mine_values = story_params.to_h.then { |values| FIELD_LABELS.keys.index_with { |field| normalize(field, values[field]) } }
@@ -57,7 +57,7 @@ class StoriesController < ApplicationController
 
   def normalize(field, value)
     case field
-    when "labels", "blocked_by" then (value.is_a?(Array) ? value : value.to_s.split(field == "labels" ? "," : /[\s,]+/)).map { it.to_s.strip }.compact_blank.join(", ")
+    when "labels", "blocked_by", "capabilities" then (value.is_a?(Array) ? value : value.to_s.split(field == "labels" ? "," : /[\s,]+/)).map { it.to_s.strip }.compact_blank.join(", ")
     else value.to_s.gsub("\r\n", "\n").strip
     end
   end
@@ -84,6 +84,6 @@ class StoriesController < ApplicationController
   end
 
   def story_params
-    params.expect(story: %i[title body mockup labels blocked_by])
+    params.expect(story: %i[title body mockup labels blocked_by capabilities])
   end
 end

@@ -13,9 +13,10 @@ class Activity
   SUGGESTIONS = 2
   RECENT = 5
 
-  # kind: :question | :definition | :low_work. `since`: desde cuándo espera.
+  # kind: :question | :definition | :low_work | :documentation. `since`: desde cuándo espera.
   # `story` y `question` según el tipo; `reason` de :definition (:questions o
-  # :stalled); `options` de :low_work: sus historias en Definiendo, cuántas hay y cuántas Listas quedan.
+  # :stalled); `options` de :low_work: sus historias en Definiendo, cuántas hay y cuántas Listas quedan;
+  # `options` de :documentation: las páginas que quedaron sin actualizar (MT-91).
   Card = Data.define(:kind, :project, :story, :question, :reason, :since, :options, :defining_count, :ready_count) do
     def initialize(kind:, project:, since:, story: nil, question: nil, reason: nil, options: [], defining_count: 0, ready_count: 0) = super
     def partial = "activity/#{kind}"
@@ -35,7 +36,7 @@ class Activity
   end
 
   def for_you
-    cards = question_cards + definition_cards + low_work_cards
+    cards = question_cards + definition_cards + low_work_cards + documentation_cards
     cards.each_with_index.sort_by { |card, index| [ card.since, index ] }.map(&:first)
   end
 
@@ -96,6 +97,14 @@ class Activity
       elsif since <= STALLED_AFTER.ago then :stalled
       end
       Card.new(kind: :definition, project: story.project, story: story, reason: reason, since: since) if reason
+    end
+  end
+
+  # Hechas que se cerraron sin actualizar las páginas de sus capacidades
+  # (MT-91): esperan desde su cierre.
+  def documentation_cards
+    Story.documentation_pending.map do |story, pages|
+      Card.new(kind: :documentation, project: story.project, story: story, since: story.last_close.occurred_at, options: pages)
     end
   end
 

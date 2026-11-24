@@ -59,6 +59,12 @@ redes       Redes conectadas  cross-cutting
 
 Read one with mt doc <slug>.
 
+## Documentation pending
+
+PG-44  Publicar en varias redes a la vez  redes
+
+Update each page with mt doc edit <slug> --file <f.md>, then run mt done <story> again.
+
 ## Decisions in force
 
 D-14  PDFs con Prawn, sin servicios externos
@@ -97,6 +103,7 @@ Next:
 - `## Ready work` (MT-33) es la misma cifra que «Trabajo listo» en la app (Actividad y cabeceras del tablero y del roadmap): historias Listas y desbloqueadas (sin `blocked by`, ni historia pendiente ni pregunta bloqueante abierta, como `mt next`) en **todos** los hitos abiertos, no solo el actual, y cuántas hay en Definiendo. En el ejemplo: PG-49 y PG-31 (PG-50 espera a una pregunta). Con 2 o menos, la app avisa a fran en «Te toca». `mt roadmap` la repite bajo el título. En `--json`, `ready_work: { ready, defining }`.
 - Sin hito abierto, `## Current milestone` dice `No open milestone.` y sugiere `mt roadmap`.
 - `## Documentation` (MT-89) es el índice de la documentación: una línea por capacidad (slug, título y área) y por página transversal (`cross-cutting` en lugar del área), por área y título. La portada no sale: es el brief de arriba. Sin páginas: `No capabilities yet. Create one with mt doc create <slug> --title "…".` En `--json`, `documentation[]` con `slug`, `type`, `title` y `area`.
+- `## Documentation pending` (MT-91) solo sale si alguna historia Hecha se cerró sin actualizar las páginas de las capacidades que cambia (ver «La historia como diff» en Escribir): referencia, título y las páginas que faltan. En `--json`, `documentation_pending[]` con `reference`, `title` y `pages` (slugs; `[]` si no hay ninguna).
 
 ## `mt doc` (MT-89)
 
@@ -116,7 +123,7 @@ Next:
   mt doc create <slug> --title "…"
 ```
 
-`mt doc editor` imprime la página en el formato que acepta `mt doc edit`, como `mt show` y `mt edit`: frontmatter, cuerpo y, tras la marca, las decisiones vigentes que la rigen y el historial (10 eventos), que se ignoran al editar.
+`mt doc editor` imprime la página en el formato que acepta `mt doc edit`, como `mt show` y `mt edit`: frontmatter, cuerpo y, tras la marca, las decisiones vigentes que la rigen, cómo ha cambiado (MT-91) y el historial (10 eventos), que se ignoran al editar.
 
 ```text
 $ mt doc editor
@@ -140,6 +147,10 @@ Un solo editor para escribir el post una vez.
 D-17 · claude · 2026-10-20 · Variables con dólar
      Why: las llaves chocan con el markdown de algunas redes.
 
+## How it has changed
+
+22:40             claude  PG-49 Plantillas de post reutilizables  version 2
+
 ## History
 
 22:31             claude  edited page editor (body)
@@ -155,6 +166,7 @@ Next:
 - `mt doc cover` y `mt doc edit cover --file f.md` leen y escriben el brief, igual que `mt brief` (mismo texto, misma versión, mismo evento `brief.edited`). `mt brief` no cambia de formato. De la portada solo cambia el cuerpo: su título es el nombre del proyecto y no lleva icono ni área. Mandar los mismos `title:`, `icon:` y `area:` que imprime `mt doc cover` no cuenta como cambio; otros son un error de validación y no se guarda nada (`Title can't change on the cover: the cover only changes its body (the brief).`), como cambiar el slug o el tipo.
 - `mt doc create editor --title "Editor" [--type crosscutting] [--area Publicar] [--icon …] [--file f.md]` crea una capacidad (sin `--type`) o una transversal: `editor · Editor (capability) created.` Las opciones mandan sobre el fichero. La portada no se crea (ya existe en cada proyecto).
 - `## Decisions in force` (MT-90) son las decisiones que rigen la página y nadie ha sustituido, por número, con autor, fecha, título y el porqué en una línea (recortado a 120 caracteres, como en `mt show`). Sin ninguna: `None yet: mt decide "…" --why "…" --capability editor.` Las sustituidas no salen aquí: solo en `## History`, como `recorded D-15` (en el ejemplo, D-17 sustituye a D-15). La portada no lleva la sección: sus decisiones vigentes están en `mt context`.
+- `## How it has changed` (MT-91) son las historias que la cambiaron, de la más reciente a la más antigua (10 como mucho): fecha del cierre (o de la actualización posterior), quién, la historia y la versión de la página que dejó. Salen de los eventos que enlazan la página en `data.docs`: el de cierre (`story.state_changed` a done) y los `story.documented` que resuelven una pendiente. Sin ninguna: `No story has changed it yet: a story lists it under capabilities: and mt done links its update.` La portada no lleva la sección.
 - `mt doc delete editor` la borra (`editor · Editor (capability) deleted.`); su historial sigue en los eventos (`page.deleted`). La portada no se borra.
 - **Autonomía**: un agente edita las páginas que cambia la historia en la que trabaja; crear, separar, juntar o borrar capacidades lo pregunta antes (`mt ask`). La API no lo impide: lo dicen la skill y la sección `## Autonomía` de la plantilla del brief.
 - `--json`: `pages[]` (índice) o `page` con `slug`, `type`, `title`, `icon`, `area`, `version` y `body`; `mt doc <slug> --json` añade `decisions[]` (las vigentes, con los campos de `mt show`), salvo en la portada.
@@ -226,6 +238,7 @@ claimed_by:
 mockup: https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF/p-C-0
 labels: [editor, ui]
 blocked_by: [47]
+capabilities: [editor]
 ---
 
 ## Contexto
@@ -249,6 +262,10 @@ Compartir plantillas entre cuentas (M4).
 ## Related
 
 Blocked by PG-47 Borradores automáticos (done): no longer blocking.
+
+## Documentation
+
+It changes editor. Before mt done, update its page: mt doc edit editor --file <f.md>.
 
 ## Questions · 1 answered
 
@@ -291,7 +308,7 @@ Hint: 2 stories are being defined (PG-51, PG-54). See them with mt list --state 
 Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar (frontmatter y cuerpo); debajo de la marca `<!-- mt: … -->`, lo que es solo lectura. Así `mt show PG-49 > f.md`, editar `f.md` y `mt edit PG-49 --file f.md` funciona sin limpiar nada.
 
 - `milestone` es el título del hito, sin el código (`M2`). En la bandeja de ideas, vacío.
-- `version` sube cada vez que alguien edita el contenido (título, cuerpo, mockup, labels, bloqueos). `mt edit` la manda de vuelta y, si ya no es la actual, no guarda nada (ver «Conflictos de edición»). Mover, reordenar o cerrar no la cambian.
+- `version` sube cada vez que alguien edita el contenido (título, cuerpo, mockup, labels, bloqueos, capacidades). `mt edit` la manda de vuelta y, si ya no es la actual, no guarda nada (ver «Conflictos de edición»). Mover, reordenar o cerrar no la cambian.
 - `state` y `milestone` se pueden leer, pero `mt edit` no los cambia: para eso están `mt move` y `mt reorder` (decisión de la #018).
 - El historial muestra los 10 últimos eventos. Si un evento tiene motivo, va al final de su línea: `reordered it in its milestone: "lo pide la beta"`.
 - `## Related` lista lo que la bloquea y lo que bloquea, cada una con su estado: `Blocked by PG-45 Programar publicaciones (in progress).` / `Blocks PG-54 Reprogramar arrastrando en el calendario (defining).` Una pregunta abierta que bloquea sale aquí con el comando para contestarla: `Blocked by fran: Q12 from codex, asked 2026-10-21 10:12. Answer it with mt answer PG-50 <option>.`
@@ -304,6 +321,8 @@ Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar
   D-14 · claude · 2026-10-16 · PDFs con Prawn, sin servicios externos
        Why: autoalojado y sin coste por documento.
   ```
+- `capabilities` (MT-91) son las capacidades que cambia la historia: los slugs de sus páginas (capacidades o transversales, no la portada), como los lista `mt doc`. Es una propiedad como `labels`: se escribe con `mt edit` (o `mt create --file`) en el frontmatter, `[editor, calendario]`, y en la web en «Capacidades» al editar (solo sale si el proyecto tiene páginas o la historia ya declara alguna). Se guardan en minúsculas; un slug que no es una página del proyecto es `VALIDATION_FAILED` (`Capabilities includes pages that don't exist in the project's documentation (nada): create them first with mt doc create.`) y `cover` también (`… can't include the cover: it is the brief, not a capability.`). Solo se comprueban los que se añaden: el de una página borrada después puede quedarse y no cuenta. **Es la única fuente de las capacidades de una historia**: las decisiones registradas con `--story` las heredan (ver `mt decide`) y `mt done` pide actualizar sus páginas. La sección `## Qué cambia del producto` del cuerpo es texto libre (cómo quedan), ya no enlaza nada. En `--json`, `capabilities` (si tiene) y `documentation_pending` (los slugs pendientes, si hay).
+- `## Documentation` (MT-91), tras `## Related`, solo si la historia cambia alguna capacidad que existe. Sin Hecha: `It changes editor. Before mt done, update its page: mt doc edit editor --file <f.md>.` Hecha y al día: `## Documentation · up to date` con `It changes editor.` Hecha y pendiente: `## Documentation · pending` con `PG-49 was closed without updating editor. Update it with mt doc edit editor --file <f.md> and run mt done PG-49 again.`, y `Next:` sugiere esos dos comandos en lugar de `mt next`.
 - `## Questions` (MT-29) sale de la tabla `questions`, no del cuerpo, y es solo lectura (`mt edit` no la toca). Primero las abiertas, con su comando `mt answer`; después las respondidas, con la opción elegida y la nota. La reversibilidad solo aparece si se indicó.
 
 ## `mt roadmap`
@@ -391,7 +410,7 @@ D-9   Imágenes en S3 desde el principio                fran    2026-09-16  supe
 ```
 
 - `mt decisions --capability editor` (MT-90) lista solo las que rigen esa página, vigentes y sustituidas, con el mismo formato. Sin ninguna: `No decisions govern editor yet.` Un slug que no existe es `NOT_FOUND` (`no page nada in PG.`) y la portada, `VALIDATION_FAILED` (`the cover is not a capability: it is the brief.`). En `--json`, cada decisión lleva `capabilities` (los slugs, si rige alguna).
-- `mt decide "…" --why "…" --capability editor --capability calendario` (una o varias; también `--capability "editor, calendario"`) registra la decisión rigiendo esas páginas. Además hereda las capacidades que cambia su historia (`--story`: las páginas, no la portada, cuyo slug aparece exacto y entre backticks, como `` `editor` ``, en su sección `## Qué cambia del producto`; exacto es en minúsculas, tal como lo lista `mt doc`: `` `Editor` `` o `` `EDITOR` `` no enlazan; un título, el slug sin backticks, los comentarios HTML y lo que va dentro de un bloque de código (` ``` ` o `~~~`, aunque lleve backticks dentro) no cuentan, para no enlazar por accidente: el enlace no se quita; `--capability Editor`, en cambio, sí se normaliza a `editor`) y las de la decisión que sustituye (`--supersedes`), para que la página no se quede sin la vigente. `mt answer --decide` y la UI del brief heredan igual. Se fijan al registrarla: editar la historia después no las cambia. Responde `D-17 recorded by claude, superseding D-15, governing calendario and editor.` (sin capacidades, como antes) y el evento `decision.recorded` guarda los slugs en `data.capabilities`. Los mismos errores que `--capability` en `mt decisions`, sin registrar nada, y `--capability ""` es `VALIDATION_FAILED` (`--capability needs a page slug.`). Las decisiones anteriores a MT-90 no rigen ninguna: las enlaza el arranque de la documentación (MT-40), no se hace a mano.
+- `mt decide "…" --why "…" --capability editor --capability calendario` (una o varias; también `--capability "editor, calendario"`) registra la decisión rigiendo esas páginas. Además hereda las capacidades que cambia su historia (`--story`: las de su propiedad `capabilities`, MT-91, la misma lista que `mt done` pide actualizar; el cuerpo ya no enlaza nada, ni la sección `## Qué cambia del producto`: lo que esa sección enlazaba con la regla de MT-90 —slug exacto entre backticks— se copió a `capabilities` al migrar; `--capability Editor`, en cambio, sí se normaliza a `editor`) y las de la decisión que sustituye (`--supersedes`), para que la página no se quede sin la vigente. `mt answer --decide` y la UI del brief heredan igual. Se fijan al registrarla: editar la historia después no las cambia. Responde `D-17 recorded by claude, superseding D-15, governing calendario and editor.` (sin capacidades, como antes) y el evento `decision.recorded` guarda los slugs en `data.capabilities`. Los mismos errores que `--capability` en `mt decisions`, sin registrar nada, y `--capability ""` es `VALIDATION_FAILED` (`--capability needs a page slug.`). Las decisiones anteriores a MT-90 no rigen ninguna: las enlaza el arranque de la documentación (MT-40), no se hace a mano.
 
 ## `mt check` (MT-79)
 
@@ -657,6 +676,45 @@ Next:
 $ mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63
 PG-49 done by claude, with 1 commit and PR #63.
 ```
+
+### La historia como diff (MT-91)
+
+Una historia declara las capacidades que cambia (`capabilities:` en `mt show`) y cerrarla deja sus páginas al día. Con alguna, `mt start` lo recuerda y sugiere editarlas antes de cerrar:
+
+```text
+$ mt start PG-49
+PG-49 is in progress, claimed by claude. It changes calendario and editor: update their pages before mt done.
+
+Next:
+  mt show PG-49
+  mt comment PG-49 "…"
+  mt doc edit calendario --file <f.md>
+  mt doc edit editor --file <f.md>
+  mt done PG-49 --commit <sha>
+```
+
+`mt done` enlaza al evento de cierre (`data.docs`: `page_id`, `slug` y la versión) las páginas de sus capacidades editadas (`page.edited`, por cualquiera) desde que la historia pasó a En curso por última vez (o desde que se creó, si nunca lo estuvo). Las que no se editaron quedan en `data.docs_pending`: **la historia se cierra igual**, con un aviso, y queda marcada «documentación pendiente» en la historia (`mt show` y la web), en «Te toca» y en `mt context`:
+
+```text
+$ mt done PG-49 --commit 4f3e2a1
+PG-49 done by claude, with 1 commit; documentation updated: editor.
+Warning: documentation pending: calendario was not updated since it started. Update it with mt doc edit calendario --file <f.md> and run mt done PG-49 again.
+
+Next:
+  mt doc edit calendario --file <f.md>
+  mt done PG-49
+```
+
+`mt done` sobre una historia ya Hecha enlaza las pendientes que ya se editaron con un evento `story.documented` (`data.docs`) y deja de marcarlas; sin pendientes, responde como siempre (`PG-49 was already done.`):
+
+```text
+$ mt done PG-49
+PG-49 was already done; documentation updated: calendario.
+```
+
+- Una historia sin capacidades (o de un proyecto sin páginas) se cierra **exactamente igual que antes**: ni aviso, ni `docs` en el evento, ni marca.
+- La pendiente se resuelve también quitando la capacidad de la historia (`mt edit`, si al final no la cambió), o borrando la página. En la web, la historia y «Te toca» dicen eso mismo: que un agente actualice la página y vuelva a hacer `mt done`, o quitarla de «Capacidades». Salir de Hecha y volver a cerrarla vuelve a calcularlo. Los cierres de antes de MT-91 nunca quedan pendientes.
+- En el historial: `moved to done (4f3e2a1) · QA pending · docs editor · docs pending calendario` y `updated the documentation: calendario`.
 
 `--commit` lee el asunto de cada commit con `git log -1 --format=%s <sha>` (en el repo donde corres `mt`) y lo envía junto al sha; si git falla (fuera del repo, sha desconocido) envía solo el sha, sin error. La API acepta `commits` como lista de shas o de `{sha, message}`. Donde se pintan (historia, «Qué cambió», QA, `mt show`, `mt daily`, `mt qa`) salen como `4f3e2a1 · asunto`; en la web el sha enlaza al commit si el evento trae un PR de GitHub. Los eventos viejos (solo shas) se siguen leyendo. En `mt qa --json`, `commits` es siempre una lista de `{sha, message}` (`[]` si no hay; `message` falta si no se conoce).
 

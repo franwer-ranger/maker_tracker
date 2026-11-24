@@ -1,0 +1,14 @@
+<%# Documentación pendiente (MT-91): la historia cambia capacidades y se cerró sin actualizar sus páginas. Arriba de la historia, como la QA. Local: story, pages (las pendientes). %>
+<% slugs = pages.map(&:slug) %>
+<section id="documentacion" class="flex flex-col gap-3" aria-label="Documentación pendiente">
+  <div class="flex items-baseline justify-between gap-4">
+    <%= section_label "Documentación pendiente" %>
+    <span class="font-mono text-xs text-text-subtle max-md:hidden">mt doc edit <%= slugs.first %></span>
+  </div>
+  <div class="flex flex-col gap-3 rounded-xl border border-strong bg-surface-sunken px-6 py-5 max-md:p-4">
+    <span class="flex flex-wrap items-center gap-1.5">
+      <% slugs.each do |slug| %><span class="font-mono text-control text-text"><%= slug %></span><% end %>
+    </span>
+    <p class="text-sm leading-5 text-text-soft">Se cerró sin actualizar <%= slugs.one? ? "la página de esta capacidad" : "las páginas de estas capacidades" %>. Un agente <%= slugs.one? ? "la edita" : "las edita" %> con <span class="font-mono text-xs">mt doc edit</span> y vuelve a hacer <span class="font-mono text-xs">mt done <%= story.reference %></span>. Si al final no <%= slugs.one? ? "la cambió, quítala" : "las cambió, quítalas" %> de Capacidades al editar la historia.</p>
+  </div>
+</section>

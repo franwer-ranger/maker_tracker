@@ -1,0 +1,20 @@
+<%# Una historia Hecha con documentación pendiente (MT-91): cambia capacidades y se cerró sin actualizar sus páginas. Espera desde su cierre. Local: card (options: las páginas pendientes). %>
+<% story = card.story %>
+<% slugs = card.options.map(&:slug) %>
+<article id="te-toca-documentacion-<%= story.id %>" class="flex gap-4 py-5 pl-4 pr-4 shadow-[inset_2px_0_0_var(--color-accent)] md:pl-5 md:pr-6">
+  <%= link_to story.reference, project_story_path(card.project, story), class: "hidden w-14 shrink-0 font-mono text-control leading-5 text-text-muted hover:text-text md:block #{ComponentsHelper::FOCUS_RING}" %>
+  <div class="flex min-w-0 grow basis-0 flex-col gap-2 md:flex-row md:items-start md:gap-4">
+    <div class="flex min-w-0 grow basis-0 flex-col gap-2 md:gap-1.5">
+      <div class="flex items-center gap-2 font-mono text-xs">
+        <%= link_to story.reference, project_story_path(card.project, story), class: "shrink-0 whitespace-nowrap text-control text-text md:hidden #{ComponentsHelper::FOCUS_RING}" %>
+        <%= state_dot :done %>
+        <span class="text-accent"><span class="hidden md:inline">Hecha · </span>documentación pendiente · <%= short_time_ago(card.since) %></span>
+      </div>
+      <h2 class="text-[17px] font-medium leading-6 md:text-base"><%= story.title %></h2>
+      <p class="text-sm text-text-muted">Se cerró sin actualizar <span class="font-mono text-xs text-text"><%= slugs.join(", ") %></span>. Pídeselo a un agente (<span class="font-mono text-xs">mt doc edit</span> y otra vez <span class="font-mono text-xs">mt done</span>) o, si al final no <%= slugs.one? ? "la cambió, quítala" : "las cambió, quítalas" %> de Capacidades en la historia.</p>
+    </div>
+    <div class="pt-2 md:shrink-0 md:pt-0">
+      <%= ui_button "Abrir historia", variant: :secondary, href: project_story_path(card.project, story, anchor: "documentacion"), class: "w-full max-md:h-11 md:h-control-sm md:w-auto md:px-3 md:text-control md:leading-4" %>
+    </div>
+  </div>
+</article>
