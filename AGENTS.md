@@ -15,6 +15,7 @@ Herramienta para definir y organizar productos junto a agentes de IA. La v1 (est
 - Ruby 3.4.8 (`.ruby-version`, gestionado con rbenv) · Rails 8.1
 - SQLite (`storage/*.sqlite3`): no hace falta Docker ni ningún servicio externo
 - Hotwire (Turbo + Stimulus) con importmap · Tailwind CSS 4 (`tailwindcss-rails`, sin Node; CSS en `app/assets/tailwind/application.css`) con la base de [Basecoat](https://basecoatui.com/) copiada en `vendor/basecoat` · Sprockets
+- Prueba del stack v1 (MT-99, D-98, rama sin mergear): Inertia v3 (`inertia_rails`) + React + Vite + UI SDK (`@ui-sdk/react`) en `app/frontend`, con Node para compilar. Páginas en `/p/<slug>/v1` (portada, ⌘K y editar hito); `bin/vite dev` para recarga en caliente (si no, Vite compila al pedir la página)
 - Sin login: la app solo es accesible por red local o Tailscale · `positioning` para ordenar
 - API para agentes en `/api` (token por actor: `bin/rails "mt:token[claude]"`) y CLI `mt` en Go dentro de `cli/` (solo biblioteca estándar; `make -C cli install`). Go lo instala cada uno (`brew install go`); `bin/setup` avisa si falta
 
