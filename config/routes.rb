@@ -67,6 +67,11 @@ Rails.application.routes.draw do
   # Todo lo de un proyecto cuelga de su slug: /p/postgram, /p/postgram/roadmap…
   scope "p/:project_slug", as: :project do
     get "/", to: "boards#show", as: ""
+    # Prueba del stack v1 (MT-99): Inertia + React, al lado de las vistas de siempre.
+    scope "v1", module: :v1, as: :v1 do
+      get "/", to: "covers#show", as: :cover
+      resources :milestones, path: "hitos", param: :number, only: %i[edit update]
+    end
     resource :roadmap, only: :show
     resources :milestones, only: :create do
       scope module: :milestones do

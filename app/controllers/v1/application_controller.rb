@@ -1,0 +1,44 @@
+# Prueba del stack v1 (MT-99, D-98): las páginas de Inertia + React de un proyecto,
+# en /p/:slug/v1, conviviendo con las vistas de Hotwire. Se tira al acabar la prueba.
+module V1
+  class ApplicationController < ::InertiaController
+    include ProjectScoped
+    layout "inertia"
+
+    inertia_share do
+      {
+        project: { key: @project.key, name: @project.name, slug: @project.slug },
+        nav: {
+          cover: project_v1_cover_path(@project),
+          board: project_path(@project),
+          roadmap: project_roadmap_path(@project),
+          brief: project_brief_path(@project)
+        },
+        notice: flash[:notice],
+        # El ⌘K pide su índice al abrirse (recarga parcial), no con cada página.
+        search: InertiaRails.optional { search_index }
+      }
+    end
+
+    private
+
+    # Historias, capacidades y decisiones del proyecto, para buscar en el ⌘K.
+    def search_index
+      stories = @project.stories.includes(:milestone).order(number: :desc).map do |story|
+        { value: "story:#{story.number}", ref: story.reference, title: story.title, state: story.state,
+          meta: [ story.milestone&.code, Story.human_state(story.state) ].compact.join(" · "),
+          url: project_story_path(@project, story) }
+      end
+      capabilities = @project.pages.documentation.ordered.map do |page|
+        { value: "page:#{page.slug}", ref: page.slug, title: page.title, meta: page.area.presence || page.kind.humanize,
+          url: "#{project_v1_cover_path(@project)}#capacidad-#{page.slug}" }
+      end
+      decisions = @project.decisions.includes(:superseded_by).reverse.map do |decision|
+        { value: "decision:#{decision.number}", ref: decision.reference, title: decision.title,
+          meta: decision.superseded_by ? "sustituida por #{decision.superseded_by.reference}" : "vigente",
+          url: project_brief_path(@project, anchor: decision.reference) }
+      end
+      { stories: stories, capabilities: capabilities, decisions: decisions }
+    end
+  end
+end
