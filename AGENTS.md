@@ -6,7 +6,7 @@ Herramienta para definir y organizar productos junto a agentes de IA. La v1 (est
 
 - **El roadmap, las historias y las decisiones viven en Maker Tracker** (proyecto `MT`, en la torre). Este repo tiene `.mt`, así que `mt context`, `mt roadmap`, `mt next` y `mt show MT-14` funcionan aquí. Hace falta `mt` en el PATH (`make -C cli install`) y configurado (`mt setup`).
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): modelo de datos v2, interfaz para agentes (`mt`, API, MCP), contrato de eventos y módulo de wflow.
-- [`docs/DESIGN.md`](docs/DESIGN.md): sistema de diseño (tokens, tipografía, componentes, landing). Léelo antes de tocar UI; la skill `maker-tracker-design` (`.claude/skills/`) explica el procedimiento.
+- [`docs/DESIGN.md`](docs/DESIGN.md): valores del sistema de diseño (tokens de Paper, claro y oscuro). Antes de tocar UI, carga las skills `maker-tracker-ds` (filosofía y reglas) y `ui-sdk` (comportamiento de los componentes); se verifica con agent-browser.
 - [`docs/CLI.md`](docs/CLI.md): qué imprime `mt`, comando a comando (la "pantalla" de los agentes).
 - [`docs/workstreams/`](docs/workstreams/README.md): el trabajo va en tres vertientes paralelas (producto, desarrollo, self-host), cada una con su brief, su worktree y lo que es suyo. Si eres uno de esos agentes, lee el README y tu brief antes de empezar.
 

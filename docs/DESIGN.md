@@ -1,152 +1,98 @@
-# Maker Tracker · Sistema de diseño
+# Maker Tracker · Sistema de diseño (UI v1)
 
-> Fuente de verdad visual. Los diseños viven en Paper; este documento recoge las reglas y los valores para que cualquier agente pueda aplicarlos sin abrir Paper. Si Paper y este documento no coinciden, se habla y se corrige uno de los dos.
+> Los valores. La filosofía y las reglas están en la skill [`maker-tracker-ds`](../.claude/skills/maker-tracker-ds/SKILL.md); el comportamiento de los componentes, en la skill oficial `ui-sdk`. Si este documento y Paper no coinciden, manda Paper y se corrige este.
 
 ## Dónde está
 
-Archivo de Paper **Maker Tracker** (`01M50CA4S5CN4Z8ERVW36XWDHF`, https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF):
+Archivo de Paper **Maker Tracker** (`01M50CA4S5CN4Z8ERVW36XWDHF`, https://app.paper.design/file/01M50CA4S5CN4Z8ERVW36XWDHF). Solo cuentan las páginas `v1 · …`:
 
-| Página | Qué hay |
-|---|---|
-| **Landing** | `Landing · Ship happens`, la landing que construimos (repo aparte) |
-| **Sistema** | `01 · Tipografía`, `02 · Color y forma`, `03 · Componentes` |
-| **App** | Pantallas de la app: `5.9 Actividad` (y `5.9b` vacía, cada una también « · Móvil»), `5.0 Proyectos`, `5.1 Tablero · M2`, `5.2 Tablero · Selector de hito`, `5.3 Roadmap`, `5.4 Historia · Lista (#49)`, `5.6 Historia · Editando (#49)` y `5.5 Brief`, con los datos de las seeds (Postgram). Debajo, los artboards `Pendiente · …` (Actividad, Stats, vista del agente, ejecución): son diseños antiguos que solo sirven de referencia hasta rehacerlos con el sistema |
-| **Propuesta · Móvil** | Sustituida por los artboards « · Móvil» de cada pantalla (MT-45) |
-| v1 · … | Histórico. No se usa |
+- `v1 · 0 · Referencias`: la receta y sus referencias.
+- `v1 · 1 · Sistema`: `01 · Tokens`, `08 · Componentes base (receta)`, `09 · Presencia del agente`, `10 · Piezas de pantalla`.
+- `v1 · 2` a `v1 · 10`: portada, capacidad, historia, roadmap, taller, decisiones, historias, editar y ajustes; cada una en escritorio claro, oscuro y móvil.
+- Debajo del separador `ARCHIVO · no construir`: diseños antiguos. No se construyen ni sirven de referencia.
 
-**Una sola versión**: en Paper solo vive el diseño vigente. Lo que se rehace se sustituye y lo antiguo se borra, sin páginas por versión.
-
-Para llevar un diseño a código, leer los valores exactos con el MCP de Paper (`get_jsx`, `get_computed_styles`), nunca a ojo desde una captura. Los tokens del archivo coinciden con los de abajo.
-
-## Principios
-
-- **Taller de noche.** Grafito casi negro, preciso y tranquilo, al estilo de Geist (Vercel). La marca solo levanta la voz con un titular serif y con el naranja.
-- **Solo modo oscuro** por ahora.
-- **El naranja es un piloto**: se enciende solo cuando algo pide acción o atención (botón principal, "Necesita tu atención", agente trabajando). Si todo es naranja, nada lo es.
-- **Información sobre superficies**, no todo metido en tarjetas. Bordes finos y poco relleno de color.
-- **Dos públicos** (ver `PRODUCT.md`): la UI es para la persona. Lo que es de máquina (ids, actores, tiempos, coste, comandos) va en mono, y cada acción importante enseña su comando equivalente.
-
-## Tipografía
-
-| Voz | Fuente | Uso |
-|---|---|---|
-| Display | **Instrument Serif** 400 | Solo titulares grandes (≥ 40px): landing, título del Brief, hitos. Tracking −0.01em a −0.025em según tamaño |
-| Interfaz | **Geist** 400 / 500 / 600 | Todo lo demás |
-| Máquina | **Geist Mono** 400 | Ids (`#48`), actores (`claude`), tiempos, coste, comandos, etiquetas de sección en mayúsculas (12px, tracking 0.08em) |
-
-Todas son OFL (Google Fonts / Vercel). **Apple Garamond Light** fue la idea original, pero no tiene licencia web: Instrument Serif es la más parecida (estrecha, misma altura de x). SF Pro tampoco se usa en web.
-
-Escala: 11 · 12 · 13 · 14 · 16 · 18 · 20 · 24 · 32 (interfaz; el 11 es `--text-label`, solo para las labels de historia; el 13 es `--text-control`, para controles pequeños, selector de estado, actor, metadatos y ayudas de campo) y 48 · 72 · 112 (display; el hero de la landing usa 184).
+Los valores exactos se leen con el MCP de Paper (`get_tokens`, `get_jsx`, `get_computed_styles`), nunca a ojo.
 
 ## Color
 
-```css
---color-bg: #111113;              /* fondo: grafito, no negro puro */
---color-surface-sunken: #0B0B0C;  /* columnas del tablero, terminal, bloques de código, ventanas */
---color-surface-raised: #18181B;  /* tarjetas que se levantan sobre una columna (historia del Tablero) */
---color-surface: #26262A;         /* nav activo, hover, botón desactivado, labels */
---color-border: #2A2A2E;
---color-border-strong: #3A3A3F;   /* botones secundarios, inputs */
---color-text: #FFFFFF;
---color-text-soft: #EDEDED;       /* lectura larga */
---color-text-muted: #9E9C9C;      /* secundario */
---color-text-subtle: #6E6E6E;     /* solo metadatos no esenciales, nunca texto de lectura */
---color-accent: #FF3F01;          /* piloto: acción y atención */
---color-accent-hover: #FF5A24;    /* solo hover del botón primario */
---color-avatar: #3D89F6;          /* actor humano */
---color-state-idea: #6B6B6B;      /* punto hueco */
---color-state-defining: #E8B04A;
---color-state-ready: #F5F5F5;
---color-state-done: #5FB37A;
-/* En curso = --color-accent con halo */
-```
+Claro en `:root`, oscuro en `.dark`. La barra lateral es oscura en los dos temas.
 
-- **Texto sobre naranja: oscuro (`text-bg`), no blanco.** El blanco sobre `#FF3F01` no llega al contraste AA en tamaños pequeños. Los mockups v2 usan blanco y hay que corregirlos.
-- Tintes de atención (fondo de una fila que pide atención): naranja al 5–6 % sobre el fondo, borde `#6B2410`.
-- Los colores de estado se usan como puntos (6–10px) y barras, nunca como fondos grandes.
+| Token | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `--background` | `#F7F8FA` | `#17171A` | Panel de lectura: blanco frío (Fran, 2026-11-23: menos arena). |
+| `--foreground` | `#111113` | `#EDEDED` | Tinta. |
+| `--card` | `#FFFFFF` | `#1F1F23` | Superficie levantada: blanco. |
+| `--card-foreground` | `#111113` | `igual` |  |
+| `--popover` | `#111113` | `#ECEBE6` | Recuadros flotantes (decisión al pasar el ratón): oscuros sobre el papel. |
+| `--popover-foreground` | `#EDEEF0` | `#111113` |  |
+| `--muted` | `#ECEEF1` | `#26262A` | Relleno sutil, frío. |
+| `--muted-foreground` | `#6B6F76` | `#8A8A8F` | Texto secundario sobre blanco frío. |
+| `--border` | `#E4E6EA` | `#2E2E33` | Reglas finas del panel, frías. |
+| `--input` | `#E4E6EA` | `igual` |  |
+| `--ring` | `#111113` | `igual` | Foco. |
+| `--primary` | `#111113` | `#EDEDED` | Acción principal: tinta (botón negro sobre papel). |
+| `--primary-foreground` | `#F6F7F8` | `#111113` |  |
+| `--signal` | `#FF3F01` | `#FF3F01` | Piloto naranja: solo atención, lo que viene y el momento clave. Si todo es naranja, nada lo es. |
+| `--signal-soft` | `#FFE7DC` | `#3A1A0E` | Fondo de un aviso de enfoque. |
+| `--success` | `#2E7D4F` | `#5FB37A` | Al día, hecho. |
+| `--destructive` | `#C2341B` | `igual` |  |
+| `--sidebar` | `#0F0F11` | `#0B0B0C` | El marco: sidebar y fondo que contiene el panel. |
+| `--sidebar-foreground` | `#C9CBD0` | `igual` | Apagada: no compite con el contenido (receta) |
+| `--sidebar-muted` | `#6E7078` | `igual` |  |
+| `--sidebar-accent` | `#1C1D21` | `#1F1F23` | Ítem activo del sidebar. |
+| `--sidebar-border` | `#2A2A2E` | `#222226` |  |
+| `--state-idea` | `#8C8A84` | `igual` | Estado Idea. |
+| `--state-defining` | `#D99A1E` | `igual` | Estado Definiendo. |
+| `--state-ready` | `#111113` | `#EDEDED` | Estado Lista. |
+| `--state-in-progress` | `#FF3F01` | `igual` | En curso (piloto). |
+| `--state-done` | `#2E7D4F` | `igual` | Hecha. |
+| `--body` | `#3A3D44` | `#B9B9BD` | Texto de lectura (párrafos) |
+| `--sidebar-active` | `#F2F3F5` | `#F2F3F5` | Texto del elemento activo de la barra |
+| `--kbd` | `#9EA3AB` | `igual` | Atajos de teclado |
 
-## Forma
+## Tipografía, tamaños, espacio y forma
 
-- Espaciado base 4: 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96 · 128.
-- Radios: 4 · **6** (botones, inputs) · 8 · **12** (tarjetas, ventanas) · full. Anidados: radio interior = exterior − hueco.
-- Alturas de control: 32 (pequeño) · 36 (nav) · 40 (normal) · 44 (CTA de landing).
-- Sin degradados de fondo ni sombras decorativas (la única sombra es la del menú, funcional). Foco visible siempre: anillo de 2px del fondo + 2px de color. Naranja en el botón primario, blanco en el resto de controles.
-- Hover: primario a `accent-hover`; secundario a fondo `surface`; fantasma y nav item, texto a `text`.
+| Token | Valor | Uso |
+|---|---|---|
+| `--font-display` | `"Instrument Serif"` | Solo titulares de 40px o más, peso 400, tracking -0.01em. Sustituye a Apple Garamond Light (sin licencia web). |
+| `--font-sans` | `"Geist"` | Toda la interfaz |
+| `--font-mono` | `"Geist Mono"` | Ids, agentes, tiempos, comandos |
+| `--text-xs` | `12px` |  |
+| `--text-sm` | `14px` |  |
+| `--text-base` | `16px` |  |
+| `--text-lg` | `18px` |  |
+| `--text-xl` | `20px` |  |
+| `--text-2xl` | `24px` |  |
+| `--text-3xl` | `32px` |  |
+| `--text-display-sm` | `48px` |  |
+| `--text-display` | `72px` |  |
+| `--text-display-lg` | `112px` |  |
+| `--text-control` | `13px` | Controles pequeños, selector de estado, actor, metadatos y ayudas de campo. Entre text-xs (12) y text-sm (14). |
+| `--text-label` | `11px` | Solo labels de historia (mono, interlineado 14px). |
+| `--spacing-1` | `4px` |  |
+| `--spacing-2` | `8px` |  |
+| `--spacing-3` | `12px` |  |
+| `--spacing-4` | `16px` |  |
+| `--spacing-6` | `24px` |  |
+| `--spacing-8` | `32px` |  |
+| `--spacing-12` | `48px` |  |
+| `--spacing-16` | `64px` |  |
+| `--spacing-24` | `96px` |  |
+| `--spacing-32` | `128px` |  |
+| `--radius-sm` | `4px` |  |
+| `--radius-md` | `6px` |  |
+| `--radius-lg` | `8px` |  |
+| `--radius-xl` | `12px` |  |
+| `--radius-full` | `9999px` |  |
+| `--radius` | `6px` | Controles. |
+| `--radius-panel` | `14px` | El panel dentro del marco. |
 
-### Los mismos tokens con nombres de shadcn
-
-La base de componentes es la de shadcn sin React: [Basecoat](https://basecoatui.com/) 1.3.0 (MIT), copiado en `vendor/basecoat` (base y componentes, sin paquete de estilos). Sus componentes leen las variables estándar de shadcn, que en `app/assets/tailwind/application.css` apuntan a los tokens de arriba. El tema se cambia en los tokens; las variables de shadcn solo dicen qué papel tiene cada uno. Sin paquete de estilos, los componentes de Basecoat (`.btn`, `.card`, `.badge`…) traen la estructura (disposición, estados, accesibilidad) pero casi nada del aspecto: ese lo pone el tema propio cuando se use. Hoy ninguna pantalla los usa:
-
-| shadcn | Token |
-|---|---|
-| `--background` / `--foreground` | `bg` / `text` |
-| `--card` | `surface-raised` |
-| `--popover`, `--secondary`, `--muted`, `--accent` | `surface` |
-| `--muted-foreground` | `text-muted` |
-| `--primary` / `--primary-foreground` | `accent` / `bg` (texto oscuro sobre naranja) |
-| `--border` / `--input` | `border` / `border-strong` |
-| `--ring` | `text` (foco blanco) |
-| `--radius` | 8 (`radius-lg`; de ahí salen 4 · 6 · 8 · 12) |
-| `--sidebar-*` | `bg`, `text-muted`, `accent`, `surface`, `border` |
-
-`--destructive` y `--chart-*` no tienen token y se quedan con los de Basecoat. Ojo con `accent`: en las clases (`bg-accent`, `text-accent`) sigue siendo el naranja de Paper, mientras que el `--accent` de shadcn es el fondo de hover (`surface`); un componente de Basecoat que pinte `bg-accent` sale naranja. Lo mismo con `muted`: la clase del texto atenuado es `text-text-muted`, porque `text-muted` es el `--muted` de shadcn (`surface`) y saldría casi invisible.
-
-## Iconos
-
-**Heroicons** (MIT), versión outline de 24, trazo 1.5, a 20px en interfaz y 16px dentro de botones, color heredado del texto, en SVG en línea. **Font Awesome se elimina.** En código: helper `icon "arrow-right", size: 16` y solo los SVG que se usan, en `app/assets/icons/`. Heroicons no tiene icono de PR: "Ver PR" usa `arrow-top-right-on-square`.
+- Instrument Serif solo en el título de la página. Geist para la interfaz; Geist Mono para ids, actores, fechas, números, comandos y etiquetas en mayúsculas (12px, tracking 0.08em).
+- Iconos de línea (trazo 1.5–1.8), 13–16 px, sin fondo, del color de su texto.
 
 ## Componentes
 
-En `Sistema → 03 · Componentes`:
-
-- **Botón**: primario (naranja, texto negro), secundario (borde `border-strong`), fantasma, desactivado y pequeño. Con estados hover y focus.
-- **Nav item**: activo sobre `surface`, con contador naranja.
-- **Selector de estado**: control segmentado con los cinco estados y su punto.
-- **Input**: fondo `surface-sunken`, borde `border-strong`, ayuda debajo.
-- **Actor**: punto + nombre en mono + estado (`claude en #48`). Agente activo = naranja con halo; inactivo = gris; humano = azul.
-- **Fila de atención**: id en mono, origen en mono naranja, título, contexto y sus opciones (botones). Marca lateral con `box-shadow: inset 2px 0 0 accent` (no `border-left`, que desalinea).
-- **Terminal**: ventana `surface-sunken` con barra de título y contenido en mono.
-- **Línea de metadatos**: mono 12px, separada por ` · `.
-
-Piezas de las pantallas de la app (en `App` y, como referencia, en `03 · Componentes` → "Fila · Historias"):
-
-- **Barra lateral**: Actividad arriba, sola y con el contador de «Te toca»; debajo el proyecto (clave en mono sobre `surface`), navegación Tablero · Roadmap · Brief y sección Agentes abajo.
-- **Tarjeta de historia** (Tablero): fondo `surface-raised` sobre la columna `surface-sunken`; `#n` en mono, título, labels y metadato arriba a la derecha (actor, "Siguiente", bloqueo, "faltan criterios", mockup). Las Hechas, sin fondo y con el título atenuado.
-- **Fila de historia** (Roadmap): estado (104px) · `#n` (40px) · título · metadato, con columnas de ancho fijo.
-- **Badge "Siguiente"**: píldora `state-ready` con texto negro. Solo una por proyecto.
-- **Label**: mono `text-label` (11px, interlineado 14) sobre `surface`, radio 4.
-- **Propiedad**: etiqueta de 112px y valor.
-- **Menú**: `surface` con borde `border-strong` y la única sombra funcional del sistema (`0 12px 32px rgba(0,0,0,.6)`).
-- **Evento del historial**: marca lateral de 2px (`inset`) con el color del estado al que pasa, o `border-strong` si no es un cambio de estado.
-- **Pregunta de agente** (5.10 / 5.10b, MT-29): abierta va arriba del todo, en una tarjeta `radius-xl` con marca lateral naranja (`inset 2px`), quién pregunta y cuánto espera en mono naranja, título, contexto y las opciones como filas de 40px (la recomendada, naranja con texto negro) con su comando `mt answer` en mono a la derecha. Una no bloqueante lleva la marca en `border-strong` y no es naranja. Respondida baja a la sección «Preguntas» al final de la historia, sin naranja: la opción elegida con un check verde, quién respondió, la nota y las descartadas. La etiqueta Reversible/Irreversible solo sale si se indicó.  Cada opción es un botón que responde sin salir de la pantalla (MT-30), con su comando al lado; «Responder con una nota…» abre un texto (nota de la opción pulsada o, con «Responder con este texto», respuesta libre) y «Registrar también como decisión» (`--decide`) solo sale en la página de la historia.
-- **Actividad** (5.9 / 5.9b, MT-30): la portada, con todos los proyectos. Cabecera (título 32px y una frase con lo que te toca), bloque «Te toca» (etiqueta naranja con el contador; una lista de tarjetas con marca lateral naranja y `PG-49` en una columna de 56px; lo que más espera, primero) y, a la derecha (340px), «En marcha»: actor, historia y desde cuándo. Cada tarjeta lleva una línea mono naranja (quién, cuánto espera), título, contexto y sus acciones; las preguntas, sus opciones (la recomendada, naranja). Vacía: «Nada te espera.» en serif y «Lo último que ha pasado». El contador naranja de «Actividad» en la barra es el número de tarjetas. En móvil (< 768px) no hay barra lateral: las tarjetas van a sangre, las opciones de 44px con su comando debajo, y una barra inferior de cuatro pestañas (Actividad con el contador, Tablero, Roadmap, Brief).
-- **Panel**: un formulario que se abre bajo su botón (p. ej. "Nuevo hito"), con el mismo fondo, borde y sombra que el menú. Inputs sobre `bg` y el botón de enviar pequeño, a la derecha.
-- **Barra de cambio pendiente**: tras soltar algo que pide motivo (reordenar en el Roadmap), una barra `surface-sunken` con borde `border-strong`: qué ha cambiado, el motivo (opcional en la UI), "Deshacer" (fantasma) y "Guardar orden" (primario), ambos pequeños. Se guarda al confirmar, porque el motivo va en el evento y los eventos no se editan.
-- **Fila · Avisos** (5.13, MT-47): la línea para activar los avisos push en este dispositivo. En escritorio va solo al pie de la barra lateral, bajo «Agentes» y separada por un borde; en el móvil, al pie de la portada, encima de las pestañas (fila de 72px a sangre). Icono de 16 (`bell`, `bell-slash` o `device-phone-mobile`) en `text-muted`, texto en `text-muted` y la ayuda en `text-subtle`. Estados: por activar («Avisarme en este dispositivo» + «Activar», secundario), activado («Avisos activados en este dispositivo» + «Desactivar», fantasma; la campana en `text`), bloqueado, sin HTTPS, sin soporte e instalar la PWA (iPhone), estos cuatro solo con su frase. **Sin naranja**: los avisos no son «Te toca». Sin claves VAPID no se enseña. Helper `push_line :sidebar | :page`.
-- **Agente trabajando** (7.4, 7.4b, MT-38; en Paper, en la página «App · Primeros pasos», aún no en `03 · Componentes`): lo que la UI enseña de la presencia mientras un agente trabaja; sin agentes activos no se pinta nada y todo se apaga solo a los 60 s. Piezas (helpers `agent_dots`, `agent_dot`, `agent_editing_label`; `/design`):
-  - **Matriz de puntos**: puntos naranjas en rejilla, 9×3 de 3px con hueco 3 (cabecera) o 4×3 de 2px con hueco 2 (etiqueta «editando»). Una ola de opacidad (0,15 → 1 → 0,3) cruza la matriz de izquierda a derecha en 1,6 s, **solo con CSS** (`.agent-dots`, keyframes `agent-wave`); con `prefers-reduced-motion: reduce` se queda quieta en el dibujo del mockup.
-  - **Punto de agente**: 6px naranja con halo del 22 % que late (`agent-pulse`). Junto al elemento de navegación que toca (Tablero para una historia, Roadmap para un hito, Brief para el brief o las decisiones), en la pestaña de la barra inferior del móvil (arriba a la derecha del icono) y, en Actividad, en la fila del proyecto. Sin nombres: los nombres van en «Agentes».
-  - **Indicador de la cabecera**: matriz + «Editando PG-51» (13px) + chevron, 32px de alto (44 en la cabecera del móvil); con solo lecturas, «Leyendo PG-51». Abre **Esta sesión**: menú de 340px (`surface`, borde `border-strong`, radio 12, sombra del menú) con «desde 10:31», la fila «ahora» (mono naranja, marca lateral `inset 2px` naranja) y lo que ha hecho ese actor (hora en mono `text-subtle` · acción), filas de 32px; pie «Se apaga solo tras 60 s sin actividad». En el móvil es una hoja inferior: quién (punto + nombre) · ESTA SESIÓN, filas de 52px a 15px y, al pie, los demás agentes activos.
-  - **Sobre el elemento**: la tarjeta (o el hito del Roadmap) que un agente está escribiendo lleva borde naranja al 70 % y, en lugar de su metadato, «editando» con la matriz pequeña; la fila del Roadmap y el brief llevan la etiqueta. Lo que acaba de crear un agente entra con un resalte de 2,4 s (`agent-fresh`, de borde naranja a `border-strong`) y «nueva». En la historia, una fila de atención: «Un agente también está editando esta historia» y quién (no bloquea; los conflictos los resuelve MT-37).
-  - **Borde de ventana**: solo con escrituras recientes de un agente en el proyecto que se mira: 1px naranja al 55 % por dentro y una línea de 2px arriba con resplandor (`0 0 16px 2px` al 45 %). Con solo lecturas, nada. Es por proyecto: en Actividad no hay borde.
-  - Varios agentes a la vez se distinguen por el nombre, nunca por el color.
-- **Acción discreta**: lo que se hace poco y no debe competir (cerrar o reabrir un hito) es un botón fantasma pequeño, al pie de su bloque, separado por un borde.
-- **Cuerpo de una historia**: el markdown tal cual, sección por sección. Cada `##` se pinta como etiqueta de sección y las secciones vacías no se muestran. No se destaca ninguna sección.
-- **Editar una historia**: el título pasa a input, el cuerpo al editor (Escribir / Vista previa) y las propiedades de la columna (mockup, labels, "Bloqueada por") a campos que se guardan con el mismo botón. El estado no se cambia mientras se edita.
-
-Piezas del móvil (< 768px, MT-45; en `03 · Componentes` → "Fila · Móvil" y, a 390px, en `/design`). Una sola vista por pantalla con clases `max-md:` / `md:`: el escritorio no cambia. Margen lateral de 16px y zonas táctiles de al menos 44px (un botón que se ve de 32, como «Editar», extiende su zona con `TOUCH_TARGET`):
-
-- **Barra inferior** (`layouts/_tab_bar`, pestañas en `bottom_tabs`): Actividad (con el contador) · Tablero · Roadmap · Brief, en Actividad, Tablero, Roadmap, Brief e Historia; la de la sección, resaltada. No sale mientras se edita.
-- **Cabecera de proyecto** (`shared/_project_header`, Tablero, Roadmap y Brief): clave en mono sobre `surface` (28px) + nombre (15px, 600) + chevron, 52px de alto; a la derecha, la acción de la pantalla («Editar» en el Brief). Abre la hoja de proyectos: clave, nombre, hito en curso y «2 en curso» con punto naranja o «sin actividad · 2 d», en filas de 60px, y «Nuevo proyecto» con `mt project create`.
-- **Hoja inferior** (`ui_menu sheet: "Hito"`): el mismo menú que en escritorio, pegado abajo, con fondo `surface`, borde `border-strong` arriba, radio 12 arriba, la sombra del menú, asa, título en mono y velo negro al 60 %. Opciones de 52px a 15px; la activa sobre `border-strong`. La usan el selector de proyecto y el de hito.
-- **Selector de hito · Móvil**: la línea en mono sobre el titular del Tablero («M2 · EN CURSO · 4/12 ⌄», 44px) abre la hoja.
-- **Pestañas de estado** (Tablero): una fila deslizable en horizontal (lo único que se desliza) con punto, estado y número; la activa sobre `surface` con borde `border-strong` (píldora de 44px). Debajo, solo las tarjetas de ese estado, a todo el ancho. Abre la primera con historias empezando por Lista (luego En curso, Definiendo, Idea, Hecha) y recuerda la última elegida durante la sesión.
-- **Fila de historia · Móvil** (Roadmap): punto de estado (16) · `#n` (36) · título en hasta dos líneas (15px) · metadato, de al menos 52px. Los hitos, a sangre y separados por bordes: plegados en filas de 56px con chevron; el abierto, sobre `surface-sunken` con su objetivo. Sin asas: en el móvil no se reordena.
-- **Historia · Móvil**: «‹ M2 / PG-49» y «Editar» arriba; título 26px; el estado como píldora (un `<select>` nativo encima) con su ayuda; propiedades en una caja `surface-raised` de radio 12 con la etiqueta en 104px (las vacías no salen); el cuerpo a 15/24; el historial al final, con los 2 últimos y «Ver los N anteriores».
-- **Barra fija de guardar** (`components/_save_bar`): «Cancelar» (secundario) y «Guardar» (primario) a medias, de 44px, y «Se guarda como fran · queda en el historial» debajo. En escritorio es la fila de siempre bajo el editor. Al editar, el título es un campo que crece y las propiedades, campos apilados (etiqueta encima, input de 44px).
-- **Conflicto al guardar · Móvil**: el aviso va arriba, antes del título; quién y cuándo, debajo de cada cambio; y las tres acciones apiladas a todo el ancho: traer (primario), ver las dos versiones (secundario) y descartar (fantasma).
-
-Regla: si una pantalla necesita una pieza nueva, primero se añade al sistema en Paper y aquí.
+En `app/frontend/components/`, encima de los comportamientos de UI SDK. El catálogo visual está en Paper (`08` y `10`) y en `/design` (solo development). Una pieza nueva se añade a los tres sitios.
 
 ## Landing
 

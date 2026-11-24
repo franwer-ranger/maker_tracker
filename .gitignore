@@ -47,3 +47,7 @@
 
 # Binario del CLI mt (make -C cli build).
 /cli/bin/
+
+# Frontend (Vite, MT-99 en adelante).
+node_modules/
+/public/vite*
