@@ -52,6 +52,15 @@ class Page < ApplicationRecord
       .or(events.where(action: "decision.recorded").where("json_extract(data, '$.number') IN (?)", decisions.select(:number)))
   end
 
+  # Cómo ha cambiado (MT-91): los cierres de historia (`story.state_changed` a
+  # Hecha) y las actualizaciones posteriores (`story.documented`) que enlazan
+  # la página en `data.docs`, del más reciente al más antiguo.
+  def story_changes
+    project.events.recent_first.where(action: %w[story.state_changed story.documented]).where(<<~SQL.squish, id)
+      EXISTS (SELECT 1 FROM json_each(events.data, '$.docs') WHERE json_extract(json_each.value, '$.page_id') = ?)
+    SQL
+  end
+
   # Título, icono, área, tipo y cuerpo. Con `version:` (la que leyó quien edita)
   # falla con Versioned::Conflict si la página ya cambió, sin guardar nada. La
   # portada solo cambia de cuerpo: otro título, icono, área o tipo es un error

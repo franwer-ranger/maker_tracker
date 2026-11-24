@@ -32,7 +32,8 @@ class Api::Markdown::Story
       claimed_by: #{@story.claimed_by&.name}
       mockup: #{scalar(@story.mockup)}
       labels: #{list(@story.labels)}
-      blocked_by: #{list(@story.blocked_by)}#{usage_fields}
+      blocked_by: #{list(@story.blocked_by)}
+      capabilities: #{list(@story.capabilities)}#{usage_fields}
       ---
     YAML
       .gsub(/ +$/, "")
@@ -45,7 +46,27 @@ class Api::Markdown::Story
   end
 
   def read_only
-    [ READ_ONLY_MARK, related, qa, questions, comments, history ].compact.join("\n\n")
+    [ READ_ONLY_MARK, related, documentation, qa, questions, comments, history ].compact.join("\n\n")
+  end
+
+  # Las páginas de las capacidades que cambia (MT-91). Antes de cerrarla, qué
+  # actualizar; cerrada, si quedó pendiente o con qué versión se enlazó.
+  #   ## Documentation · pending
+  #   PG-49 was closed without updating calendario. Update it with mt doc edit calendario --file <f.md> and run mt done PG-49 again.
+  def documentation
+    pages = @story.changed_capabilities.to_a
+    return if pages.empty?
+
+    slugs = sentence(pages.map(&:slug))
+    unless @story.done?
+      return "## Documentation\n\nIt changes #{slugs}. Before mt done, update #{pages.one? ? 'its page' : 'their pages'}: mt doc edit #{pages.first.slug} --file <f.md>."
+    end
+
+    pending = @story.pending_documentation
+    return "## Documentation · up to date\n\nIt changes #{slugs}." if pending.empty?
+
+    "## Documentation · pending\n\n#{@story.reference} was closed without updating #{sentence(pending.map(&:slug))}. " \
+      "Update #{pending.one? ? 'it' : 'them'} with mt doc edit #{pending.first.slug} --file <f.md> and run mt done #{@story.reference} again."
   end
 
   # Solo si espera QA o ya la tuvo (MT-32). Lo que se prueba son los criterios de aceptación.

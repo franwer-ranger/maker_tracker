@@ -85,6 +85,7 @@ Rails.application.routes.draw do
         resource :state, only: :update
         resource :position, only: :update
         resource :qa, only: :create, controller: "qa"
+        resource :documentation, only: :create # «Ya está al día» (MT-91)
         resource :agent_notice, only: :show # el aviso de la edición, en directo (MT-38)
       end
     end

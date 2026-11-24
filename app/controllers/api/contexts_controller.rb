@@ -8,6 +8,7 @@ class Api::ContextsController < Api::BaseController
                 ready_work: Api::Markdown::Formatting.ready_work_data(context.ready_work),
                 decisions: context.decisions.map(&:reference),
                 documentation: context.documentation.map { { slug: it.slug, type: it.kind, title: it.title, area: it.area } },
+                documentation_pending: context.documentation_pending.map { |story, pages| { reference: story.reference, title: story.title, pages: pages.map(&:slug) } },
                 in_progress: context.in_progress.map { { reference: it.reference, title: it.title, claimed_by: it.claimed_by&.name } },
                 markdown: context.to_s },
       summary: "Context of #{project.name}.",

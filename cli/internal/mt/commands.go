@@ -264,7 +264,9 @@ func init() {
 		summary: "Claims the story and moves it to in progress", example: "mt start PG-49",
 		run: func(e *env) error { return e.storyCall("POST", e.arg(0), "/start", map[string]any{}) }})
 	def(&command{name: "done", group: workGroup, usage: "mt done <story> [--commit sha]… [--pr url]", minArgs: 1, maxArgs: 1,
-		summary: "Moves it to done, linking its commits or PR", example: "mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63",
+		summary:     "Moves it to done, linking its commits or PR",
+		description: "If the story changes capabilities (capabilities: in mt show), update their pages with mt doc edit first: done links the pages edited since it started and marks the rest documentation pending (it still closes). Run it again on a done story once you update them.",
+		example:     "mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63",
 		run: func(e *env) error {
 			body := map[string]any{"commits": commitsWithSubject(e.opts.all("commit"))}
 			return e.storyCall("POST", e.arg(0), "/done", optional(body, e, "pr"))
