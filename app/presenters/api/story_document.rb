@@ -4,7 +4,7 @@
 # de solo lectura (relacionadas, comentarios, historial) y las líneas que
 # antepone `mt next` antes del frontmatter (Next up:, Why this one:).
 class Api::StoryDocument
-  FIELDS = %w[number version title milestone state claimed_by mockup labels blocked_by].freeze
+  FIELDS = %w[number version title milestone state claimed_by mockup labels blocked_by capabilities].freeze
   # Los pone `mt show` si la historia tiene coste (MT-34); se leen pero no se editan.
   READ_ONLY_FIELDS = %w[cost_usd tokens cost_estimated].freeze
   FRONTMATTER = /\A(?:(?!---[ \t]*\r?\n)[^\n]*\n)*?---[ \t]*\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|\z)(.*)\z/m

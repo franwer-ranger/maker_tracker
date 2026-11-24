@@ -89,6 +89,25 @@
         <% end %>
       </div>
 
+      <%# Las capacidades que cambia (MT-91): solo si el proyecto tiene documentación o la historia ya declara alguna. %>
+      <% capability_pages = story.changed_capabilities.to_a %>
+      <% if story.capabilities.any? || @project.pages.documentation.exists? %>
+        <div class="<%= class_names(row, "max-md:hidden": !form && capability_pages.none?) %>">
+          <% if form %>
+            <label for="story_capabilities" class="<%= label %>">Capacidades</label>
+            <%= form.text_field :capabilities, value: story.capabilities.join(", "), placeholder: @project.pages.documentation.ordered.limit(2).pluck(:slug).join(", "), "aria-describedby": "story_capabilities_ayuda", class: "#{field} font-mono" %>
+            <span id="story_capabilities_ayuda" class="sr-only">Slugs de las páginas que cambia, separados por comas</span>
+          <% else %>
+            <span class="<%= label %>">Capacidades</span>
+            <% if capability_pages.any? %>
+              <span class="flex flex-wrap gap-x-2.5 gap-y-1"><% capability_pages.each do |page| %><span class="font-mono text-control text-text" title="<%= page.title %>"><%= page.slug %></span><% end %></span>
+            <% else %>
+              <span class="text-control text-text-subtle">—</span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
       <% blockers = @project.stories.where(number: story.blocked_by).order(:number) %>
       <div class="<%= class_names(row, "max-md:hidden": !form && blockers.none? && story.blocking_questions.none?) %>">
         <% if form %>

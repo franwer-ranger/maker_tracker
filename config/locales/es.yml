@@ -25,6 +25,9 @@ es:
       cover_kind: "no puede pasar a portada ni dejar de serlo: la portada es el brief"
       cover_body_only: "no cambia en la portada: de la portada solo cambia el cuerpo (el brief)"
       cover_not_capability: "no puede incluir la portada: una decisión rige capacidades y páginas transversales"
+      not_page_slugs: "tienen que ser slugs de páginas (editor, tablero)"
+      missing_pages: "incluye páginas que no existen en la documentación del proyecto (%{slugs}): créalas antes con mt doc create"
+      cover_not_capability_of_story: "no puede incluir la portada: es el brief, no una capacidad"
       too_few: "necesita al menos 2 opciones"
       not_an_option: "tiene que ser el número de una de las %{count} opciones"
       required_when_non_blocking: "es obligatoria si la pregunta no bloquea: es la que sigue el agente"
@@ -63,6 +66,7 @@ es:
         mockup: "El mockup"
         labels: "Las labels"
         blocked_by: "«Bloqueada por»"
+        capabilities: "«Capacidades»"
         claimed_by: "Quien la tiene"
       decision:
         title: "El título"

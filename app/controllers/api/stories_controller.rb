@@ -106,7 +106,7 @@ class Api::StoriesController < Api::BaseController
 
   # Atributos desde `markdown` (formato de ver), desde campos sueltos o ambos.
   def story_attributes
-    fields = params.permit(:number, :version, :title, :milestone, :state, :body, :mockup, :blocked_by, :labels, labels: [], blocked_by: []).to_h
+    fields = params.permit(:number, :version, :title, :milestone, :state, :body, :mockup, :blocked_by, :labels, :capabilities, labels: [], blocked_by: [], capabilities: []).to_h
     return fields if params[:markdown].blank?
 
     # Los campos sueltos mandan sobre el documento: mt create --file f.md --milestone M2.
@@ -204,7 +204,9 @@ class Api::StoriesController < Api::BaseController
     when "ready" then story.blocking_questions.any? ? [ "mt questions", "mt next" ] : [ "mt start #{story.reference}" ]
     when "in_progress" then story.claimed_by == Current.actor ? [ "mt done #{story.reference} --commit <sha>", "mt comment #{story.reference} \"…\"" ] : [ "mt next" ]
     when "idea", "defining" then [ "mt edit #{story.reference} --file <f.md>", "mt move #{story.reference} ready" ]
-    else [ "mt next" ]
+    else
+      pending = story.pending_documentation
+      pending.any? ? [ "mt doc edit #{pending.first.slug} --file <f.md>", "mt done #{story.reference}" ] : [ "mt next" ]
     end
   end
 end

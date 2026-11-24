@@ -27,7 +27,7 @@ class Story < ApplicationRecord
     <!-- Dónde y qué pasos sigue Fran para comprobarla. -->
 
     ## Qué cambia del producto
-    <!-- Qué capacidades toca esta historia y cómo quedan. Al cerrarla, se confirma. -->
+    <!-- Cómo quedan las capacidades que cambia (las de «capabilities» arriba). Al cerrarla, se actualizan sus páginas. -->
 
     ## Fuera de alcance
 
@@ -57,7 +57,7 @@ class Story < ApplicationRecord
 
   enum :state, STATE_NAMES.keys.index_by(&:itself), default: :idea, validate: true
   positioned on: %i[project milestone]
-  store_accessor :properties, :mockup, :labels, :blocked_by
+  store_accessor :properties, :mockup, :labels, :blocked_by, :capabilities
 
   attribute :body, default: BODY_TEMPLATE
 
@@ -68,6 +68,7 @@ class Story < ApplicationRecord
   validate :mockup_is_http_url
   validate :labels_are_texts
   validate :blocked_by_are_stories_of_project
+  validate :capabilities_are_documentation_of_project
 
   def self.human_state(state) = STATE_NAMES.fetch(state.to_s)
 
@@ -87,29 +88,20 @@ class Story < ApplicationRecord
       .reorder(:number).includes(:actor, :superseded_by)
   end
 
-  # Las capacidades que cambia la historia (MT-90): las páginas de la
-  # documentación (no la portada) cuyo slug aparece, exacto y entre backticks
-  # (`editor`), en su sección «## Qué cambia del producto». Solo el slug como
-  # código: un título o una palabra suelta («el tablero») no enlaza, porque el
-  # enlace es para siempre. Exacto es exacto: `Editor` no enlaza `editor` (se
-  # compara en Ruby, porque `where(slug:)` pasaría por `normalizes`). Ni los
-  # comentarios HTML ni los bloques de código (```) cuentan: son guía o
-  # ejemplo, no lo que cambia. Las decisiones de la historia las heredan al
-  # registrarse.
-  CHANGES_SECTION = /^\#\# Qué cambia del producto[ \t]*$(.*?)(?=^\#\# |\z)/m
-  CODE_BLOCK = /^[ \t]*(`{3,}|~{3,}).*?(?:^[ \t]*\1[ \t]*$|\z)/m
-  CODE_SPAN = /(?<!`)`([^`\n]+)`(?!`)/
-
+  # Las capacidades que cambia la historia (MT-90, MT-91): las páginas de la
+  # documentación (no la portada) cuyos slugs declara en `capabilities`. Es la
+  # única fuente: las decisiones de la historia las heredan al registrarse y
+  # cerrarla pide actualizar sus páginas (Story::Documentation). Un slug cuya
+  # página se borró no cuenta.
   def changed_capabilities
-    section = body.to_s[CHANGES_SECTION, 1].to_s.gsub(/<!--.*?-->/m, "").gsub(CODE_BLOCK, "")
-    slugs = section.scan(CODE_SPAN).flatten.map(&:strip).uniq
-    return [] if slugs.empty?
+    return project.pages.none if capabilities.empty?
 
-    project.pages.documentation.ordered.select { slugs.include?(it.slug) }
+    project.pages.documentation.where(slug: capabilities).ordered
   end
 
   def labels = super || []
   def blocked_by = super || []
+  def capabilities = super || []
 
   # Acepta una lista o un texto ("ux, móvil"). Quita espacios sobrantes y repetidos.
   def labels=(value)
@@ -121,6 +113,12 @@ class Story < ApplicationRecord
   def blocked_by=(value)
     value = value.split(/[\s,]+/) if value.is_a?(String)
     super(Array(value).compact_blank.map { Integer(it, exception: false) || it }.uniq)
+  end
+
+  # Slugs de páginas: una lista o un texto ("editor, tablero"), en minúsculas y sin repetidos.
+  def capabilities=(value)
+    value = value.split(/[\s,]+/) if value.is_a?(String)
+    super(Array(value).map { it.is_a?(String) ? it.strip.downcase : it }.compact_blank.uniq)
   end
 
   def mockup=(value)
@@ -227,5 +225,18 @@ class Story < ApplicationRecord
     errors.add(:blocked_by, :itself) if number && blocked_by.include?(number)
     missing = blocked_by - project.stories.where(number: blocked_by).pluck(:number) if project
     errors.add(:blocked_by, :missing_stories, numbers: missing.join(", ")) if missing.present?
+  end
+
+  # Solo se comprueban los slugs que se añaden: uno cuya página se borró después
+  # puede seguir en la lista sin impedir editar lo demás.
+  def capabilities_are_documentation_of_project
+    return errors.add(:capabilities, :not_page_slugs) unless capabilities.is_a?(Array) && capabilities.all?(String)
+
+    added = capabilities - Array(capabilities_was)
+    return if added.empty? || project.nil?
+
+    errors.add(:capabilities, :cover_not_capability_of_story) if added.include?(Page::COVER_SLUG)
+    missing = added - [ Page::COVER_SLUG ] - project.pages.documentation.where(slug: added).pluck(:slug)
+    errors.add(:capabilities, :missing_pages, slugs: missing.join(", ")) if missing.any?
   end
 end
