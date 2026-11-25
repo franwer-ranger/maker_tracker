@@ -87,11 +87,6 @@ module V1
       bullets(section).presence || section.split(/(?<=\.)\s+/).filter_map { plain(it)&.delete_suffix(".") }
     end
 
-    def brief_section(heading) = @project.brief[/^## #{Regexp.escape(heading)}\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip
-
-    # La visión entera (su primer párrafo); el énfasis `*…*` se queda para pintarlo en serif.
-    def first_paragraph(text) = text.to_s.split(/\n\s*\n/).first.to_s.gsub(/\*\*|__|`/, "").squish.presence
-
     def bullets(text) = text.lines.grep(/^\s*[-*] /).map { plain(it.sub(/^\s*[-*] /, "")) }.compact
 
     # Sin el markdown de énfasis y código: la portada pinta texto.
