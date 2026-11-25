@@ -25,6 +25,7 @@ segundo plano si hace falta, y nunca esperes a un proceso que no acaba.
      elemento por su nombre, no por coordenadas. Captura: `screencapture -x -o evidence/NN-<criterio>.png`
      con la ventana de la app delante (`tell application "<App>" to activate`).
    - **Web:** el navegador que digan las notas (en Maker Tracker, agent-browser), o Playwright.
+   - **Para agentes (web):** si las notas lo piden, comprueba también la pantalla como la usaría un agente: `window.agent.snapshot()` y las herramientas WebMCP (`document.modelContext.getTools()`), y ejecuta la acción principal como agente. Guarda la salida en `evidence/NN-agente.txt`.
    - **Diseño:** si te pasan artboards de Paper, sácalos con el MCP de Paper (`get_screenshot`) y guarda cada
      uno al lado de tu captura de la misma pantalla y tamaño (`evidence/NN-<pantalla>-paper.png` y
      `-app.png`), en claro, oscuro y móvil si el artboard existe. Una diferencia que rompa el diseño
@@ -44,4 +45,5 @@ APP: ok | no arranca
 2. …
 ERRORES: <los de consola o log vistos, o "ninguno">
 DISEÑO: igual | <diferencias> | sin Paper | no aplica
+AGENTE: ok | <qué falta o falla> | no aplica
 ```
