@@ -16,6 +16,8 @@ module Api::Operations
       description: "Brief (the cover), the index of the documentation, the done stories with documentation pending, latest decisions in force, current milestone and what is in progress" },
     { method: "GET", path: "/api/projects/:key/next", params: {}, command: "mt next",
       description: "First ready, unblocked story of the open milestones, whole and with why. NOTHING_READY if there is none" },
+    { method: "GET", path: "/api/projects/:key/workshop", params: {}, command: "mt workshop",
+      description: "What the person has to define next in the project, in roadmap order (at most 5, the same as the app's workshop): each story with the one thing it is missing (answer a question, write criteria, design, review and OK) and the command that closes it; then how many more are defining and how many are ready" },
     { method: "GET", path: "/api/projects/:key/roadmap", params: { closed: "true to include closed milestones" }, command: "mt roadmap [--closed]",
       description: "Open milestones in order with their goal and stories in order, then the inbox" },
     { method: "GET", path: "/api/projects/:key/stories", command: "mt list [--state …] [--milestone …] [--label …] [--mine]",

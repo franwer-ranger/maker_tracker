@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       get "context", to: "contexts#show"
       get "next", to: "next_stories#show"
       get "roadmap", to: "roadmaps#show"
+      get "workshop", to: "workshops#show"
       post "daily", to: "dailies#create"
       post "daily/ideas", to: "dailies#idea"
       get "deployed", to: "deploys#index"
@@ -63,8 +64,8 @@ Rails.application.routes.draw do
     match "*path", to: "base#route_not_found", via: :all
   end
 
-  # "/" es Actividad, con todos los proyectos (MT-30); "/p" los lista.
-  root "activity#show"
+  # "/" es el taller (MT-97, sustituye a «Te toca»): el del primer producto con algo que definir; "/p" los lista.
+  root "workshops#show"
   resources :projects, path: "p", only: %i[index create]
 
   # Todo lo de un proyecto cuelga de su slug: /p/postgram, /p/postgram/roadmap…
@@ -73,6 +74,12 @@ Rails.application.routes.draw do
     # Prueba del stack v1 (MT-99): Inertia + React, al lado de las vistas de siempre.
     scope "v1", module: :v1, as: :v1 do
       get "/", to: "covers#show", as: :cover
+      # El taller (MT-97): la portada de Maker Tracker, un producto cada vez.
+      get "taller", to: "workshops#show", as: :workshop
+      scope "taller/historias/:number", as: :workshop_story do
+        post "lista", to: "workshops#ready", as: :ready
+        post "respuesta", to: "workshops#answer", as: :answer
+      end
       resources :milestones, path: "hitos", param: :number, only: %i[edit update]
     end
     resource :roadmap, only: :show

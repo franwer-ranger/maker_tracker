@@ -303,6 +303,40 @@ Error: no ready, unblocked story in M2, M3 or M4.
 Hint: 2 stories are being defined (PG-51, PG-54). See them with mt list --state defining, or ask fran.
 ```
 
+## `mt workshop` (MT-97)
+
+El taller, para el agente: lo mismo y en el mismo orden que la portada de la app (un producto). Como mucho 5 historias en el orden del roadmap (hitos abiertos, bandeja, cerrados), cada una con lo único que le falta y el comando que la cierra: `answer` (una pregunta abierta, con sus opciones, o preguntas en el cuerpo), `write criteria`, `design` (label `ui` sin mockup) o `review and OK` (criterios y ninguna pregunta: falta pasarla a Lista). Después, cuántas más esperan en definición. Con `--json`, `data.items` (con `position`, `kind`, `missing`, `command` y `question`), `total`, `waiting` y `ready`. Lo usa la skill para proponer una entrevista corta.
+
+```text
+$ mt workshop
+# Workshop · Postgram · PG
+
+3 of 5 things to define in PG, in roadmap order. 3 ready to build.
+
+1. answer · PG-50 · Vista previa por red · M2
+   Q12 from codex (blocking, reversible): ¿Qué redes enseñamos en la vista previa?
+     1 Solo las marcadas
+     2 Todas las conectadas (recommended)
+   mt answer PG-50 <option>
+
+2. review and OK · PG-51 · Métricas de engagement · M2
+   criteria and no questions: only the OK is missing
+   mt move PG-51 ready
+
+3. write criteria · PG-54 · Reprogramar arrastrando en el calendario · M2
+   no acceptance criteria
+   mt edit PG-54 --file f.md
+
+Waiting: 2 more defining. They come up when the roadmap gets to them.
+
+Next:
+  mt show PG-50
+  mt show PG-51
+  mt show PG-54
+```
+
+Sin nada que definir: `Nothing to define in PG. 3 ready to build.`
+
 ## `mt show PG-49`
 
 Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar (frontmatter y cuerpo); debajo de la marca `<!-- mt: … -->`, lo que es solo lectura. Así `mt show PG-49 > f.md`, editar `f.md` y `mt edit PG-49 --file f.md` funciona sin limpiar nada.
