@@ -47,7 +47,7 @@ export default function Cover({ cover }: { cover: CoverProps }) {
 
   if (cover.empty) {
     return (
-      <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]} copy={cover.context} actions={actions}>
+      <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]} copy={cover.context} actions={actions} ownMobileBar>
         <div className="flex flex-1 items-center justify-center px-5 py-11">
           <EmptyState
             figure="book"
@@ -67,7 +67,7 @@ export default function Cover({ cover }: { cover: CoverProps }) {
   }
 
   return (
-    <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]} copy={cover.context} actions={actions}>
+    <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]} copy={cover.context} actions={actions} ownMobileBar>
       {/* Móvil: «Producto» y el estado de la documentación, como en Paper. */}
       <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-5 text-control text-foreground md:hidden">
         Producto
