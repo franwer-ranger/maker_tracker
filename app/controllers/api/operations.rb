@@ -57,6 +57,10 @@ module Api::Operations
       description: "Attaches a file to a documentation page, like a story's. The page's images, in upload order, are its screenshots (the cover's and those of a capability's walkthrough)" },
     { method: "POST", path: "/api/projects/:key/decisions", params: { title: "the decision", body: "the why (markdown)", story: "PG-49 (optional)", supersedes: "D-9 (optional)", capabilities: "page slugs it governs (optional, a list); it also inherits its story's and those of the one it supersedes" },
       command: "mt decide \"…\" --why \"…\" [--story PG-49] [--supersedes D-9] [--capability board]…", description: "Records a decision. Returns its reference (D-15)" },
+    { method: "POST", path: "/api/projects/:key/decisions/link", params: { decisions: "decision references (D-45, a list)", capabilities: "page slugs they will govern (a list): capabilities or cross-cutting, not the cover" },
+      command: "mt decision link D-45 [D-52…] --capability board…", description: "Links decisions that already exist to the pages they govern, without superseding them. Linking twice does not duplicate. Records decision.linked with the new links" },
+    { method: "POST", path: "/api/projects/:key/decisions/unlink", params: { decisions: "decision references (D-45, a list)", capabilities: "page slugs (a list)" },
+      command: "mt decision unlink D-45 [D-52…] --capability board…", description: "Removes those links; the decisions stay. Records decision.unlinked with the removed links" },
 
     # Preguntas con opciones (MT-29). Bloquean por defecto la historia hasta que se contestan.
     { method: "POST", path: "/api/projects/:key/stories/:number/questions", command: "mt ask PG-49 \"…\" --option \"…\" --option \"…\" [--recommend 2] [--context \"…\"] [--reversible] [--no-bloqueante]",

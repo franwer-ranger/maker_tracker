@@ -69,7 +69,7 @@ The person defines mostly by talking with you, not from the app. `mt workshop` l
 
 ## Decisions
 
-Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. If it governs a capability, `--capability board` (repeatable); with `--story` it already takes the capabilities the story changes (its `capabilities:` property, the same list `mt done` asks you to update; the body does not link anything), and with `--supersedes` those of the old one. `mt doc board` lists the decisions in force for that page: read them before changing it. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
+Record a decision when you choose between options someone will want to know about later (a library, a format, a limit, something left out): `mt decide "Templates as JSON" --why "…" --story PG-49`. If it replaces another one, `--supersedes D-9`. If it governs a capability, `--capability board` (repeatable); with `--story` it already takes the capabilities the story changes (its `capabilities:` property, the same list `mt done` asks you to update; the body does not link anything), and with `--supersedes` those of the old one. `mt doc board` lists the decisions in force for that page: read them before changing it. A decision that already exists and governs a page it is not linked to (common when documenting a product for the first time) is linked, not superseded: `mt decision link D-45 D-52 --capability board [--capability editor]`, and `mt decision unlink D-52 --capability board` removes a wrong link. Decisions are not edited: to change one, write another that supersedes it. Implementation details that don't change the product go in the closing comment, not here.
 
 ## Autonomy
 
@@ -121,7 +121,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 
 - Set up: `mt setup` · `mt whoami` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
 - Read: `mt context` · `mt doc [<page>]` · `mt daily [--since date]` (see the `daily` skill) · `mt workshop` · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt check "…"` · `mt questions`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt attach` · `mt ask --option … --recommend` · `mt answer` · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt attach` · `mt ask --option … --recommend` · `mt answer` · `mt decide --why` · `mt decision link|unlink --capability` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt doc edit|create|delete` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

@@ -106,6 +106,8 @@ module PresenceHelper
     when "attachment.added" then "Adjuntó #{data['filename']} #{ref ? "a #{ref}" : "a la página #{data['slug']}"}"
     when "question.asked" then "Preguntó en #{ref} · #{data['title']}"
     when "decision.recorded" then [ "Registró D-#{data['number']}", decision_title(event) ].compact.join(" · ")
+    when "decision.linked" then "Enlazó #{decision_links_text(data)}"
+    when "decision.unlinked" then "Desenlazó #{decision_links_text(data, "de")}"
     when "brief.edited" then "Editó el brief"
     when "page.created" then "Creó la página #{data['slug']}"
     when "page.edited" then "Editó la página #{data['slug']}"

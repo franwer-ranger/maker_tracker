@@ -164,7 +164,7 @@ module Presence
       return "page:#{event.data['slug']}" if event.action.start_with?("page.") && event.data["slug"].present?
       return "page" if event.action.start_with?("page.")
       return "decision:#{event.data['number']}" if event.action == "decision.recorded" && event.data["number"]
-      return "decision" if event.action == "decision.recorded"
+      return "decision" if event.action.start_with?("decision.")
 
       number = Milestone.where(id: event.data["milestone_id"]).pick(:number) if event.action.start_with?("milestone.")
       "#{event.project.key} M#{number}" if number

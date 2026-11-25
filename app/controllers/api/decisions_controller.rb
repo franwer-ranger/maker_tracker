@@ -36,7 +36,54 @@ class Api::DecisionsController < Api::BaseController
       breadcrumbs: [ "mt decisions", *slugs.first(1).map { "mt doc #{it}" } ])
   end
 
+  # `mt decision link D-45 D-52 --capability revelarlo…` (MT-115): decisiones
+  # que ya existen pasan a regir esas páginas. Lo ya enlazado no se duplica.
+  def link
+    decisions, pages = link_targets
+    added = project.link_decisions!(decisions, pages, actor: Current.actor)
+    superseded = decisions.select(&:superseded_by)
+    links_response(decisions, pages, added,
+      done: decisions.one? ? "now governs" : "now govern", none: "already governed", unchanged: "already there",
+      warnings: superseded.map { "#{it.reference} is superseded by #{it.superseded_by.reference}: it does not show under Decisions in force." })
+  end
+
+  # `mt decision unlink D-52 --capability revelarlo`: les quita esas páginas.
+  def unlink
+    decisions, pages = link_targets
+    removed = project.unlink_decisions!(decisions, pages, actor: Current.actor)
+    links_response(decisions, pages, removed, done: decisions.one? ? "no longer governs" : "no longer govern", none: "did not govern", unchanged: "not there")
+  end
+
   private
+
+  # Las decisiones (D-45 o 45) y las páginas de link y unlink, sin repetir.
+  def link_targets
+    references = Array(params[:decisions]).flat_map { it.to_s.split(",") }.map(&:strip).compact_blank
+    raise Api::Error.validation("name at least one decision (D-52).", hint: "see them with mt decisions.") if references.empty?
+
+    slugs = capability_slugs
+    raise Api::Error.validation("name at least one page with --capability.", hint: "see them with mt doc.") if slugs.empty?
+
+    [ references.map { find_decision(it) }.uniq.sort_by(&:number), slugs.map { find_page(it) }.uniq.sort_by(&:slug) ]
+  end
+
+  # "D-45 and D-52 now govern revelarlo (1 link was already there)." si
+  # cambió algún enlace; "D-52 already governed revelarlo: nothing changed." si ninguno.
+  def links_response(decisions, pages, changed, done:, none:, unchanged:, warnings: [])
+    refs = Api::Markdown::Formatting.sentence(decisions.map(&:reference))
+    slugs = Api::Markdown::Formatting.sentence(pages.map(&:slug))
+    same = decisions.size * pages.size - changed.size
+    summary = if changed.empty?
+      "#{refs} #{none} #{slugs}: nothing changed."
+    else
+      note = " (#{Api::Markdown::Formatting.plural(same, 'link')} #{same == 1 ? 'was' : 'were'} #{unchanged})" if same.positive?
+      "#{refs} #{done} #{slugs}#{note}."
+    end
+    render_ok({ decisions: decisions.map(&:reference), capabilities: pages.map(&:slug),
+                changed: changed.map { |decision, page| { decision: decision.reference, capability: page.slug } } },
+      summary: summary, warnings: warnings,
+      breadcrumbs: [ "mt doc #{pages.first.slug}", "mt decisions --capability #{pages.first.slug}" ])
+  end
 
   # `capabilities` como lista o como texto ("tablero, editor"). Un
   # `--capability ""` es un error, no una decisión sin capacidades.

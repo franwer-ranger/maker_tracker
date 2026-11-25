@@ -113,6 +113,32 @@ class Project < ApplicationRecord
     end
   end
 
+  # `mt decision link` (MT-115): decisiones que ya existen pasan a regir más
+  # páginas. Enlazar no cambia lo decidido, así que no hace falta sustituirlas.
+  # Lo que ya estaba enlazado no se toca. Devuelve los enlaces nuevos,
+  # [[decision, page]], y deja un `decision.linked` si hay alguno.
+  def link_decisions!(decisions, pages, actor:)
+    transaction do
+      linked = DecisionCapability.where(decision: decisions, page: pages).pluck(:decision_id, :page_id).to_set
+      added = decisions.product(pages).reject { |decision, page| linked.include?([ decision.id, page.id ]) }
+      added.each { |decision, page| DecisionCapability.create!(decision: decision, page: page) }
+      record_decision_links!("decision.linked", added, actor)
+      added
+    end
+  end
+
+  # `mt decision unlink`: lo contrario. Devuelve los enlaces quitados y deja un
+  # `decision.unlinked` si hay alguno.
+  def unlink_decisions!(decisions, pages, actor:)
+    transaction do
+      links = DecisionCapability.where(decision: decisions, page: pages).includes(:decision, :page).to_a
+      DecisionCapability.where(id: links.map(&:id)).delete_all
+      removed = links.map { [ it.decision, it.page ] }
+      record_decision_links!("decision.unlinked", removed, actor)
+      removed
+    end
+  end
+
   # El proyecto despliega con mt (MT-46, D-64): se activa solo con la primera
   # llamada a `mt deployed`, sin columna ni configuración.
   def deploys? = events.exists?(action: "project.deployed")
@@ -178,6 +204,16 @@ class Project < ApplicationRecord
   end
 
   private
+
+  # `data.links`: cada enlace con la decisión y la página (su id, para su
+  # historial, y su slug, para leerlo aunque se borre).
+  def record_decision_links!(action, pairs, actor)
+    return if pairs.empty?
+
+    links = pairs.sort_by { |decision, page| [ decision.number, page.slug ] }
+      .map { |decision, page| { number: decision.number, page_id: page.id, slug: page.slug } }
+    record_event!(action, actor: actor, data: { links: links })
+  end
 
   def logo_is_an_image
     errors.add(:logo, :not_an_image) unless Attachable::IMAGE_TYPES.include?(logo.content_type)

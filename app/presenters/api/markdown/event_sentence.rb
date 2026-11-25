@@ -39,6 +39,8 @@ class Api::Markdown::EventSentence
     when "project.deployed" then deployed_sentence
     when "usage.reported" then usage_sentence
     when "decision.recorded" then "recorded D-#{@data['number']}"
+    when "decision.linked" then "linked #{decision_links}"
+    when "decision.unlinked" then "unlinked #{decision_links("from")}"
     when "project.created" then "created the project"
     when "brief.edited" then "edited the brief"
     when "page.created" then "created page #{@data['slug']} (#{Api::Markdown::Page.kind_words(@data['kind'])})"
@@ -51,6 +53,11 @@ class Api::Markdown::EventSentence
     when "milestone.reordered" then "reordered #{milestone_ref}"
     else @event.action
     end
+  end
+
+  # `mt decision link` (MT-115): "D-45 to revelarlo; D-52 to ir-a-buscarlo and revelarlo".
+  def decision_links(preposition = "to")
+    Array(@data["links"]).group_by { it["number"] }.map { |number, links| "D-#{number} #{preposition} #{Api::Markdown::Formatting.sentence(links.map { it['slug'] })}" }.join("; ")
   end
 
   # Una sola frase por llamada a `mt deployed` (MT-46): "deployed a1b2c3d: MT-30, MT-32".
