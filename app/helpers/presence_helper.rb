@@ -103,6 +103,7 @@ module PresenceHelper
     when "story.moved" then "Movió #{ref} · #{milestone_name(data.dig('to', 'milestone_id'))}"
     when "story.reordered" then "Reordenó #{ref}"
     when "comment.added" then "Comentó en #{ref}"
+    when "attachment.added" then "Adjuntó #{data['filename']} #{ref ? "a #{ref}" : "a la página #{data['slug']}"}"
     when "question.asked" then "Preguntó en #{ref} · #{data['title']}"
     when "decision.recorded" then [ "Registró D-#{data['number']}", decision_title(event) ].compact.join(" · ")
     when "brief.edited" then "Editó el brief"

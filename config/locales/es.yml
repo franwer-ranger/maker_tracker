@@ -28,6 +28,8 @@ es:
       not_page_slugs: "tienen que ser slugs de páginas (editor, tablero)"
       missing_pages: "incluye páginas que no existen en la documentación del proyecto (%{slugs}): créalas antes con mt doc create"
       cover_not_capability_of_story: "no puede incluir la portada: es el brief, no una capacidad"
+      not_an_image: "tiene que ser una imagen (PNG, JPEG, GIF, WebP, AVIF, SVG o HEIC)"
+      too_big: "ocupa demasiado (como mucho 5 MB)"
       too_few: "necesita al menos 2 opciones"
       not_an_option: "tiene que ser el número de una de las %{count} opciones"
       required_when_non_blocking: "es obligatoria si la pregunta no bloquea: es la que sigue el agente"

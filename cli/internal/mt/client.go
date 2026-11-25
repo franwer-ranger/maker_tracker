@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -58,6 +61,38 @@ func newClient(cfg Config) *Client {
 	return &Client{URL: cfg.URL, Token: cfg.Token, HTTP: &http.Client{Timeout: 20 * time.Second}}
 }
 
+// Upload es el cuerpo de una subida (mt attach): el archivo Path en el campo
+// "file" de un multipart/form-data, en vez de JSON.
+type Upload struct {
+	Path string
+}
+
+// UploadTimeout es lo que espera una subida: un vídeo de 100 MB no cabe en 20 s.
+const UploadTimeout = 10 * time.Minute
+
+// multipartBody arma el formulario con el archivo, en memoria (el servidor
+// limita el tamaño, así que nunca es enorme).
+func multipartBody(up Upload) (io.Reader, string, error) {
+	file, err := os.Open(up.Path)
+	if err != nil {
+		return nil, "", usageHint("check the path.", "can't read %s: %v.", up.Path, err)
+	}
+	defer file.Close()
+	var buf bytes.Buffer
+	form := multipart.NewWriter(&buf)
+	part, err := form.CreateFormFile("file", filepath.Base(up.Path))
+	if err != nil {
+		return nil, "", err
+	}
+	if _, err := io.Copy(part, file); err != nil {
+		return nil, "", err
+	}
+	if err := form.Close(); err != nil {
+		return nil, "", err
+	}
+	return &buf, form.FormDataContentType(), nil
+}
+
 // Do hace una llamada y devuelve el sobre. Un error de la API (ok: false) no
 // es un error de Go: viene en Envelope.Error.
 func (c *Client) Do(method, path string, query url.Values, body any) (*Envelope, error) {
@@ -70,7 +105,15 @@ func (c *Client) Do(method, path string, query url.Values, body any) (*Envelope,
 	}
 
 	var reader io.Reader
-	if body != nil {
+	contentType := "application/json"
+	httpClient := c.HTTP
+	if up, ok := body.(Upload); ok {
+		var err error
+		if reader, contentType, err = multipartBody(up); err != nil {
+			return nil, err
+		}
+		httpClient = &http.Client{Timeout: UploadTimeout, Transport: c.HTTP.Transport}
+	} else if body != nil {
 		payload, err := json.Marshal(body)
 		if err != nil {
 			return nil, err
@@ -84,13 +127,13 @@ func (c *Client) Do(method, path string, query url.Values, body any) (*Envelope,
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "mt/"+Version)
 	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Type", contentType)
 	}
 	if c.Token != "" {
 		req.Header.Set("Authorization", "Bearer "+c.Token)
 	}
 
-	resp, err := c.HTTP.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return nil, &hintedError{msg: fmt.Sprintf("can't connect to %s: %v.", c.URL, err), hint: "check that the instance is up and Tailscale is on.", retryable: true}
 	}

@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
-# Backs up the production database (and the generated secret) into
-# /rails/backups/<UTC timestamp>/. Runs inside the container:
+# Backs up the production database, the generated secret and the attachments
+# (storage/attachments, MT-96) into /rails/backups/<UTC timestamp>/. Runs inside
+# the container:
 #
 #   bin/backup          one backup now
 #   bin/backup --loop   one backup every BACKUP_INTERVAL_HOURS (24), keeping
@@ -16,6 +17,7 @@ fi
 STORAGE=/rails/storage
 BACKUPS=/rails/backups
 DATABASE="$STORAGE/production.sqlite3"
+ATTACHMENTS="$STORAGE/attachments"
 KEEP="${BACKUP_KEEP:-14}"
 INTERVAL_HOURS="${BACKUP_INTERVAL_HOURS:-24}"
 
@@ -41,6 +43,8 @@ backup() {
     return 1
   fi
   [ -f "$STORAGE/secret_key_base" ] && cp -p "$STORAGE/secret_key_base" "$tmp/"
+  # Attachment files never change once uploaded: a plain copy is consistent.
+  [ -d "$ATTACHMENTS" ] && cp -a "$ATTACHMENTS" "$tmp/attachments"
 
   mv "$tmp" "$BACKUPS/$name"
   echo "backup: $BACKUPS/$name ($(du -sh "$BACKUPS/$name" | cut -f1))"

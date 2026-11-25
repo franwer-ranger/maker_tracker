@@ -39,6 +39,7 @@ A story is done whole or not closed. If something is left out when you finish, s
   - Say `--reversible` only if the decision can be undone; without it the question doesn't say anything about it (don't assume it is irreversible).
   - A story can have several open questions. See the open ones of every project with `mt questions`. Only a person answers (`mt answer` is refused to agents: `FORBIDDEN`). The answer comes back in the story: `mt show PG-49` has it in `## Questions`.
 - **`mt comment` for the rest**: progress, a note, something that is not a choice between options (markdown; `-` reads from stdin). That's where whoever defines the product sees it, not in the chat.
+- **`mt attach PG-49 shot.png`** uploads a screenshot, video or file to a story (or to a page: `mt attach editor shot.png`) and prints its markdown link: paste it in the body with `mt edit`. `mt show` lists the attachments with a URL you can download if you need them.
 - If you are blocked by something that is not a question (a missing decision of the product, a story that is not ready), let the story go and carry on with another one: `mt release PG-49 --reason "Still to decide …"` and `mt next`.
 - Don't invent scope to unblock yourself.
 
@@ -116,7 +117,7 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 
 - Set up: `mt setup` · `mt whoami` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
 - Read: `mt context` · `mt doc [<page>]` · `mt daily [--since date]` (see the `daily` skill) · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt check "…"` · `mt questions` · `mt qa [--undeployed]`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt attach` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt doc edit|create|delete` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

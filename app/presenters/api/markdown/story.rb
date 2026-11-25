@@ -46,7 +46,7 @@ class Api::Markdown::Story
   end
 
   def read_only
-    [ READ_ONLY_MARK, related, documentation, qa, questions, comments, history ].compact.join("\n\n")
+    [ READ_ONLY_MARK, related, attachments_section(@story), documentation, qa, questions, comments, history ].compact.join("\n\n")
   end
 
   # Las páginas de las capacidades que cambia (MT-91). Antes de cerrarla, qué

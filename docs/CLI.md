@@ -323,6 +323,14 @@ Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar
   ```
 - `capabilities` (MT-91) son las capacidades que cambia la historia: los slugs de sus páginas (capacidades o transversales, no la portada), como los lista `mt doc`. Es una propiedad como `labels`: se escribe con `mt edit` (o `mt create --file`) en el frontmatter, `[editor, calendario]`, y en la web en «Capacidades» al editar (solo sale si el proyecto tiene páginas o la historia ya declara alguna). Se guardan en minúsculas; un slug que no es una página del proyecto es `VALIDATION_FAILED` (`Capabilities includes pages that don't exist in the project's documentation (nada): create them first with mt doc create.`) y `cover` también (`… can't include the cover: it is the brief, not a capability.`). Solo se comprueban los que se añaden: el de una página borrada después puede quedarse y no cuenta. **Es la única fuente de las capacidades de una historia**: las decisiones registradas con `--story` las heredan (ver `mt decide`) y `mt done` pide actualizar sus páginas. La sección `## Qué cambia del producto` del cuerpo es texto libre (cómo quedan), ya no enlaza nada. En `--json`, `capabilities` (si tiene) y `documentation_pending` (los slugs pendientes, si hay).
 - `## Documentation` (MT-91), tras `## Related`, solo si la historia cambia alguna capacidad que existe. Sin Hecha: `It changes editor. Before mt done, update its page: mt doc edit editor --file <f.md>.` Hecha y al día: `## Documentation · up to date` con `It changes editor.` Hecha y pendiente: `## Documentation · pending` con `PG-49 was closed without updating editor. Update it with mt doc edit editor --file <f.md> and run mt done PG-49 again.`, y `Next:` sugiere esos dos comandos en lugar de `mt next`.
+- `## Attachments · n` (MT-96), tras `## Related`, solo si tiene adjuntos: uno por línea, en el orden en que se subieron, con nombre, tipo, tamaño y el enlace absoluto para descargarlo (`curl -L`). En `--json`, `attachments[]` con `filename`, `content_type`, `byte_size`, `size`, `url` y `markdown`. `mt doc <slug>` lleva la misma sección, tras la marca.
+
+  ```markdown
+  ## Attachments · 2
+
+  captura.png  image/png  120 KB  https://mt.example/rails/active_storage/blobs/redirect/eyJf…/captura.png
+  flujo.mp4    video/mp4  4.2 MB  https://mt.example/rails/active_storage/blobs/redirect/eyJf…/flujo.mp4
+  ```
 - `## Questions` (MT-29) sale de la tabla `questions`, no del cuerpo, y es solo lectura (`mt edit` no la toca). Primero las abiertas, con su comando `mt answer`; después las respondidas, con la opción elegida y la nota. La reversibilidad solo aparece si se indicó.
 
 ## `mt roadmap`
@@ -676,6 +684,23 @@ Next:
 $ mt done PG-49 --commit 4f3e2a1 --pr https://github.com/acme/postgram/pull/63
 PG-49 done by claude, with 1 commit and PR #63.
 ```
+
+### Adjuntos (MT-96)
+
+`mt attach <historia|página> <archivo>` sube una captura, un vídeo o un archivo a una historia (`PG-49`, `49`) o a una página de la documentación (su slug: `editor`, `cover`) e imprime solo su enlace en markdown, para pegarlo en el cuerpo con `mt edit` / `mt doc edit`. Las imágenes y los vídeos van con `![]()` y se ven en línea en la web; el resto con `[]()` y se descarga (un HTML también: nunca se sirve como página). El enlace es relativo a la instancia, así vale por cualquiera de sus direcciones.
+
+```text
+$ mt attach PG-49 captura.png
+![captura.png](/rails/active_storage/blobs/redirect/eyJf…/captura.png)
+
+Next:
+  mt edit PG-49 --file <f.md>
+```
+
+- Hasta 100 MB por archivo, y solo imágenes (PNG, JPEG, GIF, WebP, AVIF, SVG, HEIC), vídeos (MP4, WebM, MOV), PDF, texto (txt, md, csv, json, html) y comprimidos (zip, gz, tar). Si no: `VALIDATION_FAILED` con `x.exe is application/x-dosexec, which is not allowed: images, videos, PDF, text or archives.` o `video.mp4 is 120 MB: the limit is 100 MB.`
+- Deja el evento `attachment.added` (`attached captura.png` en `## History`; en una página, `attached captura.png to page editor`).
+- Las imágenes de una página, en el orden en que se subieron, son sus capturas: las de la portada (`cover`) y las de «El recorrido» de una capacidad.
+- `--json`: `filename`, `content_type`, `byte_size`, `size`, `url` (absoluta) y `markdown`.
 
 ### La historia como diff (MT-91)
 

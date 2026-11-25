@@ -30,6 +30,7 @@ class Api::Markdown::EventSentence
     when "story.reordered" then "reordered it in its milestone"
     when "story.moved" then "moved it to #{milestone(@data.dig('to', 'milestone_id'))}"
     when "comment.added" then "commented"
+    when "attachment.added" then "attached #{@data['filename']}#{" to page #{@data['slug']}" if @data['slug']}"
     when "question.asked" then "asked: #{@data['title']}#{' (non-blocking)' if @data['blocking'] == false}"
     when "question.answered" then "answered #{@data['asked_by']}: #{@data['option'] ? "#{@data['option']} " : ''}#{@data['answer']}#{", recorded as D-#{@data['decision']}" if @data['decision']}"
     when "qa.passed" then "passed QA#{": #{@data['note']}" if @data['note']}"

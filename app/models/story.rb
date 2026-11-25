@@ -55,6 +55,7 @@ class Story < ApplicationRecord
   include Qa
   include Usage
   include Documentation
+  include Attachable
 
   enum :state, STATE_NAMES.keys.index_by(&:itself), default: :idea, validate: true
   positioned on: %i[project milestone]

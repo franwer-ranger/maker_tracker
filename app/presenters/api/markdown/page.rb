@@ -18,7 +18,7 @@ class Api::Markdown::Page
   end
 
   def to_s
-    [ frontmatter, @page.body.to_s.strip.presence, READ_ONLY_MARK, decisions, changes, history ].compact.join("\n\n") + "\n"
+    [ frontmatter, @page.body.to_s.strip.presence, READ_ONLY_MARK, attachments_section(@page), decisions, changes, history ].compact.join("\n\n") + "\n"
   end
 
   # Las vigentes que rigen la página, por número (la portada no tiene: es el brief).
