@@ -10,6 +10,7 @@ import { Eyebrow } from "@/components/ui/eyebrow"
 import { Icon, type IconName } from "@/components/ui/icons"
 import { Kbd } from "@/components/ui/kbd"
 import { StateBadge, type StoryState } from "@/components/ui/state"
+import { WritingField, type WritingCommand, WritingHints, type WritingLink } from "@/components/ui/writing-field"
 import { AppShell } from "@/layouts/app-shell"
 import { fromRaw, joinBody, parseBody, plain, type Section, sectionText } from "@/lib/story-body"
 
@@ -30,12 +31,14 @@ type Props = {
     open_questions: number
     url: string
     contrast_url: string
+    attachments_url: string
     show_url: string
     copy: string
   }
   milestones: { id: number; label: string }[]
   capabilities: { slug: string; title: string }[]
   guides: { heading: string; guide: string | null }[]
+  links: Record<"stories" | "decisions" | "capabilities", { value: string; ref: string; title: string; url: string }[]>
 }
 
 type Contrast = { kind: "decision" | "story" | "brief"; reference: string; title: string; excerpt: string | null; url: string | null }
@@ -53,7 +56,7 @@ const STORY_TEMPLATE = "Como (usuario), quiero (hacer algo), para (cumplir un ob
 // Editar una historia (MT-112, «v1 · 9 · Editar»): título en serif, propiedades, las secciones de la plantilla con
 // la guía de la enfocada y, al lado, lo que le falta para Lista y el contraste con lo decidido (`mt check`).
 // Barra de guardar abajo con ⌘S; en móvil fija y con cuántas faltan. El conflicto de versión llega como `errors.base`.
-export default function StoryEdit({ story, milestones, capabilities, guides }: Props) {
+export default function StoryEdit({ story, milestones, capabilities, guides, links }: Props) {
   const { nav } = usePage().props
   const template = guides.map((guide) => guide.heading)
   const initial = useMemo(() => parseBody(story.body, template), [story.body]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -144,6 +147,31 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
     </>
   )
 
+  // Escribir (MT-118): `@` enlaza lo del producto; `/` salta a una sección (en Markdown, la escribe), pone una
+  // casilla, un bloque de código o sube una imagen.
+  const linkables = useMemo<WritingLink[]>(() => [
+    ...links.stories.map((item) => ({ ...item, kind: "story" as const })),
+    ...links.decisions.map((item) => ({ ...item, kind: "decision" as const })),
+    ...links.capabilities.map((item) => ({ ...item, ref: "", kind: "capability" as const })),
+  ], [links])
+  const areas = useRef(new Map<number, HTMLTextAreaElement>())
+  const goToSection = (heading: string) => {
+    const section = doc.sections.find((item) => item.heading === heading)
+    const area = section && areas.current.get(section.id)
+    if (!area) return
+    requestAnimationFrame(() => { area.focus(); area.setSelectionRange(area.value.length, area.value.length); area.scrollIntoView({ block: "center" }) })
+  }
+  const commands: WritingCommand[] = [
+    { value: "checkbox", label: "Casilla", icon: "check", text: "- [ ] ", block: true },
+    { value: "code", label: "Código", icon: "file", text: "```\n\n```", back: 4, block: true },
+    { value: "image", label: "Imagen", icon: "camera", file: true },
+    ...template.map((heading) => ({
+      value: `section:${heading}`, label: heading, icon: "menu" as const, hint: "Sección",
+      ...(raw === null ? { run: () => goToSection(heading) } : { text: `## ${heading}\n`, block: true }),
+    })),
+  ]
+  const writing = { commands, links: linkables, attachmentsUrl: story.attachments_url }
+
   const guideFor = (heading: string) => GUIDES[heading] ?? guides.find((guide) => guide.heading === heading)?.guide ?? null
 
   return (
@@ -186,10 +214,11 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
             <div className="lg:hidden"><ContrastList results={contrast} compact /></div>
 
             {raw !== null ? (
-              <Textarea
+              <WritingField
+                {...writing}
                 aria-label="Cuerpo en markdown"
                 value={raw}
-                onChange={(event) => setRaw(event.currentTarget.value)}
+                onChange={setRaw}
                 className="min-h-[420px] w-full resize-y rounded-[10px] border border-border bg-card p-4 font-mono text-[13px] leading-[21px] text-foreground outline-none [field-sizing:content] focus:border-foreground"
               />
             ) : (
@@ -205,6 +234,8 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
                     onFocus={() => setFocused(section.id)}
                     onBlur={() => setFocused((current) => (current === section.id ? null : current))}
                     onChange={(text) => setSection(section.id, text)}
+                    writing={writing}
+                    areaRef={(area) => { if (area) areas.current.set(section.id, area); else areas.current.delete(section.id) }}
                   />
                 ))}
               </>
@@ -221,6 +252,7 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
               <ContrastList results={contrast} />
               <p className="text-xs text-muted-foreground">Lo calcula <span className="font-mono">mt check</span> mientras escribes.</p>
             </section>
+            <WritingHints isApple={isApple} />
           </aside>
         </div>
 
@@ -328,14 +360,17 @@ function Picker({ label, trigger, items, selected, onChoose }: { label: string; 
 }
 
 // Una sección de la plantilla: su título y el texto; la enfocada, en blanco con borde de tinta y su guía.
-function SectionEditor({ section, guide, placeholder, focused, onFocus, onBlur, onChange }: { section: Section; guide: string | null; placeholder: string; focused: boolean; onFocus: () => void; onBlur: () => void; onChange: (text: string) => void }) {
+type Writing = Pick<Parameters<typeof WritingField>[0], "commands" | "links" | "attachmentsUrl">
+
+function SectionEditor({ section, guide, placeholder, focused, onFocus, onBlur, onChange, writing, areaRef }: { section: Section; guide: string | null; placeholder: string; focused: boolean; onFocus: () => void; onBlur: () => void; onChange: (text: string) => void; writing: Writing; areaRef: (area: HTMLTextAreaElement | null) => void }) {
   const id = `seccion-${section.id}`
   const criteria = section.heading === "Criterios de aceptación"
 
-  // En los criterios, Enter sigue la lista de casillas.
+  // En los criterios, Enter sigue la lista de casillas (salvo con el menú de / o @ abierto).
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (!criteria || event.key !== "Enter" || event.shiftKey || event.metaKey || event.ctrlKey) return
     const area = event.currentTarget
+    if (event.defaultPrevented || area.getAttribute("aria-expanded") === "true") return // Enter elige en el menú de / o @
     const start = area.selectionStart
     const line = area.value.slice(area.value.lastIndexOf("\n", start - 1) + 1, start)
     const box = line.match(/^(\s*[-*] )\[[ xX]\] /)
@@ -356,10 +391,12 @@ function SectionEditor({ section, guide, placeholder, focused, onFocus, onBlur, 
       )}
     >
       <label id={id} htmlFor={`${id}-texto`} className="text-base leading-5 font-medium text-foreground lg:text-lg lg:leading-[22px]">{section.heading}</label>
-      <Textarea
+      <WritingField
+        {...writing}
+        areaRef={areaRef}
         id={`${id}-texto`}
         value={section.text}
-        onChange={(event) => onChange(event.currentTarget.value)}
+        onChange={onChange}
         onKeyDown={onKeyDown}
         onFocus={onFocus}
         onBlur={onBlur}

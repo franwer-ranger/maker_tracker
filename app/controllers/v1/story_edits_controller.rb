@@ -1,7 +1,9 @@
 # Editar una historia (MT-112, «v1 · 9 · Editar»): el título, las propiedades
 # (hito, capacidades, etiquetas y mockup) y las secciones de la plantilla
 # (MT-52), con lo que le falta para Lista y el contraste con lo decidido
-# (`mt check`, MT-79) mientras se escribe. El cuerpo se parte y se vuelve a
+# (`mt check`, MT-79) mientras se escribe. Al escribir (MT-118): `/` abre los
+# comandos, `@` enlaza historias, decisiones y capacidades, y pegar o arrastrar
+# un archivo lo sube como adjunto y deja su referencia por nombre. El cuerpo se parte y se vuelve a
 # juntar en el navegador; aquí llega entero, como lo guarda `mt edit`.
 # Si la historia cambió mientras se editaba, no se guarda: vuelve un aviso
 # (el conflicto lado a lado es MT-117).
@@ -13,7 +15,7 @@ module V1
     before_action :set_story
 
     def edit
-      render inertia: "StoryEdit", props: { story: story_props, milestones: milestones, capabilities: capabilities, guides: guides }
+      render inertia: "StoryEdit", props: { story: story_props, milestones: milestones, capabilities: capabilities, guides: guides, links: links }
     end
 
     # El hito solo llega si se cambió en el formulario: si no, guardar no deshace un movimiento hecho mientras
@@ -73,6 +75,7 @@ module V1
         open_questions: @story.open_questions_asked.size,
         url: project_v1_story_edit_path(@project, @story.number),
         contrast_url: project_v1_story_contrast_path(@project, @story.number),
+        attachments_url: project_story_attachments_path(@project, @story.number),
         show_url: project_v1_story_path(@project, @story.number),
         copy: Api::Markdown::Story.new(@story).to_s
       }
@@ -82,6 +85,12 @@ module V1
     def milestones
       @project.milestones.where(closed_at: nil).or(@project.milestones.where(id: @story.milestone_id)).order(:position)
         .map { { id: it.id, label: [ it.code, it.title ].join(" · ") } }
+    end
+
+    # Lo que `@` enlaza en el editor (MT-118): las historias (menos ella), las decisiones y las capacidades, como el ⌘K.
+    def links
+      index = search_index
+      { stories: index[:stories].reject { it[:ref] == @story.reference }, decisions: index[:decisions], capabilities: index[:capabilities] }
     end
 
     def capabilities = @project.pages.documentation.ordered.map { { slug: it.slug, title: it.title } }

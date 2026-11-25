@@ -17,6 +17,7 @@ import { ProductCombo } from "@/components/ui/product-combo"
 import { ProductDiff } from "@/components/ui/product-diff"
 import { Rules } from "@/components/ui/rules"
 import { SideActivity, SideChange, SideDecision, SideSection } from "@/components/ui/side-column"
+import { WritingHints } from "@/components/ui/writing-field"
 import { StateBadge, states, type StoryState } from "@/components/ui/state"
 import { TaskTypeLabel, TaskTypeTile, taskTypes, type TaskType } from "@/components/ui/task-type"
 import { TopBar } from "@/components/ui/top-bar"
@@ -180,6 +181,10 @@ function Catalog({ theme, products, current }: { theme: string; products: { key:
             <SideActivity actor="fran" text="respondió la pregunta" when="17 nov" />
           </SideSection>
         </div>
+      </Card>
+
+      <Card title="Escribir" note="Las ayudas del editor con su tecla: / comandos, @ enlazar y pegar una captura (MT-118).">
+        <div className="max-w-[320px]"><WritingHints isApple /></div>
       </Card>
 
       <Card title="Iconos" note="Un set de línea, trazo 1.6, del color de su texto.">
