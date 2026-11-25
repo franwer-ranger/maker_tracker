@@ -94,7 +94,7 @@ module V1
         events: story.events.count,
         comments: story.comments.includes(:actor).map { comment_props(it, story) },
         copy: Api::Markdown::Story.new(story).to_s,
-        edit_url: edit_project_story_path(@project, story),
+        edit_url: project_v1_story_edit_path(@project, story.number),
         history_url: project_story_path(@project, story),
         comment_url: project_v1_story_comment_path(@project, story.number)
       }

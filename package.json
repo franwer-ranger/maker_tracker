@@ -12,7 +12,8 @@
     "vite-plugin-ruby": "^5.2.6"
   },
   "scripts": {
-    "check": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json"
+    "check": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
+    "check:body": "node app/frontend/lib/story-body.check.ts"
   },
   "dependencies": {
     "@inertiajs/core": "^3.11.0",

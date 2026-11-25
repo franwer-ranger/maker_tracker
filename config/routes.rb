@@ -94,6 +94,10 @@ Rails.application.routes.draw do
         post "respuesta", to: "stories#answer", as: :answer
         post "comentarios", to: "stories#comment", as: :comment
         post "capacidades", to: "stories#link_capability", as: :capability
+        # Editarla (MT-112, «v1 · 9 · Editar»): el editor con la plantilla y el contraste en vivo.
+        get "editar", to: "story_edits#edit", as: :edit
+        patch "editar", to: "story_edits#update"
+        get "editar/contraste", to: "story_edits#contrast", as: :contrast
       end
       # Las decisiones (MT-105): la lista, una elegida (en móvil, su página) y apuntar una nueva.
       resources :decisions, path: "decisiones", param: :number, only: %i[index show create]
