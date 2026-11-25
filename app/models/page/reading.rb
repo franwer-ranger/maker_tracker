@@ -62,10 +62,10 @@ class Page::Reading
         @lead, content = take_first_paragraph(content)
         title = nil if @sections.empty? && @rules.nil? # lo que sigue a la frase va sin título
       end
-      if title&.match?(RULES) && @rules.nil? && only_items?(content)
-        @rules = items(content).map { rule(*it) }
-      elsif title&.match?(QUESTIONS) && @questions.nil? && only_items?(content)
-        @questions = items(content).map { question(*it) }
+      if title&.match?(RULES) && @rules.nil? && (rules = entries(content) { rule(*it) })
+        @rules = rules
+      elsif title&.match?(QUESTIONS) && @questions.nil? && (questions = entries(content) { question(*it) })
+        @questions = questions
       elsif content.present?
         @sections << { title: title, blocks: blocks(content) }
       end
@@ -90,6 +90,16 @@ class Page::Reading
     [ first.squish, rest.to_s.strip ]
   end
 
+  # Las entradas de «Cómo funciona» o «¿Qué pasa si…?», o nil si la sección
+  # no es solo entradas o algo en ellas no se deja partir: entonces va como
+  # prosa (nunca un 500 por una página con algo inesperado, MT-116).
+  def entries(content, &)
+    items(content).map(&) if only_items?(content)
+  rescue StandardError => error
+    Rails.error.report(error, handled: true, context: { page_reading: content.truncate(200) })
+    nil
+  end
+
   # La sección es solo entradas: `###` desde la primera línea, o todos sus
   # bloques viñetas. Con una intro, un cierre o código, va entera como prosa.
   def only_items?(content)
@@ -112,8 +122,9 @@ class Page::Reading
     content.split(/^\s*(?:[-*+]|\d+\.)\s+/).drop(1).map(&:squish).reject(&:blank?)
   end
 
+  # Un `###` es el título y su texto, el texto; una viñeta se parte.
   def rule(head, text)
-    title, text = split_bullet(head, /[.:]\s+/) if text.nil?
+    title, text = text.nil? ? split_bullet(head, /[.:]\s+/) : [ head, text ]
     decisions = [ title, text ].join(" ").scan(DECISION).uniq
     { title: strip_decisions(title).presence || title, text: text && strip_decisions(text).presence, decisions: decisions }
   end
