@@ -191,6 +191,11 @@ func init() {
 	def(&command{name: "next", group: readGroup, usage: "mt next", maxArgs: 0,
 		summary: "The next ready, unblocked story, whole and with why", example: "mt next",
 		run: func(e *env) error { return e.projectCall("GET", "/next", nil, nil) }})
+	def(&command{name: "workshop", group: readGroup, usage: "mt workshop", maxArgs: 0,
+		summary:     "What the person has to define next, in roadmap order (at most 5)",
+		description: "The same as the workshop of the app, in the same order: each story with the one thing it is missing (answer a question, write criteria, design, review and OK) and the command that closes it, then how many more are defining. Use it to propose a short interview with the person about what comes next.",
+		example:     "mt workshop",
+		run:         func(e *env) error { return e.projectCall("GET", "/workshop", nil, nil) }})
 	def(&command{name: "daily", group: readGroup, usage: "mt daily [--since date]", maxArgs: 0,
 		summary:     "The project's daily: what happened, in progress, blocked, waiting for the human and what is next",
 		description: "Counts from your last daily in this project (another actor's daily does not move yours), or from --since (2026-10-15 or \"2026-10-15 22:40\"). Without a previous daily it shows the last 7 days. Running it records your daily, so the next one starts here. It works in a project with no history yet.",
