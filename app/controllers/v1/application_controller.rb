@@ -46,7 +46,7 @@ module V1
       stories = @project.stories.includes(:milestone).order(number: :desc).map do |story|
         { value: "story:#{story.number}", ref: story.reference, title: story.title, state: story.state,
           meta: [ story.milestone&.code, Story.human_state(story.state) ].compact.join(" · "),
-          url: project_story_path(@project, story) }
+          url: project_v1_story_path(@project, story.number) }
       end
       capabilities = @project.pages.documentation.ordered.map do |page|
         { value: "page:#{page.slug}", ref: page.slug, title: page.title, meta: page.area.presence || (page.crosscutting? ? "Transversal" : ""),

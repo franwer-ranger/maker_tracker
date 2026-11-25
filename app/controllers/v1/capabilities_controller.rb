@@ -65,7 +65,7 @@ module V1
         next unless event.story
 
         { at: event.occurred_at.iso8601, title: event.story.title, ref: event.story.reference, actor: event.actor.name,
-          url: project_story_path(@project, event.story) }
+          url: project_v1_story_path(@project, event.story.number) }
       end
     end
 

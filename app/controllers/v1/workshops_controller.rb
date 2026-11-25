@@ -58,13 +58,13 @@ module V1
 
     def waiting_props(item, current)
       story = item.story
-      { kind: item.kind, ref: story.reference, title: story.title, milestone: milestone_label(story, current), url: project_story_path(@project, story) }
+      { kind: item.kind, ref: story.reference, title: story.title, milestone: milestone_label(story, current), url: project_v1_story_path(@project, story.number) }
     end
 
     def item_props(item, current)
       story = item.story
       props = { kind: item.kind, ref: story.reference, title: story.title, milestone: milestone_label(story, current),
-                reason: helpers.workshop_reason(item), url: project_story_path(@project, story),
+                reason: helpers.workshop_reason(item), url: project_v1_story_path(@project, story.number),
                 edit_url: edit_project_story_path(@project, story) }
       case item.kind
       when :review then props[:ready_url] = project_v1_workshop_story_ready_path(@project, story.number)

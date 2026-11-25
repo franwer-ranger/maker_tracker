@@ -77,6 +77,14 @@ Rails.application.routes.draw do
       # La página de una capacidad (MT-103) y su markdown (el de `mt doc <slug>`).
       get "capacidades/:slug", to: "capabilities#show", as: :capability
       get "capacidades/:slug/markdown", to: "capabilities#markdown", as: :capability_markdown
+      # Una historia (MT-104): leerla, responder, marcarla como Lista, comentar y enlazar una capacidad.
+      scope "historias/:number", as: :story do
+        get "/", to: "stories#show", as: ""
+        post "lista", to: "stories#ready", as: :ready
+        post "respuesta", to: "stories#answer", as: :answer
+        post "comentarios", to: "stories#comment", as: :comment
+        post "capacidades", to: "stories#link_capability", as: :capability
+      end
       # El taller (MT-97): la portada de Maker Tracker, un producto cada vez.
       get "taller", to: "workshops#show", as: :workshop
       scope "taller/historias/:number", as: :workshop_story do

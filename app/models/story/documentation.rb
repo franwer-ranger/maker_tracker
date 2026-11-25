@@ -57,6 +57,19 @@ module Story::Documentation
 
   def documentation_pending? = pending_documentation.any?
 
+  # Cuándo se cerró MT-91 (24 nov 2026, 00:17 en Madrid): desde entonces una
+  # historia dice qué capacidades cambia. Las cerradas antes no lo sabían.
+  CAPABILITIES_SINCE = Time.utc(2026, 11, 23, 23, 17)
+
+  # Hecha después de MT-91 sin decir qué capacidades cambia (MT-104): sus
+  # páginas no cuentan que esto ya funciona. Las de antes no avisan.
+  def closed_without_capabilities?
+    return false unless done? && capabilities.empty?
+
+    close = last_close
+    close.present? && close.occurred_at >= CAPABILITIES_SINCE
+  end
+
   # Enlaza las pendientes que ya se editaron (`mt done` otra vez). Devuelve
   # las enlazadas. Sin pendientes no bloquea: casi ninguna historia tiene.
   def document!(actor:)

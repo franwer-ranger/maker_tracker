@@ -99,7 +99,7 @@ export function CommandPalette({ open, onOpenChange, initialQuery = "" }: { open
     const target = goTo.find(({ item }) => item.value === value)?.item
     if (!target) return
     close()
-    // Lo que aún no es de Inertia (historia, tablero, brief) va con una carga completa.
+    // Lo que aún no es de Inertia (tablero, brief) va con una carga completa.
     if (target.url.startsWith(nav.cover)) router.visit(target.url)
     else window.location.assign(target.url)
   }
