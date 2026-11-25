@@ -37,10 +37,10 @@
       <div class="max-md:order-4"><%= render "stories/open_questions", story: @story %></div>
     <% end %>
 
-    <div data-controller="markdown" class="max-md:order-6 max-md:mt-2">
+    <%= tag.div class: "max-md:order-6 max-md:mt-2", data: { controller: "markdown", markdown_attachments_value: @story.attachment_links.to_json } do %>
       <textarea hidden data-markdown-target="source"><%= @story.body %></textarea>
       <div class="markdown max-md:text-[15px]" data-markdown-target="output"></div>
-    </div>
+    <% end %>
 
     <% if @story.answered_questions.any? %>
       <div class="max-md:order-6"><%= render "stories/answered_questions", story: @story %></div>

@@ -123,13 +123,13 @@ module Api::Markdown::Formatting
     "mockup" if story.mockup.present?
   end
 
-  # Un adjunto (MT-96) en datos: `markdown` para pegar en el cuerpo (enlace
-  # relativo) y `url`, absoluta, para descargarlo.
-  def attachment_data(attachment, base_url: Current.base_url)
+  # Un adjunto (MT-96) en datos: `markdown` para pegar en el cuerpo (por su
+  # nombre, `attachment:captura.png`, MT-122) y `url`, absoluta, para descargarlo.
+  def attachment_data(attachment, alt: nil, base_url: Current.base_url)
     path = Attachable.path(attachment)
     { filename: attachment.filename.to_s, content_type: attachment.content_type, byte_size: attachment.byte_size,
       size: Attachable.human_size(attachment.byte_size),
-      url: "#{base_url}#{path}", markdown: Attachable.markdown(attachment) }
+      url: "#{base_url}#{path}", markdown: Attachable.reference(attachment, alt: alt) }
   end
 
   # La sección de adjuntos de `mt show` y `mt doc`, en el orden en que se subieron:

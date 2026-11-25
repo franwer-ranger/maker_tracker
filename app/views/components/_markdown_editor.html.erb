@@ -1,8 +1,9 @@
 <%# Editor de markdown con pestañas Escribir / Vista previa (5.6). Locals: form, attribute, label, doc (variante documento),
-    upload_url (opcional: pegar o arrastrar archivos los sube ahí y deja su enlace, MT-96) %>
+    upload_url (opcional: pegar o arrastrar archivos los sube ahí y deja su enlace, MT-96),
+    attachments (opcional: nombre → enlace, para resolver `attachment:` en la vista previa, MT-122) %>
 <% upload_url = local_assigns[:upload_url] %>
 <%= tag.div class: "flex flex-col rounded-lg border border-strong bg-surface-sunken focus-within:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]",
-      data: { controller: class_names("markdown editor", upload: upload_url), upload_url_value: upload_url }.compact do %>
+      data: { controller: class_names("markdown editor", upload: upload_url), upload_url_value: upload_url, markdown_attachments_value: local_assigns[:attachments]&.to_json }.compact do %>
   <div class="flex h-control shrink-0 items-center justify-between border-b border-border pl-2 pr-3" role="tablist">
     <div class="flex gap-0.5">
       <button type="button" role="tab" data-editor-target="tab" data-action="editor#write" aria-selected="true"

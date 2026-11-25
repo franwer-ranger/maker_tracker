@@ -11,7 +11,7 @@
       <p class="text-sm text-text-muted">Visión, principios, fuera de alcance y glosario. Lo primero que lee cualquier agente.</p>
     </header>
 
-    <%= render "components/markdown_editor", form: form, attribute: :brief, label: "Brief en markdown", doc: true %>
+    <%= render "components/markdown_editor", form: form, attribute: :brief, label: "Brief en markdown", doc: true, attachments: @project.cover&.attachment_links %>
 
     <% if @notice %>
       <p class="text-control leading-[18px] text-state-defining" role="status"><%= @notice %> Revisa y guarda.</p>

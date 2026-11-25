@@ -20,6 +20,9 @@
 # criterios, una intro en «Fuera de alcance») va entera al contexto como prosa.
 # Lo mismo el preámbulo antes del primer `##` y los párrafos de «Historia» a
 # partir del segundo. Solo se quitan los comentarios HTML, que no se ven.
+#
+# Los adjuntos citados por su nombre (`attachment:captura.png`, MT-122) llegan
+# ya resueltos a su enlace.
 class Story::Reading
   OWN = { "historia" => :sentence, "criterios de aceptacion" => :criteria,
           "que cambia del producto" => :changes, "fuera de alcance" => :out_of_scope }.freeze
@@ -39,7 +42,7 @@ class Story::Reading
     rest = []
     used = {}
 
-    preamble, sections = split_sections(story.body)
+    preamble, sections = split_sections(story.resolve_attachment_references(story.body))
     rest << [ nil, preamble ] if preamble.present?
     sections.each do |title, content|
       kind = OWN[normalize(title)]
