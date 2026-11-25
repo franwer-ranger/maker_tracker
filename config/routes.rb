@@ -44,6 +44,7 @@ Rails.application.routes.draw do
         end
         resources :comments, only: :create
         resources :questions, only: :create
+        resources :attachments, only: :create
       end
       resources :decisions, only: %i[index create]
       match "check", to: "checks#show", via: %i[get post]
@@ -55,7 +56,9 @@ Rails.application.routes.draw do
         end
       end
       resource :brief, only: %i[show update]
-      resources :pages, path: "docs", param: :slug, only: %i[index show create update destroy]
+      resources :pages, path: "docs", param: :slug, only: %i[index show create update destroy] do
+        resources :attachments, only: :create
+      end
     end
     match "*path", to: "base#route_not_found", via: :all
   end
@@ -91,6 +94,7 @@ Rails.application.routes.draw do
         resource :position, only: :update
         resource :qa, only: :create, controller: "qa"
         resource :agent_notice, only: :show # el aviso de la edición, en directo (MT-38)
+        resources :attachments, only: :create # pegar o arrastrar en el editor (MT-96)
       end
     end
   end

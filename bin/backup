@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
-# Backs up the production database (and the generated secret) into
-# /rails/backups/<UTC timestamp>/. Runs inside the container:
+# Backs up the production database, the generated secret and the attachments
+# (storage/attachments, MT-96) into /rails/backups/<UTC timestamp>/. Runs inside
+# the container:
 #
 #   bin/backup          one backup now
 #   bin/backup --loop   one backup every BACKUP_INTERVAL_HOURS (24), keeping
@@ -16,8 +17,29 @@ fi
 STORAGE=/rails/storage
 BACKUPS=/rails/backups
 DATABASE="$STORAGE/production.sqlite3"
+ATTACHMENTS="$STORAGE/attachments"
 KEEP="${BACKUP_KEEP:-14}"
 INTERVAL_HOURS="${BACKUP_INTERVAL_HOURS:-24}"
+
+# Copies the attachments into $1. Starting from the previous backup with
+# hardlinks, each backup only takes the space of what was uploaded since (with
+# BACKUP_KEEP=14 a plain copy would keep 14 copies of every video); storage/
+# and backups/ are different mounts, so they can't be hardlinked to storage/.
+copy_attachments() {
+  local dest="$1" prev
+  prev="$(ls -1d "$BACKUPS"/[0-9]*/ 2>/dev/null | sort | tail -n 1)"
+  if [ -z "$prev" ] || [ ! -d "$prev/attachments" ]; then
+    cp -a "$ATTACHMENTS" "$dest"
+    return
+  fi
+
+  cp -al "$prev/attachments" "$dest"
+  cp -a --update=none "$ATTACHMENTS/." "$dest/"
+  # Drop what was deleted since (a deleted page purges its attachments).
+  (cd "$dest" && find . -type f -print0) | while IFS= read -r -d '' file; do
+    [ -e "$ATTACHMENTS/$file" ] || rm -f "$dest/$file"
+  done
+}
 
 backup() {
   if [ ! -f "$DATABASE" ]; then
@@ -41,6 +63,8 @@ backup() {
     return 1
   fi
   [ -f "$STORAGE/secret_key_base" ] && cp -p "$STORAGE/secret_key_base" "$tmp/"
+  # Attachment files never change once uploaded: a plain copy is consistent.
+  if [ -d "$ATTACHMENTS" ]; then copy_attachments "$tmp/attachments"; fi
 
   mv "$tmp" "$BACKUPS/$name"
   echo "backup: $BACKUPS/$name ($(du -sh "$BACKUPS/$name" | cut -f1))"

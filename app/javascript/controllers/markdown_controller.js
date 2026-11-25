@@ -23,7 +23,22 @@ export default class extends Controller {
     const text = this.sourceTarget.value
     const html = DOMPurify.sanitize(marked.parse(text, { gfm: true }))
     this.outputTarget.innerHTML = html
+    this.#playVideos()
     this.#hideEmptySections()
+  }
+
+  // Los vídeos adjuntos (MT-96) van en el markdown como imágenes, `![](…mp4)`:
+  // se pintan como <video> para que se reproduzcan.
+  #playVideos() {
+    this.outputTarget.querySelectorAll("img").forEach((image) => {
+      if (!/\.(mp4|webm|mov)$/i.test(new URL(image.src, location.href).pathname)) return
+      const video = document.createElement("video")
+      video.src = image.src
+      video.controls = true
+      video.preload = "metadata"
+      video.setAttribute("aria-label", image.alt)
+      image.replaceWith(video)
+    })
   }
 
   #hideEmptySections() {

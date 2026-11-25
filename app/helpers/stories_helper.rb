@@ -18,6 +18,7 @@ module StoriesHelper
     when "story.reordered" then "Cambia de posición en su hito"
     when "story.moved" then "Pasa a #{milestone_name(data.dig('to', 'milestone_id'))}"
     when "comment.added" then "#{event.actor.name} comenta"
+    when "attachment.added" then "#{event.actor.name} adjunta #{data['filename']}"
     when "usage.reported" then usage_event_sentence(data)
     when "qa.passed" then "#{event.actor.name} da la QA por probada#{": «#{data['note']}»" if data['note']}"
     when "qa.failed" then "#{event.actor.name} falla la QA: #{project_story_ref(event, data['story'])}"

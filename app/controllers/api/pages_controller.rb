@@ -14,7 +14,9 @@ class Api::PagesController < Api::BaseController
   end
 
   def show
-    render_ok({ page: page_data(page, decisions: true), markdown: Api::Markdown::Page.new(page).to_s },
+    render_ok({ page: page_data(page, decisions: true),
+                attachments: page.ordered_attachments.map { Api::Markdown::Formatting.attachment_data(it) },
+                markdown: Api::Markdown::Page.new(page).to_s },
       summary: "#{label(page)} (version #{page.version}).", breadcrumbs: [ "mt doc edit #{page.slug} --file <f.md>" ])
   end
 

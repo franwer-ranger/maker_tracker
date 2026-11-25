@@ -123,6 +123,26 @@ module Api::Markdown::Formatting
     "mockup" if story.mockup.present?
   end
 
+  # Un adjunto (MT-96) en datos: `markdown` para pegar en el cuerpo (enlace
+  # relativo) y `url`, absoluta, para descargarlo.
+  def attachment_data(attachment, base_url: Current.base_url)
+    path = Attachable.path(attachment)
+    { filename: attachment.filename.to_s, content_type: attachment.content_type, byte_size: attachment.byte_size,
+      size: Attachable.human_size(attachment.byte_size),
+      url: "#{base_url}#{path}", markdown: Attachable.markdown(attachment) }
+  end
+
+  # La sección de adjuntos de `mt show` y `mt doc`, en el orden en que se subieron:
+  #   ## Attachments · 2
+  #   captura.png  image/png  120 KB  https://mt.example/rails/active_storage/blobs/redirect/…/captura.png
+  def attachments_section(record)
+    items = record.ordered_attachments.map { attachment_data(it) }
+    return if items.empty?
+
+    rows = items.map { [ it[:filename], it[:content_type], it[:size], it[:url] ] }
+    "## Attachments · #{items.size}\n\n#{table(rows).join("\n")}"
+  end
+
   # Lo mismo en datos.
   def story_data(story, done_numbers: nil)
     { reference: story.reference, number: story.number, title: story.title, state: story.state,

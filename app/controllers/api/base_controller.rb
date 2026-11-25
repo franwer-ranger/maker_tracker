@@ -10,6 +10,7 @@ class Api::BaseController < ActionController::API
   # mt comprueba en cada respuesta que conoce esta versión.
   before_action { response.set_header("X-MT-API-Version", Api::Operations::VERSION.to_s) }
   before_action :authenticate_actor
+  before_action { Current.base_url = request.base_url }
   skip_before_action :authenticate_actor, only: :route_not_found
   # Presencia (MT-36): cada petición autenticada marca al actor como activo.
   after_action :record_presence, unless: -> { Current.actor.nil? }

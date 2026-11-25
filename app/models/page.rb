@@ -10,6 +10,7 @@
 class Page < ApplicationRecord
   include Eventable
   include Versioned
+  include Attachable
 
   COVER_SLUG = "cover"
   # Los subcomandos de `mt doc` no pueden ser el slug de una página.

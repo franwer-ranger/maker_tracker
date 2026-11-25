@@ -47,5 +47,11 @@ cp "$source" "$DATABASE"
 if [ -f "$BACKUPS/$1/secret_key_base" ]; then
   cp -p "$BACKUPS/$1/secret_key_base" "$STORAGE/secret_key_base"
 fi
+# Attachments: bring back the files of the backup, keeping the ones uploaded
+# since (they are only orphans for the restored database).
+if [ -d "$BACKUPS/$1/attachments" ]; then
+  mkdir -p "$STORAGE/attachments"
+  cp -a -n "$BACKUPS/$1/attachments/." "$STORAGE/attachments/"
+fi
 
 echo "restore: $1 restored. Start the app again."

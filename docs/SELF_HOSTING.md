@@ -41,7 +41,7 @@ docker compose ps   # app should say "healthy", backup "running"
 What you get:
 
 - The app on `http://127.0.0.1:3002`, **only reachable from that machine**. Docker does not respect firewalls like `ufw` for published ports, which is why it binds to `127.0.0.1` and nothing else.
-- All the data in `./data/`: `data/storage/` (the SQLite databases and the generated secret) and `data/backups/`.
+- All the data in `./data/`: `data/storage/` (the SQLite databases, the generated secret and the attachments, in `data/storage/attachments/`) and `data/backups/`.
 - No configuration needed. To change the port, the data folder or the backup schedule, copy `.env.example` to `.env` and edit it (see [Settings](#settings)).
 
 ## 3. Reach it from your devices with Tailscale
@@ -105,7 +105,7 @@ scp cli/bin/mt-linux-amd64 <server>:.local/bin/mt    # ~/.local/bin must be in t
 
 ## Backups
 
-The `backup` container takes a consistent copy of the database on start and then every 24 hours, checks it with SQLite's `integrity_check` and keeps the newest 14. Each backup is a folder `data/backups/<UTC date-time>/` with `production.sqlite3` and the app secret.
+The `backup` container takes a consistent copy of the database on start and then every 24 hours, checks it with SQLite's `integrity_check` and keeps the newest 14. Each backup is a folder `data/backups/<UTC date-time>/` with `production.sqlite3`, the app secret and `attachments/`: a copy of the screenshots, videos and files attached to stories and pages (they are never served from anywhere else, so they need the backup as much as the database). A restore brings them back too, keeping any uploaded after the backup.
 
 ```bash
 docker compose exec backup bin/backup    # take one now

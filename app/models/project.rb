@@ -33,6 +33,11 @@ class Project < ApplicationRecord
   has_many :events, inverse_of: :project
   has_many :pages, inverse_of: :project
   has_one :cover, -> { where(kind: :cover) }, class_name: "Page", inverse_of: :project, autosave: true
+  # El logo del producto (MT-96; lo usan MT-85 y MT-40): una imagen en Active Storage.
+  has_one_attached :logo do |attachable|
+    attachable.variant :thumb, resize_to_limit: [ 128, 128 ]
+  end
+  validate :logo_is_an_image, if: -> { logo.attached? }
 
   normalizes :key, with: -> { it.strip.upcase }
 
@@ -177,6 +182,11 @@ class Project < ApplicationRecord
   end
 
   private
+
+  def logo_is_an_image
+    errors.add(:logo, :not_an_image) unless Attachable::IMAGE_TYPES.include?(logo.content_type)
+    errors.add(:logo, :too_big) if logo.byte_size > 5.megabytes
+  end
 
   def generate_slug
     return if slug.present? || name.blank?
