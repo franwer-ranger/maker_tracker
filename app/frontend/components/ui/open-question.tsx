@@ -20,7 +20,7 @@ export function OpenQuestion({ question, context, options, blocks, onAnswer }: {
           <Icon name="question" size={14} />
           <Eyebrow className="text-foreground">Pregunta abierta</Eyebrow>
         </span>
-        {blocks && <FocusSignal className="text-muted-foreground">{blocks}</FocusSignal>}
+        {blocks && <FocusSignal muted>{blocks}</FocusSignal>}
       </div>
       <h3 className="text-lg font-medium text-foreground">{question}</h3>
       {context && <p className="text-sm text-muted-foreground">{context}</p>}

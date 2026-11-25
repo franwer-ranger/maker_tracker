@@ -79,7 +79,7 @@ module V1
 
     def story_props(story, titles, agent)
       { ref: story.reference, title: story.title, capabilities: story.capabilities.filter_map { titles[it] },
-        agent: agent, url: project_story_path(@project, story) }
+        agent: agent, url: project_v1_story_path(@project, story.number) }
     end
 
     def out_of_scope

@@ -57,6 +57,35 @@ module Story::Documentation
 
   def documentation_pending? = pending_documentation.any?
 
+  # Cuándo se cerró MT-91 (24 nov 2026, 00:17 en Madrid): desde entonces una
+  # historia dice qué capacidades cambia. Las cerradas antes no lo sabían.
+  CAPABILITIES_SINCE = Time.utc(2026, 11, 23, 23, 17)
+
+  # Hecha después de MT-91 sin decir qué capacidades cambia (MT-104): sus
+  # páginas no cuentan que esto ya funciona. Las de antes no avisan.
+  def closed_without_capabilities?
+    return false unless done? && capabilities.empty?
+
+    close = last_close
+    close.present? && close.occurred_at >= CAPABILITIES_SINCE
+  end
+
+  # Las capacidades que se enlazaron después de un cierre posterior a MT-91 (en
+  # la UI, «Enlazar» en una Hecha sin capacidades, MT-104) y cuya página no se
+  # ha editado desde el cierre. No están en `docs_pending` (el cierre no las
+  # conocía), así que `mt done` no las enlaza: dejan de estar pendientes al
+  # editar la página.
+  def linked_after_close_undocumented
+    return [] unless done? && capabilities.any?
+
+    close = last_close or return []
+    return [] if close.occurred_at < CAPABILITIES_SINCE
+
+    known = %w[docs docs_pending].flat_map { |key| Array(close.data[key]).map { it["page_id"] } }
+    pages = changed_capabilities.reject { known.include?(it.id) }
+    pages - pages_edited_since(pages, close.occurred_at)
+  end
+
   # Enlaza las pendientes que ya se editaron (`mt done` otra vez). Devuelve
   # las enlazadas. Sin pendientes no bloquea: casi ninguna historia tiene.
   def document!(actor:)

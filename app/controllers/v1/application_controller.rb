@@ -26,6 +26,14 @@ module V1
 
     private
 
+    # Una pregunta abierta como la pinta `OpenQuestion` (taller e historia), respondida en `answer_url`.
+    def question_props(question, answer_url:)
+      { id: question.id, title: question.title, context: question.context.presence, actor: question.actor.name,
+        blocking: question.blocking?, recommended: question.recommended,
+        options: question.options.each_with_index.map { |text, index| { value: (index + 1).to_s, label: text } },
+        answer_url: answer_url }
+    end
+
     # El taller del producto actual: lo leen el marco y la portada, una vez por petición.
     def workshop = @workshop ||= Workshop.new(@project)
 
@@ -46,7 +54,7 @@ module V1
       stories = @project.stories.includes(:milestone).order(number: :desc).map do |story|
         { value: "story:#{story.number}", ref: story.reference, title: story.title, state: story.state,
           meta: [ story.milestone&.code, Story.human_state(story.state) ].compact.join(" · "),
-          url: project_story_path(@project, story) }
+          url: project_v1_story_path(@project, story.number) }
       end
       capabilities = @project.pages.documentation.ordered.map do |page|
         { value: "page:#{page.slug}", ref: page.slug, title: page.title, meta: page.area.presence || (page.crosscutting? ? "Transversal" : ""),

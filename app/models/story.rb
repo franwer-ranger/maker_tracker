@@ -160,6 +160,10 @@ class Story < ApplicationRecord
   # En Definiendo y sin ningún criterio.
   def missing_criteria? = defining? && !criteria?
 
+  # Pendiente del OK de Fran para pasar a Lista (MT-97): en Definiendo, con
+  # criterios, sin preguntas por responder y sin nada que incumpla la regla.
+  def reviewable? = defining? && criteria? && open_questions_asked.empty? && readiness_problems.empty?
+
   # Lo que incumple la regla para pasar a Lista (`PRODUCT.md`). Es un aviso,
   # no una validación: la UI lo enseña (readiness_issues) y la API lo devuelve
   # como warning, en inglés.
