@@ -1,0 +1,61 @@
+/*
+ * Tema v1 de Maker Tracker (MT-87, Paper «v1 · 1 · Sistema»), con los nombres de shadcn.
+ * Valores de los comentarios de MT-87 (2026-11-24): fondo #F7F8FA, borde #E4E6EA, texto
+ * apagado #6B6F76, barra lateral #0F0F11 con #C9CBD0 / #6E7078, naranja solo como piloto.
+ * Los marcados «(prueba)» no estaban en la historia y se han puesto a ojo para esta prueba:
+ * se sustituyen por los de Paper (get_tokens) al construir MT-85.
+ */
+:root {
+  --background: #F7F8FA;
+  --foreground: #0F0F11;
+  --body: #2E3036;            /* (prueba) lectura larga */
+  --card: #FFFFFF;            /* (prueba) */
+  --popover: #FFFFFF;         /* (prueba) */
+  --muted: #EEF0F3;           /* (prueba) hover, fondos de fila */
+  --muted-foreground: #6B6F76;
+  --border: #E4E6EA;
+  --input: #D9DCE1;           /* (prueba) */
+  --ring: #0F0F11;
+  --primary: #0F0F11;         /* un solo botón en tinta */
+  --primary-foreground: #FFFFFF;
+  --signal: #FF3F01;          /* piloto: atención y vida */
+  --success: #2F9E5B;         /* (prueba) */
+  --destructive: #C8350B;     /* (prueba) errores de formulario */
+  --kbd: #E9EBEF;             /* (prueba) */
+
+  --sidebar: #0F0F11;
+  --sidebar-foreground: #C9CBD0;
+  --sidebar-muted: #6E7078;
+  --sidebar-active: #1D1E22;  /* (prueba) */
+  --sidebar-border: #1F2024;  /* (prueba) */
+
+  --state-idea: #A3A6AD;      /* (prueba) */
+  --state-defining: #D49A2A;  /* (prueba) */
+  --state-ready: #0F0F11;     /* (prueba) */
+  --state-done: #2F9E5B;      /* (prueba) */
+}
+
+/* Oscuro (MT-87: en Paper como --dark-*; en código, los mismos nombres dentro de .dark). */
+.dark {
+  --background: #111113;
+  --foreground: #FFFFFF;
+  --body: #EDEDED;
+  --card: #18181B;
+  --popover: #18181B;
+  --muted: #26262A;
+  --muted-foreground: #9E9C9C;
+  --border: #2A2A2E;
+  --input: #3A3A3F;
+  --ring: #FFFFFF;
+  --primary: #FFFFFF;
+  --primary-foreground: #0F0F11;
+  --success: #5FB37A;
+  --destructive: #FF6A3D;
+  --kbd: #26262A;
+  --sidebar: #0B0B0C;
+  --sidebar-active: #1A1A1D;
+  --state-idea: #6B6B6B;
+  --state-defining: #E8B04A;
+  --state-ready: #F5F5F5;
+  --state-done: #5FB37A;
+}
