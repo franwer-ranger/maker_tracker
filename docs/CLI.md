@@ -697,7 +697,7 @@ Next:
   mt edit PG-49 --file <f.md>
 ```
 
-- Hasta 100 MB por archivo, y solo imágenes (PNG, JPEG, GIF, WebP, AVIF, SVG, HEIC), vídeos (MP4, WebM, MOV), PDF, texto (txt, md, csv, json, html) y comprimidos (zip, gz, tar). Si no: `VALIDATION_FAILED` con `x.exe is application/x-dosexec, which is not allowed: images, videos, PDF, text or archives.` o `video.mp4 is 120 MB: the limit is 100 MB.`
+- Hasta 100 MB por archivo, y solo imágenes (PNG, JPEG, GIF, WebP, AVIF, SVG, HEIC), vídeos (MP4, WebM, MOV), PDF, texto (txt, md, csv, json, html) y comprimidos (zip, gz, tar). Si no: `VALIDATION_FAILED` con `x.exe is application/x-dosexec, which is not allowed: images, videos, PDF, text or archives.` o `video.mp4 is 120 MB: the limit is 100 MB.` (este último lo da `mt` antes de leer el archivo, con código 2, sin subirlo).
 - Deja el evento `attachment.added` (`attached captura.png` en `## History`; en una página, `attached captura.png to page editor`).
 - Las imágenes en línea de una página (no SVG ni HEIC), en el orden en que se subieron, son sus capturas: las de la portada (`cover`) y las de «El recorrido» de una capacidad.
 - `--json`: `filename`, `content_type`, `byte_size`, `size`, `url` (absoluta) y `markdown`.
