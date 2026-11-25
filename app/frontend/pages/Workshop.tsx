@@ -24,7 +24,6 @@ type Question = {
 type Item = {
   kind: "answer" | "criteria" | "design" | "review"
   ref: string
-  number: number
   title: string
   milestone: string | null
   reason: string
@@ -34,13 +33,15 @@ type Item = {
   question?: Question
 }
 
+type WaitingItem = Pick<Item, "kind" | "ref" | "title" | "milestone" | "url">
+
 type WorkshopProps = {
   items: Item[]
   waiting: number
+  waiting_items: WaitingItem[]
   ready: number
   today: string
   prompt: string
-  roadmap_url: string
   products: { key: string; name: string; url: string; count: number; logo: string | null }[]
 }
 
@@ -50,6 +51,8 @@ export default function Workshop({ workshop }: { workshop: WorkshopProps }) {
   const { project } = usePage().props
   const [first, ...rest] = workshop.items
   const copyLabel = workshop.items.length > 1 ? `Copiar las ${workshop.items.length} para tu agente` : "Copiar para tu agente"
+  // En móvil, como en Paper: «Copiar las 5», para que quepa junto a las listas.
+  const copyShortLabel = workshop.items.length > 1 ? `Copiar las ${workshop.items.length}` : "Copiar"
 
   return (
     <AppShell title={`Taller · ${project.name}`} active="workshop" copy={workshop.prompt}>
@@ -68,7 +71,7 @@ export default function Workshop({ workshop }: { workshop: WorkshopProps }) {
             <span className="text-control whitespace-nowrap text-muted-foreground">
               <span className="font-mono">{workshop.ready}</span> {workshop.ready === 1 ? "lista" : "listas"} para construir
             </span>
-            {first && <CopyForAgent text={workshop.prompt} label={copyLabel} shortcut="mod+shift+c" />}
+            {first && <CopyForAgent text={workshop.prompt} label={copyLabel} shortLabel={copyShortLabel} shortcut="mod+shift+c" />}
           </div>
         </div>
 
@@ -83,17 +86,7 @@ export default function Workshop({ workshop }: { workshop: WorkshopProps }) {
                 </ol>
               </section>
             )}
-            {workshop.waiting > 0 && (
-              <div className="flex items-center justify-between gap-4 border-t border-border px-1 py-3.5">
-                <p className="text-sm text-muted-foreground">
-                  En espera · <span className="font-mono text-foreground">{workshop.waiting}</span> más en definición
-                  <span className="hidden sm:inline"> de {project.name} · suben cuando les toque en el roadmap</span>
-                </p>
-                <a href={workshop.roadmap_url} className="flex items-center gap-1 rounded-sm text-control text-muted-foreground hover:text-foreground">
-                  Mostrar<Icon name="chevronRight" size={12} className="sm:hidden" />
-                </a>
-              </div>
-            )}
+            {workshop.waiting > 0 && <Waiting count={workshop.waiting} items={workshop.waiting_items} productName={project.name} />}
           </>
         ) : (
           <div className="rounded-xl border border-border bg-card">
@@ -170,14 +163,17 @@ function Row({ item, index }: { item: Item; index: number }) {
         <span className="font-mono text-control leading-[22px] text-muted-foreground">{String(index).padStart(2, "0")}</span>
         <div className="flex min-w-0 flex-col gap-[5px]">
           <a href={item.url} className="text-base leading-[22px] font-medium text-foreground hover:underline">{item.title}</a>
-          <p className="text-control leading-[19px] text-muted-foreground">
-            <span className="hidden sm:inline">{item.reason} </span>
-            <span className="font-mono text-label">{[item.ref, item.milestone].filter(Boolean).join(" · ")}</span>
+          <p className="hidden text-control leading-[19px] text-muted-foreground sm:block">
+            {item.reason} <span className="font-mono text-label">{[item.ref, item.milestone].filter(Boolean).join(" · ")}</span>
           </p>
-          <span className="sm:hidden"><TaskTypeLabel type={item.kind} className="text-[10px]" /></span>
+          {/* En móvil, como en Paper: tipo y referencia en una línea, sin botón (la fila lleva a la historia). */}
+          <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 sm:hidden">
+            <TaskTypeLabel type={item.kind} className="text-[10px]" />
+            <span className="font-mono text-label text-muted-foreground">{[item.ref, item.milestone].filter(Boolean).join(" · ")}</span>
+          </p>
         </div>
-        <div className="col-start-2 flex items-center gap-2 sm:col-start-auto sm:flex-col sm:items-end">
-          <span className="hidden sm:block"><TaskTypeLabel type={item.kind} className="text-[10px]" /></span>
+        <div className="hidden sm:flex sm:flex-col sm:items-end sm:gap-2">
+          <span><TaskTypeLabel type={item.kind} className="text-[10px]" /></span>
           {item.kind === "review" ? (
             <Button variant="secondary" className="h-7 text-control" onClick={() => markReady(item)}>Marcar como Lista</Button>
           ) : item.kind === "answer" && question ? (
@@ -190,7 +186,7 @@ function Row({ item, index }: { item: Item; index: number }) {
         </div>
       </div>
       {answering && question && (
-        <div className="sm:pl-[42px]">
+        <div className="hidden sm:block sm:pl-[42px]">
           <OpenQuestion
             question={question.title}
             context={question.context ?? undefined}
@@ -201,6 +197,45 @@ function Row({ item, index }: { item: Item; index: number }) {
         </div>
       )}
     </li>
+  )
+}
+
+// El resto en definición, plegado con su número; «Mostrar» lo despliega aquí mismo, una línea por historia.
+function Waiting({ count, items, productName }: { count: number; items: WaitingItem[]; productName: string }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <section className="flex flex-col border-t border-border">
+      <div className="flex items-center justify-between gap-4 px-1 py-3.5">
+        <p className="text-sm text-muted-foreground">
+          En espera · <span className="font-mono text-foreground">{count}</span> más en definición
+          <span className="hidden sm:inline"> de {productName} · suben cuando les toque en el roadmap</span>
+        </p>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls="en-espera"
+          onClick={() => setOpen((value) => !value)}
+          className="flex items-center gap-1 rounded-sm text-control text-muted-foreground hover:text-foreground"
+        >
+          <span className={open ? undefined : "sr-only sm:not-sr-only"}>{open ? "Ocultar" : "Mostrar"}</span>
+          <Icon name="chevronRight" size={12} className={open ? "hidden" : "sm:hidden"} />
+        </button>
+      </div>
+      {open && (
+        <ul id="en-espera" className="flex flex-col">
+          {items.map((item) => (
+            <li key={item.ref} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-t border-border px-1 py-2.5">
+              <a href={item.url} className="min-w-0 text-sm text-foreground hover:underline">{item.title}</a>
+              <span className="flex items-center gap-2.5">
+                <TaskTypeLabel type={item.kind} className="text-[10px]" />
+                <span className="font-mono text-label text-muted-foreground">{[item.ref, item.milestone].filter(Boolean).join(" · ")}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 

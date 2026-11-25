@@ -7,7 +7,8 @@ import { Kbd } from "./kbd"
 // «Copiar para tu agente» (08): acción ligera, nunca protagonista. Copia `text` y confirma unos segundos.
 // `shortcut` (p. ej. "mod+shift+c") lo registra de verdad: solo en una instancia por pantalla.
 // `iconOnly` para la cabecera móvil: solo el icono, con la etiqueta para lectores de pantalla.
-export function CopyForAgent({ text, label = "Copiar para tu agente", shortcut = null, iconOnly = false, className }: { text: string; label?: string; shortcut?: string | null; iconOnly?: boolean; className?: string }) {
+// `shortLabel` en móvil (por debajo de `sm`) en lugar de `label`, para que quepa en la fila (p. ej. «Copiar las 5»).
+export function CopyForAgent({ text, label = "Copiar para tu agente", shortLabel, shortcut = null, iconOnly = false, className }: { text: string; label?: string; shortLabel?: string; shortcut?: string | null; iconOnly?: boolean; className?: string }) {
   const [copied, setCopied] = useState(false)
   const hint = useShortcutHint(shortcut ?? "mod+shift+c")
 
@@ -42,8 +43,18 @@ export function CopyForAgent({ text, label = "Copiar para tu agente", shortcut =
       )}
     >
       <Icon name={copied ? "check" : "copy"} size={14} />
-      {!iconOnly && (copied ? "Copiado · pégalo en Claude, Codex o el que uses" : label)}
+      {!iconOnly && (copied ? <Responsive short={shortLabel ? "Copiado" : undefined} full="Copiado · pégalo en Claude, Codex o el que uses" /> : <Responsive short={shortLabel} full={label} />)}
       {!iconOnly && !copied && shortcut && <Kbd className="border-0 px-0">{hint.text}</Kbd>}
     </button>
+  )
+}
+
+function Responsive({ short, full }: { short?: string; full: string }) {
+  if (!short) return full
+  return (
+    <>
+      <span className="sm:hidden">{short}</span>
+      <span className="hidden sm:inline">{full}</span>
+    </>
   )
 }
