@@ -181,7 +181,9 @@ sigue. Si falla dos veces seguidas, deja de desplegar esta noche y dilo en el in
 `mt comment <id>` con qué paso falló, por qué (dos o tres líneas, sin pegar logs) y dónde están los
 ficheros; `mt release <id>` si sigue siendo tuya. `git worktree remove --force <worktree>` (lo que había
 está en la rama subida). Si abandonas dos historias seguidas por el mismo motivo, para la noche: es algo del
-entorno, no de las historias.
+entorno, no de las historias. **Excepción:** «demasiado grande» (el implementador devuelve `blocked` porque no cabe
+en una noche y propone partirla) no cuenta: es de la historia, no del entorno. Pregunta (`mt ask`) y sigue con
+la siguiente que no dependa de ella.
 
 ## Varios repos
 
