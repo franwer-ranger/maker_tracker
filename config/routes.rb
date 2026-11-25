@@ -97,6 +97,8 @@ Rails.application.routes.draw do
         post "respuesta", to: "stories#answer", as: :answer
         post "comentarios", to: "stories#comment", as: :comment
         post "capacidades", to: "stories#link_capability", as: :capability
+        # Moverla de columna en el Tablero (MT-120): las mismas reglas que `mt move`.
+        post "estado", to: "story_lists#move", as: :state
         # Editarla (MT-112, «v1 · 9 · Editar»): el editor con la plantilla y el contraste en vivo.
         get "editar", to: "story_edits#edit", as: :edit
         patch "editar", to: "story_edits#update"
