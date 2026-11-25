@@ -43,11 +43,11 @@ A story is done whole or not closed. If something is left out when you finish, s
 - If you are blocked by something that is not a question (a missing decision of the product, a story that is not ready), let the story go and carry on with another one: `mt release PG-49 --reason "Still to decide …"` and `mt next`.
 - Don't invent scope to unblock yourself.
 
-## QA pending
+## After done
 
-When your story is done it is not tested yet: it stays with **QA pending** until the person tries it where it is deployed. It is derived, not a state: it blocks nothing and `mt next` ignores it, so carry on. `mt qa` lists what is waiting in every project, with the criteria and where to test it. Only a person passes (`mt qa PG-49 ok`) or fails it (`mt qa PG-49 fail --note "…"`, which creates a new story in defining linked to the original); `mt qa` with ok/fail is refused to agents (`FORBIDDEN`). If it failed, the new story arrives through `mt next` like any other.
+Testing what is built is not Maker Tracker's (D-97): it belongs to Relay. Done is done here: there is no QA pending and no `mt qa`; an old `mt` that calls it gets `GONE`.
 
-In a project whose deploy script calls `mt deployed` (MT-46), done is not enough: a story shows up in `mt qa` only once it is deployed, and `mt qa` says how many are still waiting (`mt qa --undeployed` lists them). Nothing changes for you: keep passing real commits and the PR to `mt done`, because `mt deployed` uses them to know what a deploy contains. If your project deploys by hand, add `mt deployed` (from the root of the repo, once the app answers) at the end of its deploy script.
+In a project whose deploy script calls `mt deployed` (MT-46), keep passing real commits and the PR to `mt done`: `mt deployed` uses them to know what a deploy contains and marks those stories as deployed. If your project deploys by hand, add `mt deployed` (from the root of the repo, once the app answers) at the end of its deploy script.
 
 The cost of a story is an estimate that you do not report by hand: the `SessionEnd` hook that `mt init --claude` leaves runs `mt usage --hook`, which sends the tokens of the session to the last story you started in it (`usage.reported`; `mt show` prints `cost_usd` and `tokens` in the frontmatter). If a session did not fire the hook, recover it with `mt usage <transcript.jsonl>`: it is idempotent. A session that touches several stories counts for the last one you started.
 
@@ -120,8 +120,8 @@ When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Ma
 ## Commands
 
 - Set up: `mt setup` · `mt whoami` · `mt skill install` · `mt projects` · `mt project create "Name" --key PG` · `mt init PG --claude`
-- Read: `mt context` · `mt doc [<page>]` · `mt daily [--since date]` (see the `daily` skill) · `mt workshop` · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt check "…"` · `mt questions` · `mt qa [--undeployed]`
-- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt attach` · `mt ask --option … --recommend` · `mt answer` · `mt qa PG-49 ok|fail` (a person) · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
+- Read: `mt context` · `mt doc [<page>]` · `mt daily [--since date]` (see the `daily` skill) · `mt workshop` · `mt next` · `mt roadmap [--closed]` · `mt show PG-49` · `mt list [--state …] [--milestone …] [--label …] [--mine]` · `mt decisions` · `mt check "…"` · `mt questions`
+- Work: `mt start` · `mt done --commit` · `mt release --reason` · `mt comment` · `mt attach` · `mt ask --option … --recommend` · `mt answer` · `mt decide --why` · `mt daily idea` · `mt deployed [sha]` (from a deploy script)
 - Define: `mt create` · `mt edit --file` · `mt move` · `mt reorder --reason` · `mt brief` · `mt doc edit|create|delete` · `mt milestone …`
 
 `mt help` and `mt <command> --help` have the details and an example of each.

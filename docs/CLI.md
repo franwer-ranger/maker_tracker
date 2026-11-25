@@ -565,58 +565,26 @@ Next:
 
 Errores: `Error: PG-50 Q12 is already answered.` (`ALREADY_ANSWERED`), `Error: PG-50 has no open questions.` y `Error: Answer must be the number of one of the 3 options.`
 
-## QA pendiente (MT-32)
+## La QA es de Relay (MT-98, D-97)
 
-Una historia que pasa a Hecha queda con **QA pendiente**: lo que la persona aún no ha probado allí donde ya está. Es derivado de Hecha, no un estado; no bloquea nada ni cambia `mt next`. Solo entran las que pasan a Hecha a partir de esta funcionalidad (el evento lleva `qa: pending`); las anteriores no. Dónde se prueba cada proyecto es una línea bajo `## Dónde se prueba` en el brief (la plantilla la incluye), con la URL: `Testing: https://testing.postgram.app`. Sin ella, la historia sigue pendiente pero sin enlace.
+Maker Tracker ya no lleva la QA: probar lo construido es de Relay. `mt qa` no existe (`Error: unknown command "qa".`), `mt done` ya no deja `qa: pending` en el evento y las historias no tienen campo `qa` (ni en `mt show`, ni en `--json`). Un `mt` antiguo que llame a `GET /api/qa` o a `POST /api/projects/:key/stories/:n/qa` recibe `GONE` (410): `Error: QA is no longer part of Maker Tracker: testing what is built belongs to Relay (D-97).`
 
-`mt qa` sin argumentos lista lo pendiente **de todos los proyectos** (o de uno con `--project`), lo que más lleva hecho primero, con los criterios de aceptación y dónde probarlo:
+Los hechos no se borran: los eventos `qa.passed` y `qa.failed` de antes siguen en el historial de cada historia (`passed QA: …`, `failed QA: … (created PG-55)`), pero no salen en la daily ni en «Qué cambió».
 
-```text
-$ mt qa
-2 stories waiting for QA.
+## `mt deployed` (MT-46)
 
-PG-47  Borradores automáticos          done 2026-10-20 18:40 by codex  https://testing.postgram.app
-       How to test
-       Abre un post nuevo, escribe dos líneas y espera unos segundos sin guardar. Cierra la pestaña y vuelve a Posts: el post sigue ahí con la etiqueta «Borrador».
-       Criteria
-       1 Mientras escribes, el post se guarda solo cada pocos segundos.
-       2 Si cierras la pestaña y vuelves, el borrador sigue ahí.
-       4f3e2a1 · Guarda el borrador cada pocos segundos
-PG-43  Subir varias imágenes a la vez  done 01:12 by claude            https://testing.postgram.app
-       1 Puedo elegir varias imágenes en un solo selector.
-
-Next:
-  mt show PG-47
-  mt show PG-43
-```
-
-Si la historia tiene texto en `## Cómo probarlo` (sin contar la guía de la plantilla, que es un comentario HTML), sale bajo el título con `How to test` (sin sus líneas en blanco, para que no parezca que empieza otra historia) y, debajo, `Criteria` sobre los criterios (MT-52); sin él, solo los criterios numerados, sin etiqueta. En `--json`, cada historia lleva `how_to_test` (si lo tiene) y `criteria`.
-
-```text
-$ mt qa PG-47 ok [--note "…"]
-PG-47 passed QA.
-
-$ mt qa PG-47 fail --note "El borrador no sale con la etiqueta"
-PG-47 failed QA. PG-55 was created in M2 · Publicar sin fricción as defining, linked to it.
-```
-
-`ok` la cierra (repetirlo no es un error: `PG-47 had already passed QA.`). `fail` **exige** `--note`, crea una historia en Definiendo en el mismo hito, con la nota y la referencia a la original en `## Contexto`, y la enlaza en el evento; la original no se reabre. Eventos `qa.passed` y `qa.failed` (con actor, fecha, la nota y, en el segundo, el número de la historia creada). **Solo una persona prueba**: un agente recibe `Error: only a person tests QA, and codex is an agent.` (`FORBIDDEN`); puede listar con `mt qa`. Una historia sin QA pendiente da `NOT_PENDING` (409). Endpoints: `GET /api/qa` y `POST /api/projects/:key/stories/:n/qa` (`result: ok|fail`, `note`).
-
-### La QA espera al despliegue (MT-46)
-
-Hecha es mergeada, no desplegada. Un proyecto cuyo script de despliegue llama a `mt deployed` **activa solo** la espera con la primera llamada (D-64: se deriva de que exista un evento `project.deployed`; sin configuración). Desde entonces `mt qa` y «Por probar» solo listan las historias con `deployed_at`; un proyecto que nunca llama a `mt deployed` sigue como arriba, Hecha sale al momento.
+Hecha es mergeada, no desplegada. El script de despliegue de un proyecto llama a `mt deployed` para marcar como desplegadas las historias Hechas que contiene el sha (`deployed_at` y el evento `story.deployed`). El proyecto «despliega con mt» desde la primera llamada (D-64: se deriva de que exista un evento `project.deployed`; sin configuración).
 
 ```text
 $ mt deployed                       # sha por defecto: HEAD del repo donde corres mt
-deployed a1b2c3d: MT-30, MT-32 can be tested now · MT-35 still waiting
+deployed a1b2c3d: MT-30, MT-32 marked as deployed · MT-35 still waiting
 Warning: MT-31 has no commits or PR to check: I take it as deployed.
 
 Next:
-  mt qa
   mt deployed   (again, when MT-35 is deployed)
 ```
 
-`mt deployed [<sha>] [--project PG]` lo ejecuta cualquier actor con token (no es QA). Lee de la API los candidatos (`GET /api/projects/:key/deployed`: Hechas con QA pendiente y sin desplegar, con `commits` y `pr` de su evento de Hecha), decide con git qué contiene el sha y envía `POST /api/projects/:key/deployed` con `{sha, stories: [números]}`. Si el sha no existe en local hace un `git fetch --quiet` y, si sigue sin existir, da error. Orden de la decisión (D-63):
+`mt deployed [<sha>] [--project PG]` lo ejecuta cualquier actor con token. Lee de la API los candidatos (`GET /api/projects/:key/deployed`: Hechas y sin desplegar, con `commits` y `pr` de su evento de Hecha; en un proyecto que ya despliega con mt, solo las hechas desde su primer despliegue), decide con git qué contiene el sha y envía `POST /api/projects/:key/deployed` con `{sha, stories: [números]}`. Si el sha no existe en local hace un `git fetch --quiet` y, si sigue sin existir, da error. Orden de la decisión (D-63):
 
 1. Tiene commits que existen en el repo local: desplegada si **todos** son ancestros del sha (`git merge-base --is-ancestor`); si alguno no lo es, sigue esperando, sin error.
 2. Ninguno existe en local (un squash) pero tiene PR: desplegada si el historial del sha trae `Merge pull request #N` o `(#N)` en un asunto.
@@ -624,17 +592,9 @@ Next:
 
 Una historia con PR y sin rastro (ningún commit existe aquí y el PR no está en el historial) **espera**: es la opción conservadora (D-68, que aclara D-63). Solo se aceptan como commits los que cumplen `^[0-9a-f]{7,40}$`; cualquier otra cosa se trata como «no existe aquí».
 
-Llamarlo dos veces con el mismo sha, o con uno posterior, es idempotente. Siempre deja un evento `project.deployed` (aunque no marque ninguna), que es lo que activa la espera. Si el servidor no responde (se reinicia al desplegar), falla por conexión: llámalo cuando `/up` ya conteste (`bin/deploy` lo hace).
+Llamarlo dos veces con el mismo sha, o con uno posterior, es idempotente (`deployed a1b2c3d: no story was waiting for a deploy`). Siempre deja un evento `project.deployed` (aunque no marque ninguna). Si el servidor no responde (se reinicia al desplegar), falla por conexión: llámalo cuando `/up` ya conteste (`bin/deploy` lo hace).
 
-Con la espera activa, `mt qa` lista solo lo desplegado y termina con una línea si hay más:
-
-```text
-1 done story is not deployed yet: mt qa --undeployed lists it.
-```
-
-`mt qa --undeployed` lista esas (mismo formato). `mt show` de una historia sin desplegar lleva `## QA · waiting for deploy` en vez de `## QA · pending`; `mt qa MT-30 ok|fail` sigue funcionando sobre ella. En el historial, `deployed (a1b2c3d)` (`story.deployed`); en la daily, una frase por llamada: `deployed a1b2c3d: MT-30, MT-32 can be tested now` (`project.deployed`).
-
-En `mt show`, una historia con QA lleva `## QA · pending` (con dónde probarla) o `## QA · passed|failed` antes de `## Questions`, y su historial dice `moved to done (…) · QA pending`.
+En el historial, `deployed (a1b2c3d)` (`story.deployed`); en la daily, una frase por llamada: `deployed a1b2c3d: MT-30, MT-32` (`project.deployed`).
 
 ## Coste (MT-34)
 
@@ -653,7 +613,7 @@ A mano hace lo mismo y sirve para una sesión cuyo hook no se disparó (SIGKILL,
 - **Qué historia**: la resuelve el servidor, no el hook: de las que **ese actor** empezó (`story.state_changed` a En curso o `story.claimed`) antes de acabar la sesión, la que empezó más tarde que siga En curso o dejara de estarlo después del inicio de la sesión (así vale `mt start`, trabajar, `mt done` y que la sesión termine con la historia ya Hecha). `--story` se salta la regla. Si hay varias, **todo va a la última que empezó** (no se reparte). Sin ninguna: `no story of claude in progress during this session; nothing reported.`, sin evento.
 - **Idempotente por sesión**: se manda el total acumulado de la sesión (con `--resume` el transcript acumula la anterior) y el servidor guarda solo la diferencia con el último reporte del mismo `source` + `session_id`. Lo mismo otra vez: `nothing new in this session since the last report.`; un total menor se ignora.
 - **Modelo sin precio**: sus tokens se guardan y sale en `unpriced_models`; los demás modelos suman dólares. Los modelos se resuelven por su id sin el sufijo de fecha (`claude-haiku-4-5-20251001` → `claude-haiku-4-5`).
-- **Dónde se ve**: `mt show` pone `cost_usd`, `tokens` y `cost_estimated: true` en el frontmatter (solo si hay uso; `mt edit` los ignora), `## QA · pending` y la daily citan el coste de la historia hecha, y el historial lleva `reported ~1.20 $ and 310k tokens (claude-code session 0b447df5, estimated)`. En la app es la propiedad «Coste» del lateral. El total es la suma de los eventos `usage.reported`: no hay columna.
+- **Dónde se ve**: `mt show` pone `cost_usd`, `tokens` y `cost_estimated: true` en el frontmatter (solo si hay uso; `mt edit` los ignora), la daily cita el coste de la historia hecha, y el historial lleva `reported ~1.20 $ and 310k tokens (claude-code session 0b447df5, estimated)`. En la app es la propiedad «Coste» del lateral. El total es la suma de los eventos `usage.reported`: no hay columna.
 
 `POST /api/projects/:key/usage` (`source`, `session_id`, `started_at`, `ended_at`, `models: [{ model, input, output, cache_read, cache_write_5m, cache_write_1h }]`, `story` opcional). wflow usará el mismo endpoint con `source: wflow`.
 
@@ -773,9 +733,9 @@ PG-49 was already done; documentation updated: calendario.
 
 - Una historia sin capacidades (o de un proyecto sin páginas) se cierra **exactamente igual que antes**: ni aviso, ni `docs` en el evento, ni marca.
 - La pendiente se resuelve también quitando la capacidad de la historia (`mt edit`, si al final no la cambió), o borrando la página. En la web, la historia y «Te toca» dicen eso mismo: que un agente actualice la página y vuelva a hacer `mt done`, o quitarla de «Capacidades». Salir de Hecha y volver a cerrarla vuelve a calcularlo. Los cierres de antes de MT-91 nunca quedan pendientes.
-- En el historial: `moved to done (4f3e2a1) · QA pending · docs editor · docs pending calendario` y `updated the documentation: calendario`.
+- En el historial: `moved to done (4f3e2a1) · docs editor · docs pending calendario` y `updated the documentation: calendario`.
 
-`--commit` lee el asunto de cada commit con `git log -1 --format=%s <sha>` (en el repo donde corres `mt`) y lo envía junto al sha; si git falla (fuera del repo, sha desconocido) envía solo el sha, sin error. La API acepta `commits` como lista de shas o de `{sha, message}`. Donde se pintan (historia, «Qué cambió», QA, `mt show`, `mt daily`, `mt qa`) salen como `4f3e2a1 · asunto`; en la web el sha enlaza al commit si el evento trae un PR de GitHub. Los eventos viejos (solo shas) se siguen leyendo. En `mt qa --json`, `commits` es siempre una lista de `{sha, message}` (`[]` si no hay; `message` falta si no se conoce).
+`--commit` lee el asunto de cada commit con `git log -1 --format=%s <sha>` (en el repo donde corres `mt`) y lo envía junto al sha; si git falla (fuera del repo, sha desconocido) envía solo el sha, sin error. La API acepta `commits` como lista de shas o de `{sha, message}`. Donde se pintan (historia, «Qué cambió», `mt show`, `mt daily`) salen como `4f3e2a1 · asunto`; en la web el sha enlaza al commit si el evento trae un PR de GitHub. Los eventos viejos (solo shas) se siguen leyendo.
 
 ```text
 Next:

@@ -22,7 +22,7 @@ class Api::Markdown::EventSentence
   def sentence
     case @event.action
     when "story.created" then "created as #{state_words(@data['state'] || 'idea')}#{' (proposed in a daily)' if @data['daily']}"
-    when "story.state_changed" then "moved to #{state_words(@data['to'])}#{work}#{' · QA pending' if @data['qa'] == 'pending'}#{docs}"
+    when "story.state_changed" then "moved to #{state_words(@data['to'])}#{work}#{docs}"
     when "story.documented" then "updated the documentation: #{doc_slugs(@data['docs'])}"
     when "story.edited" then "edited #{Array(@data['fields']).join(', ')}"
     when "story.claimed" then "claimed it"
@@ -53,10 +53,10 @@ class Api::Markdown::EventSentence
     end
   end
 
-  # Una sola frase por llamada a `mt deployed` (MT-46): "deployed a1b2c3d: MT-30, MT-32 can be tested now".
+  # Una sola frase por llamada a `mt deployed` (MT-46): "deployed a1b2c3d: MT-30, MT-32".
   def deployed_sentence
     refs = Array(@data["stories"]).map { "#{@event.project.key}-#{it}" }
-    "deployed #{@data['sha'].to_s.first(7)}#{": #{refs.join(', ')} can be tested now" if refs.any?}"
+    "deployed #{@data['sha'].to_s.first(7)}#{": #{refs.join(', ')}" if refs.any?}"
   end
 
   # "reported ~1.20 $ and 310k tokens (session 4f3a, estimated)"; sin precio, "+ 8k tokens without a price".

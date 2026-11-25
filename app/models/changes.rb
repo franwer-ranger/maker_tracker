@@ -10,6 +10,9 @@ class Changes
   # Acciones que son contabilidad de la herramienta y no algo que le pasó al
   # producto: no salen en ningún «qué ha pasado».
   BOOKKEEPING = %w[daily.held].freeze
+  # La QA salió de Maker Tracker (MT-98, D-97): sus eventos antiguos se quedan
+  # en el historial de la historia, pero ya no son algo que haya cambiado.
+  RETIRED = %w[qa.passed qa.failed].freeze
   # `story.deployed` se cuenta una vez por llamada, en el `project.deployed` que
   # la agrupa (MT-46). Solo se ve cuando se pide la historia, que no tiene la otra.
   GROUPED = %w[story.deployed].freeze
@@ -46,7 +49,7 @@ class Changes
   private
 
   def scope
-    scope = project.events.where("occurred_at > ?", since).where.not(action: BOOKKEEPING).order(:occurred_at, :id)
+    scope = project.events.where("occurred_at > ?", since).where.not(action: BOOKKEEPING + RETIRED).order(:occurred_at, :id)
     scope = scope.where.not(action: GROUPED) unless @story
     scope = scope.where("occurred_at <= ?", until_time) if until_time
     scope = scope.where.not(actor: @except_actor) if @except_actor

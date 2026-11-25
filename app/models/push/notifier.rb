@@ -1,10 +1,9 @@
 # Decide si un hecho avisa (MT-47, D-66). Lo llama `Event` al crearse (después
 # del commit) y no hace nada más que decidir: el envío va en un job.
 #
-# Avisan solo los hechos de agentes: una pregunta bloqueante, una historia que
-# pasa a estar por probar (al pasar a Hecha o, si el proyecto despliega con
-# `mt deployed`, al desplegarse) y un proyecto que entra en poco trabajo (`ReadyWork`,
-# que se comprueba en `Push::ReadyWorkJob`).
+# Avisan solo los hechos de agentes: una pregunta bloqueante y un proyecto que
+# entra en poco trabajo (`ReadyWork`, que se comprueba en `Push::ReadyWorkJob`).
+# Lo que hay que probar ya no avisa: la QA es de Relay (MT-98, D-97).
 # Como mucho un aviso por proyecto cada `Push::WINDOW`: el primero sale al
 # momento y lo demás espera al resumen de `Push::FlushJob`.
 class Push::Notifier
@@ -19,17 +18,14 @@ class Push::Notifier
   # cuenta. Nil si no queda nada.
   def self.summary(project, deferred)
     ids = ->(kind) { deferred.select { it.kind == kind }.flat_map(&:ids).uniq }
-    activity = Activity.new
-    cards = activity.for_you.select { it.project == project }
+    cards = Activity.new.for_you.select { it.project == project }
     questions = cards.count { it.question? && it.question.id.in?(ids.(:question)) }
     low_work = deferred.any? { it.kind == :low_work } && cards.any? { it.kind == :low_work }
-    testing = activity.qa_pending.count { it.project == project && it.story.id.in?(ids.(:testable)) }
 
     parts = []
     parts << (questions == 1 ? "1 pregunta" : "#{questions} preguntas") if questions.positive?
-    parts << "#{testing} por probar" if testing.positive?
     parts << "poco trabajo listo" if low_work
-    total = questions + testing + (low_work ? 1 : 0)
+    total = questions + (low_work ? 1 : 0)
     return if total.zero?
 
     Push::Notice.new(title: "#{project.key} · #{total == 1 ? '1 cosa te toca' : "#{total} cosas te tocan"}",
@@ -79,25 +75,10 @@ class Push::Notifier
     Push::ReadyWorkJob.schedule(project, notify: event.actor.agent?) if event.action.match?(READY_WORK_ACTIONS)
     return unless event.actor.agent?
 
-    [ question_notice, testable_notice ].compact.each { self.class.send_or_defer(project, it) }
+    notice = question_notice
+    self.class.send_or_defer(project, notice) if notice
   rescue => e
     Rails.error.report(e, handled: true) # avisar no puede romper el hecho que lo provocó
-  end
-
-  # El único punto del aviso de QA: las historias que, con este hecho, pasan a
-  # estar por probar. Es la misma lista que «Por probar» (`Story.qa_testable`):
-  # en un proyecto que despliega con `mt deployed` (MT-46), las que marca el
-  # despliegue (`project.deployed`, con sus números en `data["stories"]`); en
-  # uno que nunca ha desplegado, la que pasa a Hecha con QA pendiente.
-  def testable_stories
-    scope = Story.qa_testable.where(project_id: event.project_id)
-    case event.action
-    when "project.deployed"
-      scope.where(number: Array(event.data["stories"])).order(:number).to_a
-    when "story.state_changed"
-      event.data["to"] == "done" && event.story_id ? scope.where(id: event.story_id).to_a : []
-    else []
-    end
   end
 
   private
@@ -109,18 +90,6 @@ class Push::Notifier
 
     Push::Notice.new(title: "#{event.story.reference} · pregunta de #{event.actor.name}", body: event.data["title"].to_s, path: story_path(event.story),
       kind: :question, ids: [ event.data["question_id"] ])
-  end
-
-  # Una historia: «PG-47 · por probar» y abre la historia. Varias de un
-  # despliegue: un solo aviso, «PG · 3 por probar», que abre la portada.
-  def testable_notice
-    stories = testable_stories
-    case stories.size
-    when 0 then nil
-    when 1 then Push::Notice.new(title: "#{stories.first.reference} · por probar", body: stories.first.title, path: story_path(stories.first), kind: :testable, ids: stories.map(&:id))
-    else Push::Notice.new(title: "#{event.project.key} · #{stories.size} por probar", body: stories.map(&:reference).to_sentence(words_connector: ", ", two_words_connector: " y ", last_word_connector: " y "), path: "/",
-      kind: :testable, ids: stories.map(&:id))
-    end
   end
 
   def story_path(story) = Rails.application.routes.url_helpers.project_story_path(story.project, story)

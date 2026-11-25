@@ -1,6 +1,6 @@
 # Avisos push (MT-47, D-66): Maker Tracker avisa en el móvil y en el escritorio
 # cuando a Fran le toca algo que bloquea a un agente o ya espera a Fran: una
-# pregunta bloqueante, algo por probar y un proyecto que entra en poco trabajo.
+# pregunta bloqueante y un proyecto que entra en poco trabajo.
 # Nunca de lo que hace Fran.
 #
 # Las claves VAPID van en variables de entorno (`VAPID_PUBLIC_KEY`,
@@ -15,8 +15,7 @@ module Push
   WINDOW = 10.minutes
 
   # Qué dice un aviso y qué abre al pulsarlo (una ruta de la app). `kind` e
-  # `ids` dicen de qué es (:question con su id, :testable con los ids de las
-  # historias, :low_work), para que el resumen solo cuente lo aplazado.
+  # `ids` dicen de qué es (:question con su id, :low_work), para que el resumen solo cuente lo aplazado.
   Notice = Data.define(:title, :body, :path, :kind, :ids) do
     def initialize(title:, body:, path:, kind: nil, ids: []) = super
   end

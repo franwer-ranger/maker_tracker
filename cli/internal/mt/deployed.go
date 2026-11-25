@@ -9,11 +9,10 @@ import (
 )
 
 // mt deployed [<sha>] (MT-46, D-62..D-64): avisa de que un sha está desplegado
-// para que las historias Hechas que contiene salgan en «Por probar». El CLI
-// decide con git qué contiene el sha y se lo dice a la API; el servidor no
-// necesita el repo.
+// y marca como desplegadas las historias Hechas que contiene. El CLI decide con
+// git qué contiene el sha y se lo dice a la API; el servidor no necesita el repo.
 
-// deployCandidate es una historia Hecha con QA pendiente y sin desplegar, tal
+// deployCandidate es una historia Hecha y sin desplegar, tal
 // como la devuelve GET /api/projects/:key/deployed.
 type deployCandidate struct {
 	Reference string   `json:"reference"`
@@ -153,11 +152,11 @@ func references(list []deployCandidate) string {
 	return strings.Join(refs, ", ")
 }
 
-// deployedLine: "deployed a1b2c3d: MT-30, MT-32 can be tested now · MT-35 still waiting".
+// deployedLine: "deployed a1b2c3d: MT-30, MT-32 marked as deployed · MT-35 still waiting".
 func deployedLine(sha string, ready, waiting []deployCandidate) string {
 	parts := []string{}
 	if len(ready) > 0 {
-		parts = append(parts, references(ready)+" can be tested now")
+		parts = append(parts, references(ready)+" marked as deployed")
 	}
 	if len(waiting) > 0 {
 		parts = append(parts, references(waiting)+" still waiting")
@@ -211,7 +210,7 @@ func runDeployed(e *env) error {
 		return posted.Error
 	}
 	fmt.Fprintln(e.stdout, deployedLine(sha, ready, waiting))
-	next := []string{"mt qa"}
+	next := []string{}
 	if len(waiting) > 0 {
 		next = append(next, "mt deployed   (again, when "+references(waiting)+" is deployed)")
 	}
@@ -241,7 +240,7 @@ func resolveDeployedSha(r repo, ref string) (string, error) {
 
 func init() {
 	def(&command{name: "deployed", group: "Work on a story", usage: "mt deployed [<sha>] [--project PG]", maxArgs: 1,
-		summary:     "Tells Maker Tracker that a sha is deployed: the stories done in it can be tested now",
-		description: "Run it at the root of the repo, at the end of the deploy script (bin/deploy does). sha defaults to HEAD. It marks the stories done and waiting for QA whose commits are ancestors of the sha (or, after a squash, whose PR is in its history). The first call turns on the wait for deploys in the project: from then on \"Por probar\" and mt qa only list what was deployed. Calling again with the same or a later sha is safe. Any actor can run it.",
+		summary:     "Tells Maker Tracker that a sha is deployed: the stories done in it are marked as deployed",
+		description: "Run it at the root of the repo, at the end of the deploy script (bin/deploy does). sha defaults to HEAD. It marks the stories done and not deployed yet whose commits are ancestors of the sha (or, after a squash, whose PR is in its history); once the project deploys with mt, only those done since its first deploy. Calling again with the same or a later sha is safe. Any actor can run it.",
 		example:     "mt deployed a1b2c3d", run: runDeployed})
 }

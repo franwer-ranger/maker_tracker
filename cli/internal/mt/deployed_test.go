@@ -59,7 +59,7 @@ func TestClassifyDeploy(t *testing.T) {
 	if len(warnings) != 2 || !strings.Contains(warnings[0], "MT-31 has no commits or PR to check") || !strings.Contains(warnings[1], "MT-38 has no commits") {
 		t.Errorf("warnings = %v", warnings)
 	}
-	want := "deployed " + deployed[:7] + ": MT-30, MT-32, MT-31, MT-38 can be tested now · MT-35, MT-36, MT-37 still waiting"
+	want := "deployed " + deployed[:7] + ": MT-30, MT-32, MT-31, MT-38 marked as deployed · MT-35, MT-36, MT-37 still waiting"
 	if got := deployedLine(deployed, ready, waiting); got != want {
 		t.Errorf("line = %q, want %q", got, want)
 	}

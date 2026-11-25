@@ -80,7 +80,7 @@ module StoriesHelper
   def state_change_sentence(event)
     data = event.data
     docs = " · documentación pendiente: #{data['docs_pending'].map { it['slug'] }.join(', ')}" if data["docs_pending"].present?
-    return "Pasa a #{Story.human_state(data['to'])}#{' · QA pendiente' if data['qa'] == 'pending'}#{docs}" unless data["released"] && data["to"] != "done"
+    return "Pasa a #{Story.human_state(data['to'])}#{docs}" unless data["released"] && data["to"] != "done"
 
     "#{event.actor.name} la suelta: vuelve a #{Story.human_state(data['to'])}"
   end
@@ -194,54 +194,13 @@ module StoriesHelper
       who = story.claimed_by&.name || "alguien"
       since = story.claimed_at ? " desde hace #{short_time_ago(story.claimed_at)}" : ""
       "La está construyendo #{who}#{since}."
-    when "done" then done_explanation(story)
+    when "done" then "Hecha."
     end
   end
 
   # «PG-50» de una historia del proyecto del evento; es la historia que crea una QA fallida.
   def project_story_ref(event, number) = "#{event.project.key}-#{number}"
 
-  # La historia Hecha: con QA pendiente, quién la cerró y que no bloquea nada.
-  def done_explanation(story)
-    return "Hecha." unless story.qa_pending?
-
-    event = story_done_event(story)
-    who = event ? " #{event.actor.name} la cerró #{relative_day(event.occurred_at, time_of_day: true)}." : ""
-    "Hecha.#{who} Te falta probarla: no bloquea nada."
-  end
-
-  # El evento que la pasó a Hecha.
-  def story_done_event(story)
-    story.history.includes(:actor).find { it.action == "story.state_changed" && it.data["to"] == "done" }
-  end
-
-  # La propiedad «QA» de la Historia (5.12): Pendiente en testing.…, Probada o Falló y su historia.
-  def qa_status(story)
-    event = story.events.where(action: %w[qa.passed qa.failed]).recent_first.includes(:actor).first
-    dot = ->(done) { tag.span(class: class_names("inline-block size-1.5 shrink-0 rounded-full", "bg-state-done": done, "border-[1.5px] border-state-done": !done), aria: { hidden: true }) }
-    case story.qa
-    when "pending"
-      url = story.project.qa_url
-      if story.qa_awaiting_deploy? # MT-46: se puede dar por probada, pero aún no está donde se prueba
-        return tag.span(class: "flex items-center gap-2") { safe_join([ dot.call(false), tag.span("Esperando al despliegue", class: "text-control text-text-muted") ]) }
-      end
-      tag.span(class: "flex items-center gap-2") do
-        safe_join([ dot.call(false), tag.span("Pendiente", class: "text-control text-text"),
-          (tag.span("en #{URI.parse(url).host}", class: "font-mono text-xs text-text-muted max-md:hidden") if url) ].compact)
-      end
-    when "passed"
-      tag.span(class: "flex items-center gap-2") do
-        safe_join([ dot.call(true), tag.span("Probada", class: "text-control text-text"),
-          (tag.span("#{event.actor.name} · #{relative_day(event.occurred_at, time_of_day: true)}", class: "font-mono text-xs text-text-muted") if event) ].compact)
-      end
-    else
-      fix = event && story.project.stories.find_by(number: event.data["story"])
-      tag.span(class: "flex items-center gap-2") do
-        safe_join([ tag.span("Falló", class: "text-control text-text"),
-          (link_to(fix.reference, project_story_path(story.project, fix), class: "font-mono text-xs text-text-muted underline decoration-border-strong underline-offset-[3px] hover:text-text") if fix) ].compact)
-      end
-    end
-  end
 
   # ¿La soltó de verdad? Hay un evento released poco antes de la primera pregunta o después.
   def released_for_question?(story, questions)

@@ -113,40 +113,34 @@ class Project < ApplicationRecord
     end
   end
 
-  # La QA espera al despliegue (MT-46, D-64): se activa sola con la primera
+  # El proyecto despliega con mt (MT-46, D-64): se activa solo con la primera
   # llamada a `mt deployed`, sin columna ni configuración.
   def deploys? = events.exists?(action: "project.deployed")
 
-  # Las historias Hechas con QA pendiente y sin desplegar: lo que `mt deployed`
-  # puede marcar, con los commits y el PR de su evento de Hecha.
+  # Las historias Hechas y sin desplegar: lo que `mt deployed` puede marcar,
+  # con los commits y el PR de su evento de Hecha. En un proyecto que ya
+  # despliega, solo las hechas desde su primer despliegue: las de antes no
+  # esperan a ninguno (sin la QA, MT-98, nada más las distingue).
   # [[story, event]] (el evento puede faltar en historias antiguas).
   def deploy_candidates
-    stories = self.stories.qa_pending.where(deployed_at: nil).includes(:milestone).order(:number).to_a
+    stories = self.stories.done.where(deployed_at: nil).includes(:milestone).order(:number).to_a
     done = events.where(story_id: stories.map(&:id), action: "story.state_changed").order(:occurred_at, :id)
       .select { it.data["to"] == "done" }.index_by(&:story_id) # el último gana
-    stories.map { [ it, done[it.id] ] }
+    since = events.where(action: "project.deployed").minimum(:occurred_at)
+    stories.map { [ it, done[it.id] ] }.select { |_, event| since.nil? || (event && event.occurred_at >= since) }
   end
 
-  # `mt deployed`: marca como desplegadas las historias `numbers` (solo las que
-  # esperan, así llamar dos veces es idempotente) y deja un evento del proyecto
-  # aunque no marque ninguna: con él se activa la espera. `warnings` son los
-  # avisos del CLI (las que dio por desplegadas sin nada que comprobar). Devuelve las marcadas.
+  # `mt deployed`: marca como desplegadas las historias `numbers` (solo las
+  # candidatas, así llamar dos veces es idempotente) y deja un evento del
+  # proyecto aunque no marque ninguna. `warnings` son los avisos del CLI (las
+  # que dio por desplegadas sin nada que comprobar). Devuelve las marcadas.
   def deploy!(sha:, numbers:, actor:, warnings: [])
     transaction do
-      marked = stories.qa_pending.where(deployed_at: nil, number: numbers).order(:number).select { it.deployed!(sha: sha, actor: actor) }
+      wanted = numbers.to_set
+      marked = deploy_candidates.map(&:first).select { it.number.in?(wanted) && it.deployed!(sha: sha, actor: actor) }
       record_event!("project.deployed", actor: actor, data: { sha: sha, stories: marked.map(&:number), warnings: warnings.presence }.compact)
       marked
     end
-  end
-
-  # Dónde se prueba (MT-32): la URL de la primera línea bajo «## Dónde se prueba»
-  # del brief. Nil si no hay sección o la línea no trae ninguna.
-  def qa_url
-    section = brief.to_s[/^## Dónde se prueba\s*$(.*?)(?=^## |\z)/m, 1].to_s
-    url = section[%r{https?://[^\s)>\]]+}]&.sub(/[.,;:]+\z/, "")
-    url if url && URI.parse(url).host.present?
-  rescue URI::InvalidURIError
-    nil
   end
 
   def last_editor = cover.last_editor

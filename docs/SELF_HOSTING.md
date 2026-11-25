@@ -85,14 +85,14 @@ Database migrations run on start. Your data in `./data/` is untouched.
 
 ### Tell Maker Tracker what is deployed
 
-If you use the Maker Tracker app to define your product, "Por probar" (QA) can wait until a story is really deployed where you test it. `bin/deploy` does the update above and then tells it:
+Maker Tracker can know which done stories are really deployed. `bin/deploy` does the update above and then tells it:
 
 ```bash
 cd maker_tracker
 bin/deploy
 ```
 
-It runs `git pull --ff-only` and `docker compose up -d --build`, waits for `/up` to answer and runs `mt deployed` with the deployed `HEAD`: the stories done in it appear in "Por probar". If `mt` is missing or fails it only warns; the deploy is already done. It needs `mt` on the server, set up as in [Agents](#agents) (below), with its own actor (`mt:token[torre]`) and the repo's `.mt` file (it is in git). A project that never calls `mt deployed` keeps showing every done story in "Por probar", as before: the wait switches on by itself with the first call.
+It runs `git pull --ff-only` and `docker compose up -d --build`, waits for `/up` to answer and runs `mt deployed` with the deployed `HEAD`: the stories done in it are marked as deployed. If `mt` is missing or fails it only warns; the deploy is already done. It needs `mt` on the server, set up as in [Agents](#agents) (below), with its own actor (`mt:token[torre]`) and the repo's `.mt` file (it is in git).
 
 `mt` for Linux, built from any machine (check the server with `uname -m`: `x86_64` is `amd64`, `aarch64` is `arm64`):
 

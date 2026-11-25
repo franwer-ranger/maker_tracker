@@ -114,18 +114,6 @@ module ActivityHelper
 
   def decided_meta(event) = [ event.story&.reference || event.project.key, event.actor.name, away_time(event.occurred_at) ].join(" · ")
 
-  # QA pendiente (MT-32) -------------------------------------------------------
-
-  # Plegada: "hecha 06:22 · 3 criterios".
-  def qa_collapsed_meta(card)
-    [ "hecha #{away_time(card.done_at)}", pluralize_es(card.criteria.size, "criterio") ].join(" · ")
-  end
-
-  # Desplegada: "Hecha ayer 18:40 · codex · QA pendiente" (en móvil, sin lo último).
-  def qa_card_meta(card)
-    [ "Hecha #{away_time(card.done_at)}", card.done_by&.name, (pluralize_es(card.commits.size, "commit") if card.commits.any?), "QA pendiente" ].compact.join(" · ")
-  end
-
   # Trabajo listo (MT-33) ----------------------------------------------------
 
   # El resumen del proyecto (`ReadyWork`), calculado una vez por petición para todos.

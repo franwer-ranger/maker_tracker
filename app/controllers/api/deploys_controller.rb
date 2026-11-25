@@ -1,13 +1,12 @@
-# La QA espera al despliegue (MT-46, D-62..D-64). `mt deployed` lee los
-# candidatos (GET), decide con git cuáles contiene el sha desplegado y se lo
-# dice al servidor (POST), que no necesita el repo. Cualquier actor con token
-# puede llamarlo: avisar de un despliegue no es probar la QA.
+# Lo desplegado (MT-46, D-62..D-64). `mt deployed` lee los candidatos (GET),
+# decide con git cuáles contiene el sha desplegado y se lo dice al servidor
+# (POST), que no necesita el repo. Cualquier actor con token puede llamarlo.
 class Api::DeploysController < Api::BaseController
   Formatting = Api::Markdown::Formatting
   MAX_STORIES = 500
 
-  # Las historias Hechas con QA pendiente y sin desplegar, con los commits y el
-  # PR de su evento de Hecha. `active`: si el proyecto ya espera al despliegue.
+  # Las historias Hechas y sin desplegar (Project#deploy_candidates), con los
+  # commits y el PR de su evento de Hecha. `active`: si el proyecto ya despliega con mt.
   def index
     candidates = project.deploy_candidates
     summary = "#{candidates.size} #{candidates.one? ? 'story' : 'stories'} done and not deployed yet in #{project.key}."
@@ -29,8 +28,8 @@ class Api::DeploysController < Api::BaseController
     warnings = Array(params[:warnings]).first(MAX_STORIES).map { it.to_s.truncate(300) }
     marked = project.deploy!(sha: sha, numbers: numbers, actor: Current.actor, warnings: warnings)
     refs = marked.map(&:reference)
-    summary = refs.any? ? "Deployed #{sha.first(7)}: #{refs.to_sentence} can be tested now." : "Deployed #{sha.first(7)}: no story was waiting for it."
-    render_ok({ sha: sha, marked: refs, stories: marked.map { Formatting.story_data(it) } }, status: :created, summary: summary, breadcrumbs: [ "mt qa" ])
+    summary = refs.any? ? "Deployed #{sha.first(7)}: #{refs.to_sentence} marked as deployed." : "Deployed #{sha.first(7)}: no story was waiting for it."
+    render_ok({ sha: sha, marked: refs, stories: marked.map { Formatting.story_data(it) } }, status: :created, summary: summary)
   end
 
   private
@@ -45,7 +44,7 @@ class Api::DeploysController < Api::BaseController
     return "#{summary}\n" if candidates.empty?
 
     rows = candidates.map do |story, event|
-      work = [ ("#{event.commits.size} #{event.commits.one? ? 'commit' : 'commits'}" if event&.commits&.any?), (event.data["pr"].presence && "PR #{event.data['pr']}") ].compact
+      work = [ ("#{event.commits.size} #{event.commits.one? ? 'commit' : 'commits'}" if event&.commits&.any?), (event&.data&.dig("pr").presence && "PR #{event.data['pr']}") ].compact
       [ story.reference, story.title, ("done #{Formatting.datetime(event.occurred_at)}" if event), work.join(", ").presence || "nothing to check" ]
     end
     "#{summary}\n\n#{Formatting.table(rows, min: [ 0, Formatting::TITLE_WIDTH ]).join("\n")}\n"

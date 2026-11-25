@@ -5,8 +5,8 @@ module PushHelper
   # Los estados de la línea. `hint` es la segunda línea; en la barra lateral,
   # «por activar» y «activado» no la llevan.
   PUSH_STATES = {
-    idle: { icon: "bell", text: "Avisarme en este dispositivo", hint: "Preguntas, por probar y poco trabajo" },
-    on: { icon: "bell", text: "Avisos activados en este dispositivo", hint: "Preguntas, por probar y poco trabajo" },
+    idle: { icon: "bell", text: "Avisarme en este dispositivo", hint: "Preguntas y poco trabajo" },
+    on: { icon: "bell", text: "Avisos activados en este dispositivo", hint: "Preguntas y poco trabajo" },
     blocked: { icon: "bell-slash", text: "Bloqueados en este navegador", hint: "Se cambian en los ajustes del sitio" },
     unsupported: { icon: "bell", text: "Este navegador no puede recibir avisos", hint: "Usa Chrome, Edge, Firefox o Safari" },
     insecure: { icon: "bell-slash", text: "Los avisos necesitan HTTPS", hint: "Abre Maker Tracker por su dirección https://" },
