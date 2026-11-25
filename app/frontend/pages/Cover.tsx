@@ -28,7 +28,7 @@ export default function Cover({ cover }: { cover: CoverProps }) {
   useTick(30_000)
 
   return (
-    <AppShell title={project.name} active="cover">
+    <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]}>
       <div className="mx-auto flex max-w-[1120px] flex-col gap-12 px-6 py-10 lg:flex-row lg:gap-16 lg:px-12 lg:py-14">
         <div className="flex min-w-0 flex-1 flex-col gap-12">
           <header className="flex flex-col gap-5">

@@ -12,8 +12,8 @@ Rails.application.routes.draw do
   delete "push_subscriptions", to: "push_subscriptions#destroy"
 
   if Rails.env.development?
-    get "design" => "design#show"
-    get "design/movil" => "design#mobile" # las piezas del móvil, dentro de un iframe de 390px
+    # Catálogo de la UI v1 (MT-101): todas las piezas dentro del marco, para comparar con Paper.
+    get "design" => "v1/design#show"
   end
 
   # API para agentes (mt, MCP). Proyectos por su clave: /api/projects/PG/stories/49.

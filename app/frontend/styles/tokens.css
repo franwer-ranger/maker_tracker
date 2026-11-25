@@ -1,61 +1,72 @@
 /*
- * Tema v1 de Maker Tracker (MT-87, Paper «v1 · 1 · Sistema»), con los nombres de shadcn.
- * Valores de los comentarios de MT-87 (2026-11-24): fondo #F7F8FA, borde #E4E6EA, texto
- * apagado #6B6F76, barra lateral #0F0F11 con #C9CBD0 / #6E7078, naranja solo como piloto.
- * Los marcados «(prueba)» no estaban en la historia y se han puesto a ojo para esta prueba:
- * se sustituyen por los de Paper (get_tokens) al construir MT-85.
+ * Tokens de la UI v1, copiados de Paper (archivo Maker Tracker, «v1 · 1 · Sistema · 01 · Tokens»,
+ * get_tokens) y documentados en docs/DESIGN.md. Claro en :root; oscuro en .dark con los --dark-*.
+ * El oscuro sigue al sistema salvo que se elija a mano (lib/theme.ts). La barra lateral es oscura siempre.
  */
-:root {
+:root,
+.light {
   --background: #F7F8FA;
-  --foreground: #0F0F11;
-  --body: #2E3036;            /* (prueba) lectura larga */
-  --card: #FFFFFF;            /* (prueba) */
-  --popover: #FFFFFF;         /* (prueba) */
-  --muted: #EEF0F3;           /* (prueba) hover, fondos de fila */
+  --foreground: #111113;
+  --card: #FFFFFF;
+  --card-foreground: #111113;
+  --popover: #111113;
+  --popover-foreground: #EDEEF0;
+  --muted: #ECEEF1;
   --muted-foreground: #6B6F76;
   --border: #E4E6EA;
-  --input: #D9DCE1;           /* (prueba) */
-  --ring: #0F0F11;
-  --primary: #0F0F11;         /* un solo botón en tinta */
-  --primary-foreground: #FFFFFF;
-  --signal: #FF3F01;          /* piloto: atención y vida */
-  --success: #2F9E5B;         /* (prueba) */
-  --destructive: #C8350B;     /* (prueba) errores de formulario */
-  --kbd: #E9EBEF;             /* (prueba) */
+  --input: #E4E6EA;
+  --ring: #111113;
+  --primary: #111113;
+  --primary-foreground: #F6F7F8;
+  --signal: #FF3F01;
+  --signal-soft: #FFE7DC;
+  --success: #2E7D4F;
+  --destructive: #C2341B;
+  --body: #3A3D44;
+  --kbd: #9EA3AB;
 
   --sidebar: #0F0F11;
   --sidebar-foreground: #C9CBD0;
   --sidebar-muted: #6E7078;
-  --sidebar-active: #1D1E22;  /* (prueba) */
-  --sidebar-border: #1F2024;  /* (prueba) */
+  --sidebar-accent: #1C1D21;
+  --sidebar-border: #2A2A2E;
+  --sidebar-active: #F2F3F5;
 
-  --state-idea: #A3A6AD;      /* (prueba) */
-  --state-defining: #D49A2A;  /* (prueba) */
-  --state-ready: #0F0F11;     /* (prueba) */
-  --state-done: #2F9E5B;      /* (prueba) */
+  --state-idea: #8C8A84;
+  --state-defining: #D99A1E;
+  --state-ready: #111113;
+  --state-in-progress: #FF3F01;
+  --state-done: #2E7D4F;
+
+  --radius: 6px;
+  --radius-panel: 14px;
 }
 
-/* Oscuro (MT-87: en Paper como --dark-*; en código, los mismos nombres dentro de .dark). */
-.dark {
-  --background: #111113;
-  --foreground: #FFFFFF;
-  --body: #EDEDED;
-  --card: #18181B;
-  --popover: #18181B;
+.dark,
+.light .dark {
+  --background: #17171A;
+  --foreground: #EDEDED;
+  --card: #1F1F23;
+  --card-foreground: #EDEDED;
+  --popover: #ECEBE6;
+  --popover-foreground: #111113;
   --muted: #26262A;
-  --muted-foreground: #9E9C9C;
-  --border: #2A2A2E;
-  --input: #3A3A3F;
-  --ring: #FFFFFF;
-  --primary: #FFFFFF;
-  --primary-foreground: #0F0F11;
+  --muted-foreground: #8A8A8F;
+  --border: #2E2E33;
+  --input: #2E2E33;
+  --ring: #EDEDED;
+  --primary: #EDEDED;
+  --primary-foreground: #111113;
+  --signal: #FF3F01;
+  --signal-soft: #3A1A0E;
   --success: #5FB37A;
-  --destructive: #FF6A3D;
-  --kbd: #26262A;
+  --body: #B9B9BD;
+
   --sidebar: #0B0B0C;
-  --sidebar-active: #1A1A1D;
-  --state-idea: #6B6B6B;
-  --state-defining: #E8B04A;
-  --state-ready: #F5F5F5;
+  --sidebar-accent: #1F1F23;
+  --sidebar-border: #222226;
+  --sidebar-active: #F2F3F5;
+
+  --state-ready: #EDEDED;
   --state-done: #5FB37A;
 }

@@ -15,12 +15,26 @@ module V1
           brief: project_brief_path(@project)
         },
         notice: flash[:notice],
+        # El marco (MT-101): combo de producto, Taller, mapa de capacidades, agentes trabajando y usuario.
+        frame: frame,
         # El ⌘K pide su índice al abrirse (recarga parcial), no con cada página.
         search: InertiaRails.optional { search_index }
       }
     end
 
     private
+
+    def frame
+      {
+        products: Project.order(:name).map { { key: it.key, name: it.name, url: project_v1_cover_path(it) } },
+        taller: Daily.new(@project, Current.actor).waiting_for_human.size,
+        capabilities: @project.pages.documentation.ordered.group_by { it.area.presence }.map do |area, pages|
+          { area: area, items: pages.map { { slug: it.slug, title: it.title, url: "#{project_v1_cover_path(@project)}#capacidad-#{it.slug}" } } }
+        end,
+        agents: Presence.active(project_id: @project.id).map { { name: it.actor_name, target: it.target } },
+        user: Current.actor&.name
+      }
+    end
 
     # Historias, capacidades y decisiones del proyecto, para buscar en el ⌘K.
     def search_index

@@ -1,6 +1,6 @@
 /*
  * CSS de las páginas de Inertia (MT-99): Tailwind 4 por Vite, solo sobre app/frontend,
- * con el tema v1 de MT-87. UI SDK no trae estilos: todo el aspecto sale de aquí.
+ * con los tokens de Paper (tokens.css, MT-101). UI SDK no trae estilos: todo el aspecto sale de aquí.
  */
 @import "tailwindcss" source("../");
 @import "./tokens.css";
@@ -37,7 +37,9 @@
   --color-foreground: var(--foreground);
   --color-body: var(--body);
   --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
@@ -46,18 +48,20 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
   --color-success: var(--success);
   --color-kbd: var(--kbd);
   --color-destructive: var(--destructive);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-active: var(--sidebar-active);
   --color-sidebar-border: var(--sidebar-border);
   --color-state-idea: var(--state-idea);
   --color-state-defining: var(--state-defining);
   --color-state-ready: var(--state-ready);
-  --color-state-in-progress: var(--signal);
+  --color-state-in-progress: var(--state-in-progress);
   --color-state-done: var(--state-done);
 
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -74,7 +78,7 @@
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
-  --radius-frame: 14px;
+  --radius-frame: var(--radius-panel);
 
   --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
 }
