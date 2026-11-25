@@ -102,6 +102,11 @@ class Page < ApplicationRecord
     end
   end
 
+  # La página partida como la pinta la web (Page::Reading): con sus
+  # `attachment:` resueltos y sin las líneas que son sus capturas. La misma
+  # lectura para la página de la capacidad y para `mt doc lint` (MT-123).
+  def reading = Page::Reading.new(resolve_attachment_references(body), attachments: screenshots.map { Attachable.path(it) })
+
   def last_editor
     event = history.where(action: %w[brief.edited page.edited page.created]).includes(:actor).first
     [ event&.actor, event&.occurred_at ]

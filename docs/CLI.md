@@ -191,6 +191,7 @@ Next:
 - Por página: `slug · Título: n errors, n warnings` (o `reads well`), `Opening sentence: «…»` si la tiene (recortada a 100), cuántas reglas y preguntas reconoce y una línea por hallazgo.
 - **Errores** (algo impide leerla bien; `mt` sale con 1): sin frase inicial; una decisión (`D-99`) o una historia del proyecto (`PG-999`) citada que no existe; una imagen que no carga: un enlace de adjunto cortado o roto (`eyJ…`), un `attachment:nombre.png` sin adjunto con ese nombre en la página o una ruta que no es de adjunto; o una página que no se deja leer.
 - **Avisos** (se lee, pero es mejorable; sale con 0): «Cómo funciona» o «¿Qué pasa si…?» que acabarán como prosa (con intro, cierre, código o un `###` vacío, o repetidas); una decisión citada sustituida (`D-9 is superseded by D-12.`); una imagen que no es adjunto de la página (de otra historia o página, o externa: de esa no sabe si carga).
+- **Código de salida**: 1 si hay algún error (o la página no existe, `no page editor in PG.`); 0 si solo hay avisos o se lee bien; 2 sin página ni `--all`, o con las dos a la vez.
 - `--all`: un bloque por página (capacidades y transversales, en el orden de `mt doc`) y `4 pages in PG: 1 with errors and 3 read well.`; `Next:` `mt doc lint <slug>`.
 - `--json`: `pages[]` con `slug`, `title`, `lead`, `rules` y `questions` (cuántas), `errors[]` y `warnings[]` (los mensajes), y `errors` / `warnings` con el total.
 - `mt doc --help` explica el formato de una página de capacidad, con un ejemplo corto.

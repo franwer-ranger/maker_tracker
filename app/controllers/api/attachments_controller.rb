@@ -25,8 +25,7 @@ class Api::AttachmentsController < Api::BaseController
 
   def record
     @record ||= if params[:page_slug]
-      project.pages.find_by(slug: params[:page_slug].to_s.downcase) ||
-        raise(Api::Error.not_found("no page #{params[:page_slug]} in #{project.key}.", hint: "see them with mt doc."))
+      find_page(params[:page_slug])
     else
       story
     end

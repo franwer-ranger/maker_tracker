@@ -30,7 +30,7 @@ module V1
 
     def capability_props
       page = @project.pages.find(@page.id)
-      reading = Page::Reading.new(page.resolve_attachment_references(page.body), attachments: page.screenshots.map { Attachable.path(it) })
+      reading = page.reading
       {
         slug: page.slug,
         title: page.title,

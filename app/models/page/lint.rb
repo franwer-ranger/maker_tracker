@@ -47,7 +47,7 @@ class Page::Lint
   def attachments = @attachments ||= page.ordered_attachments.to_a
 
   def read
-    Page::Reading.new(page.body, attachments: page.screenshots.map { Attachable.path(it) })
+    page.reading
   rescue StandardError => error
     error!("the page cannot be read (#{error.class}: #{error.message.truncate(120)}): the web would fail to show it.")
     nil
@@ -59,17 +59,12 @@ class Page::Lint
     error!("no opening sentence: start the page with a paragraph (before any ##), or with the first one of «## Qué hace hoy».")
   end
 
-  # «Cómo funciona» o «¿Qué pasa si…?» que no se dejan partir en entradas (los de más, también).
+  # «Cómo funciona» o «¿Qué pasa si…?» que no se dejan partir en entradas, o
+  # que llegan cuando ya había uno que contaba (Page::Reading lo sabe por posición).
   def check_prose_sections
-    reading.sections.each do |section|
-      title = section[:title].to_s
-      kind = if title.match?(Page::Reading::RULES) then "rules"
-      elsif title.match?(Page::Reading::QUESTIONS) then "questions"
-      end
-      next unless kind
-
-      again = (kind == "rules" ? reading.rules : reading.questions)
-      warning!(again ? "«#{title}» will show as prose: there is already one, only the first counts as #{kind}." :
+    reading.as_prose.each do |section|
+      title, kind = section[:title], section[:kind]
+      warning!(section[:repeated] ? "«#{title}» will show as prose: there is already one, only the first counts as #{kind}." :
         "«#{title}» will show as prose, not as #{kind}: it must have only ### entries (from its first line) or only bullets, with no intro, closing, code or empty ###.")
     end
   end
@@ -99,7 +94,7 @@ class Page::Lint
   def check_images
     text.scan(IMAGE).uniq.each do |alt, url|
       name = alt.presence || url.split("/").last.to_s
-      problem, level = image_problem(url.gsub("%28", "(").gsub("%29", ")"))
+      problem, level = image_problem(url)
       findings << Finding.new(level: level, message: "image #{name} #{problem}") if problem
     end
   end
@@ -107,12 +102,14 @@ class Page::Lint
   # [qué le pasa, :error | :warning], o nil si es un adjunto de la página.
   def image_problem(url)
     if url.start_with?("attachment:")
-      filename = url.delete_prefix("attachment:")
+      # Como la web (resolve_attachment_references): el nombre, con sus %-escapes deshechos.
+      filename = Attachable.decode_name(url.delete_prefix("attachment:"))
       return if attachments.any? { it.filename.to_s == filename }
 
       return [ "does not load: the page has no attachment named #{filename} (upload it with mt attach #{page.slug} #{filename}).", :error ]
     end
 
+    url = url.gsub("%28", "(").gsub("%29", ")")
     uri = URI.parse(url) rescue nil
     path = uri&.path.to_s
     unless path.start_with?("/rails/active_storage/")

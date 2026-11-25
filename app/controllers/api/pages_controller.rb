@@ -65,8 +65,7 @@ class Api::PagesController < Api::BaseController
   private
 
   def page
-    @page ||= project.pages.find_by(slug: params[:slug].to_s.downcase) ||
-      raise(Api::Error.not_found("no page #{params[:slug]} in #{project.key}.", hint: "see them with mt doc."))
+    @page ||= find_page(params[:slug])
   end
 
   # Atributos desde `markdown` (formato de ver), desde campos sueltos o ambos.

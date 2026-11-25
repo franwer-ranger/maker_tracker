@@ -4,12 +4,11 @@
 class Api::PageLintsController < Api::BaseController
   def index
     lints = project.pages.documentation.ordered.map { Page::Lint.new(it) }
-    render_lints(lints, summary: all_summary(lints))
+    render_lints(lints, summary: all_summary(lints), summary_in_markdown: true)
   end
 
   def show
-    page = project.pages.find_by(slug: params[:slug].to_s.downcase) ||
-      raise(Api::Error.not_found("no page #{params[:slug]} in #{project.key}.", hint: "see them with mt doc."))
+    page = find_page(params[:slug])
     if page.cover?
       raise Api::Error.validation("the cover is the brief: lint reads capabilities and cross-cutting pages.", hint: "mt doc lint <slug> or mt doc lint --all.")
     end
@@ -20,10 +19,11 @@ class Api::PageLintsController < Api::BaseController
 
   private
 
-  def render_lints(lints, summary:, breadcrumbs: [ "mt doc lint <slug>" ])
+  # Con `--all` el resumen cierra también el markdown, haya las páginas que haya.
+  def render_lints(lints, summary:, summary_in_markdown: false, breadcrumbs: [ "mt doc lint <slug>" ])
     markdown = lints.map { page_markdown(it) }.join("\n\n")
     render_ok({ pages: lints.map(&:to_h), errors: lints.sum { it.errors.size }, warnings: lints.sum { it.warnings.size },
-                markdown: [ markdown.presence, (summary if lints.size != 1) ].compact.join("\n\n") + "\n" },
+                markdown: [ markdown.presence, (summary if summary_in_markdown) ].compact.join("\n\n") + "\n" },
       summary: summary, breadcrumbs: breadcrumbs)
   end
 
