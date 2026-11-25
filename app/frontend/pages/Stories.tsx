@@ -117,6 +117,7 @@ function List({ stories, onCreate }: { stories: ListProps; onCreate: () => void 
   // La bandeja se queda aunque esté vacía (con su estado vacío), salvo si se buscan las hechas o se filtra.
   const showTray = ideas.length > 0 || (!filtering && status !== "done")
   const capabilityOptions = [{ value: ALL, label: "Capacidad" }, ...stories.capabilities.map((cap) => ({ value: cap.slug, label: cap.title }))]
+  // «Quitar el filtro» lo quita todo, también el estado: pasa a Todas («para verlas todas»).
   const clear = () => { setQuery(""); setCapability(ALL); setStatus("all") }
 
   return (
@@ -347,7 +348,7 @@ function NewIdea({ open, onOpenChange, url }: { open: boolean; onOpenChange: (op
           <DialogDescription className="sr-only">Cae en la Bandeja de ideas, sin hito.</DialogDescription>
           <div className="flex flex-col gap-2 px-5 pt-3.5 pb-[22px]">
             {error && <p role="alert" className="rounded-lg border border-signal/40 px-3 py-2 text-control text-foreground">{error}</p>}
-            <Textarea autoFocus autoResize rows={1} value={title} onValueChange={(value) => setTitle(value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit() } }} aria-label="La idea" placeholder="La idea, en una frase" className="resize-none bg-transparent text-[17px] leading-[25px] text-foreground outline-none placeholder:text-kbd focus-visible:shadow-none md:text-lg md:leading-[26px]" />
+            <Textarea autoFocus autoResize rows={1} value={title} onValueChange={(value) => setTitle(value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); submit() } }} aria-label="La idea" placeholder="La idea, en una frase" className="resize-none bg-transparent text-[17px] leading-[25px] text-foreground outline-none placeholder:text-kbd focus-visible:shadow-none md:text-lg md:leading-[26px]" />
             <Input value={body} onValueChange={(value) => setBody(value)} aria-label="Una línea más" placeholder="Una línea más, si hace falta" className="bg-transparent text-sm leading-[21px] text-foreground outline-none placeholder:text-kbd focus-visible:shadow-none" />
           </div>
           <div className="mx-5 flex flex-col gap-4 border-t border-border pt-3.5 pb-6 md:mx-0 md:flex-row md:items-center md:justify-between md:gap-4 md:pt-3 md:pr-3.5 md:pb-3 md:pl-5">

@@ -11,8 +11,10 @@ module V1
     end
 
     # «Apuntar una idea»: título y, si hace falta, una línea más. Sin hito y en Idea.
+    # El título es de una línea (lo imprimen `mt roadmap`, `mt next`, el ⌘K y las filas):
+    # `squish` junta lo que llegue en varias líneas del Textarea (Shift+Enter o pegado).
     def create
-      story = @project.create_story!({ title: params[:title].to_s.strip, body: params[:body].to_s.strip.presence, state: "idea", milestone: nil }.compact,
+      story = @project.create_story!({ title: params[:title].to_s.squish, body: params[:body].to_s.strip.presence, state: "idea" }.compact,
                                      actor: Current.actor)
       redirect_to project_v1_story_list_path(@project), notice: "#{story.reference} apuntada en la bandeja."
     rescue ActiveRecord::RecordInvalid => e
