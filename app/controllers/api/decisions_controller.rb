@@ -43,7 +43,7 @@ class Api::DecisionsController < Api::BaseController
     added = project.link_decisions!(decisions, pages, actor: Current.actor)
     superseded = decisions.select(&:superseded_by)
     links_response(decisions, pages, added,
-      done: verb(decisions, "now govern"), none: "already governed", unchanged: "already there",
+      done: decisions.one? ? "now governs" : "now govern", none: "already governed", unchanged: "already there",
       warnings: superseded.map { "#{it.reference} is superseded by #{it.superseded_by.reference}: it does not show under Decisions in force." })
   end
 
@@ -51,7 +51,7 @@ class Api::DecisionsController < Api::BaseController
   def unlink
     decisions, pages = link_targets
     removed = project.unlink_decisions!(decisions, pages, actor: Current.actor)
-    links_response(decisions, pages, removed, done: verb(decisions, "no longer govern"), none: "did not govern", unchanged: "not there")
+    links_response(decisions, pages, removed, done: decisions.one? ? "no longer governs" : "no longer govern", none: "did not govern", unchanged: "not there")
   end
 
   private
@@ -76,16 +76,14 @@ class Api::DecisionsController < Api::BaseController
     summary = if changed.empty?
       "#{refs} #{none} #{slugs}: nothing changed."
     else
-      "#{refs} #{done} #{slugs}#{" (#{Api::Markdown::Formatting.plural(same, 'link')} #{same == 1 ? 'was' : 'were'} #{unchanged})" if same.positive?}."
+      note = " (#{Api::Markdown::Formatting.plural(same, 'link')} #{same == 1 ? 'was' : 'were'} #{unchanged})" if same.positive?
+      "#{refs} #{done} #{slugs}#{note}."
     end
     render_ok({ decisions: decisions.map(&:reference), capabilities: pages.map(&:slug),
                 changed: changed.map { |decision, page| { decision: decision.reference, capability: page.slug } } },
       summary: summary, warnings: warnings,
       breadcrumbs: [ "mt doc #{pages.first.slug}", "mt decisions --capability #{pages.first.slug}" ])
   end
-
-  # "D-52 now governs", "D-45 and D-52 now govern".
-  def verb(decisions, plural) = decisions.one? ? plural.sub(/govern\z/, "governs") : plural
 
   # `capabilities` como lista o como texto ("tablero, editor"). Un
   # `--capability ""` es un error, no una decisión sin capacidades.

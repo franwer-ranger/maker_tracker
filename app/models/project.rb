@@ -118,7 +118,6 @@ class Project < ApplicationRecord
   # Lo que ya estaba enlazado no se toca. Devuelve los enlaces nuevos,
   # [[decision, page]], y deja un `decision.linked` si hay alguno.
   def link_decisions!(decisions, pages, actor:)
-    check_decision_links!(decisions, pages)
     transaction do
       linked = DecisionCapability.where(decision: decisions, page: pages).pluck(:decision_id, :page_id).to_set
       added = decisions.product(pages).reject { |decision, page| linked.include?([ decision.id, page.id ]) }
@@ -131,7 +130,6 @@ class Project < ApplicationRecord
   # `mt decision unlink`: lo contrario. Devuelve los enlaces quitados y deja un
   # `decision.unlinked` si hay alguno.
   def unlink_decisions!(decisions, pages, actor:)
-    check_decision_links!(decisions, pages)
     transaction do
       links = DecisionCapability.where(decision: decisions, page: pages).includes(:decision, :page).to_a
       DecisionCapability.where(id: links.map(&:id)).delete_all
@@ -206,13 +204,6 @@ class Project < ApplicationRecord
   end
 
   private
-
-  # Las decisiones y las páginas son del proyecto, y la portada no es una capacidad.
-  def check_decision_links!(decisions, pages)
-    raise ArgumentError, "Las decisiones tienen que ser de #{key}" if decisions.any? { it.project_id != id }
-    raise ArgumentError, "Las páginas tienen que ser de #{key}" if pages.any? { it.project_id != id }
-    raise ArgumentError, "La portada no es una capacidad: es el brief" if pages.any?(&:cover?)
-  end
 
   # `data.links`: cada enlace con la decisión y la página (su id, para su
   # historial, y su slug, para leerlo aunque se borre).
