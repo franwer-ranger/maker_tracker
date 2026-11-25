@@ -36,8 +36,11 @@ const board = definePrimitive({
     return { transfer }
   },
   slots: (slot) => ({
-    // Las columnas como se ven ahora: las del borrador mientras se mueve una tarjeta, si no, el valor.
-    root: slot({ state: (state, part) => ({ lists: part.api.transfer.lists(state) }), attrs: () => ({ "aria-roledescription": "tablero" }) }),
+    // Las columnas como se ven ahora: las del borrador mientras se mueve una tarjeta, si no, el valor; y cuál se mueve.
+    root: slot({
+      state: (state, part) => ({ lists: part.api.transfer.lists(state), moving: state.moving?.key ?? null }),
+      attrs: () => ({ "aria-roledescription": "tablero" }),
+    }),
     column: slot<{ value: string }>({
       props: { value: "string" },
       bind: (el, part) => part.api.transfer.bindList(el, part.key),
