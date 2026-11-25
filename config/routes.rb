@@ -66,6 +66,9 @@ Rails.application.routes.draw do
       resource :brief, only: %i[show update]
       resources :pages, path: "docs", param: :slug, only: %i[index show create update destroy], constraints: { slug: %r{[^/]+}, page_slug: %r{[^/]+} } do
         resources :attachments, only: :create
+        # `mt doc lint <slug>` y `mt doc lint --all` (MT-123): `lint` no puede ser un slug.
+        get :lint, on: :member, to: "page_lints#show"
+        get :lint, on: :collection, to: "page_lints#index"
       end
     end
     match "*path", to: "base#route_not_found", via: :all

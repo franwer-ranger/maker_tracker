@@ -5,7 +5,7 @@ namespace :mt do
   namespace :pages do
     desc "Lee todas las páginas de la documentación y los ejemplos de lib/tasks/pages; falla si alguna no se deja leer"
     task check: :environment do
-      fixtures = Rails.root.glob("lib/tasks/pages/*.md").to_h { [ it.basename(".md").to_s, Page::Reading.new(it.read).to_h ] }
+      fixtures = Rails.root.glob("lib/tasks/pages/{titulos,vinetas,inesperado}.md").to_h { [ it.basename(".md").to_s, Page::Reading.new(it.read).to_h ] }
       Page.find_each { Page::Reading.new(it.body, attachments: it.screenshots.map { Attachable.path(it) }).to_h }
 
       expect = ->(name, actual, expected) { abort "#{name}: esperaba #{expected.inspect}, sale #{actual.inspect}" unless actual == expected }
@@ -29,6 +29,13 @@ namespace :mt do
       # Un `###` vacío no se deja partir y unas preguntas con intro no son solo preguntas: las dos, como prosa.
       expect.("inesperado · como prosa", [ inesperado[:rules], inesperado[:questions], inesperado[:sections].map { it[:title] } ],
         [ nil, nil, [ "Cómo funciona", "¿Qué pasa si…?" ] ])
+
+      # `mt doc lint` (MT-123) sobre las mismas lecturas: sin frase, citas e imágenes rotas son errores; lo demás, avisos.
+      Page.documentation.find_each { Page::Lint.new(it).to_h }
+      lint = Page::Lint.new(Page.new(project: Project.new(key: "ZZ"), slug: "lint-ejemplo", body: Rails.root.join("lib/tasks/pages/lint.md").read))
+      expect.("lint · errores", lint.errors.map { it.message[/\A\S+(?: \S+)?/] }, [ "no opening", "D-1 does", "ZZ-3 does", "image rota", "image suelta" ])
+      expect.("lint · avisos", lint.warnings.map { it.message[/\A\S+ \S+/] }, [ "«Cómo funciona»", "image fuera" ])
+      expect.("lint · preguntas", lint.questions.size, 1)
 
       puts "#{Page.count} páginas y #{fixtures.size} ejemplos se leen bien."
     end

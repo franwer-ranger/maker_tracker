@@ -14,7 +14,7 @@ class Page < ApplicationRecord
 
   COVER_SLUG = "cover"
   # Los subcomandos de `mt doc` no pueden ser el slug de una página.
-  RESERVED_SLUGS = %w[create edit delete list show].freeze
+  RESERVED_SLUGS = %w[create edit delete list show lint].freeze
   EDITABLE_FIELDS = %w[title icon area body kind].freeze
 
   belongs_to :project
