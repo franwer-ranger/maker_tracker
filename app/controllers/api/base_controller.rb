@@ -143,13 +143,17 @@ class Api::BaseController < ActionController::API
     @story ||= find_story(params[:story_number] || params[:number])
   end
 
-  # Hito por su código (M2) o su título.
+  # Hito por su código (M2) o su título, sin distinguir mayúsculas. El título se
+  # compara en Ruby: LOWER() de SQLite solo baja ASCII y «Álbum» no casaba con
+  # «álbum» (MT-124). NFC para que una «Á» compuesta y otra descompuesta casen.
   def find_milestone(value)
     value = value.to_s.strip
     milestone = project.milestones.find_by(number: value[/\AM(\d+)\z/i, 1]) if value.match?(/\AM\d+\z/i)
-    milestone ||= project.milestones.find_by("LOWER(title) = ?", value.downcase)
+    milestone ||= project.milestones.find { folded(it.title) == folded(value) }
     milestone || raise(Api::Error.not_found("no milestone #{value} in #{project.key}.", hint: "see them with mt roadmap --closed."))
   end
+
+  def folded(text) = text.to_s.unicode_normalize(:nfc).downcase(:fold)
 
   # "PG-48 is claimed by claude since 11:42."
   def claimed_by_other_error(story)
