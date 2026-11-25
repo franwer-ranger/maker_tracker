@@ -13,7 +13,7 @@ type BoardOptions = {
 
 // Tablero: tarjetas que pasan de una columna a otra arrastrando o con el teclado (createTransfer de UI SDK).
 // Espacio coge la tarjeta, Izquierda y Derecha la cambian de columna, Espacio la suelta y Escape la devuelve.
-// Intro abre la tarjeta (es un enlace) mientras no esté cogida.
+// Intro abre la tarjeta (es un enlace, y conserva su papel de enlace) mientras no esté cogida.
 const board = definePrimitive({
   name: "board",
   options: { value: "value", defaultValue: "value", order: "callback", label: "callback", listLabel: "callback", onValueChange: "callback" },
@@ -40,13 +40,11 @@ const board = definePrimitive({
     root: slot({ state: (state, part) => ({ lists: part.api.transfer.lists(state) }), attrs: () => ({ "aria-roledescription": "tablero" }) }),
     column: slot<{ value: string }>({
       props: { value: "string" },
-      attrs: () => ({ role: "list" }),
       bind: (el, part) => part.api.transfer.bindList(el, part.key),
     }),
     card: slot<{ value: string }>({
       props: { value: "string" },
       attrs: (state, part) => ({
-        role: "listitem",
         "aria-roledescription": "tarjeta",
         "data-grabbed": part.api.transfer.moving(state, part.key) ? "" : undefined,
         "data-dragging": part.api.transfer.dragging(state, part.key) ? "" : undefined,

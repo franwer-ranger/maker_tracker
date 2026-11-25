@@ -405,7 +405,7 @@ function Card({ item, dropped }: { item: Item; dropped: { current: number } }) {
   return (
     <BoardCard
       value={item.ref}
-      render={<Link href={item.url} />}
+      render={<Link href={item.url} draggable={false} />}
       onClickCapture={(event: React.MouseEvent) => { if (Date.now() - dropped.current < 400) event.preventDefault() }}
       className="flex cursor-grab flex-col gap-2 rounded-[10px] bg-card px-[13px] py-3 shadow-[0_0_0_1px_var(--color-border)] hover:shadow-[0_0_0_1px_var(--color-kbd)] data-dragging:opacity-40 data-grabbed:outline-1 data-grabbed:outline-foreground data-drag-preview:shadow-[0_0_0_1px_var(--color-border),0_12px_32px_rgba(15,15,17,0.14)]"
     >
