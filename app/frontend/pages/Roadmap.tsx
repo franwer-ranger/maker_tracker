@@ -2,7 +2,7 @@ import { Link, router, usePage } from "@inertiajs/react"
 import { Dialog, DialogBackdrop, DialogContent, DialogDescription, DialogTitle } from "@ui-sdk/react/dialog"
 import { Radio, RadioGroup, RadioIndicator } from "@ui-sdk/react/radio"
 import { useShortcut } from "@ui-sdk/react/shortcuts"
-import { type ReactNode, useEffect, useState } from "react"
+import { type ReactNode, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
@@ -20,15 +20,13 @@ type Chapter = {
   code: string
   title: string
   goal: string | null
-  label: string
   capabilities: { title: string; icon: string | null; url: string }[]
   done: number
   total: number
   next: { ref: string; title: string; url: string } | null
-  pending: { number: number; ref: string; title: string; state: string; human_state: string }[]
+  pending: { number: number; ref: string; title: string; human_state: string }[]
   following: { number: number; code: string; title: string } | null
   close_url: string
-  edit_url: string
 }
 
 type Closed = {
@@ -122,10 +120,9 @@ export default function Roadmap({ roadmap }: { roadmap: RoadmapProps }) {
 
 // Los capítulos: arrastrar el asa (o cogerla con Espacio y moverla con las flechas) cambia el orden de los hitos.
 function Chapters({ roadmap, onClose }: { roadmap: RoadmapProps; onClose: (chapter: Chapter) => void }) {
-  const keys = roadmap.chapters.map((chapter) => String(chapter.number))
-  const [order, setOrder] = useState(keys)
-  const seen = keys.join(",")
-  useEffect(() => setOrder(seen.split(",")), [seen])
+  // Mientras va la petición se ve el orden arrastrado; al volver, el que diga el servidor (también tras un rechazo).
+  const [moving, setMoving] = useState<string[] | null>(null)
+  const order = moving ?? roadmap.chapters.map((chapter) => String(chapter.number))
   const byKey = new Map(roadmap.chapters.map((chapter) => [String(chapter.number), chapter]))
 
   const reorder = (next: string[]) => {
@@ -135,8 +132,8 @@ function Chapters({ roadmap, onClose }: { roadmap: RoadmapProps; onClose: (chapt
     if (!moved) return
     const index = next.indexOf(moved)
     const place = index === 0 ? { before: next[1] } : { after: next[index - 1] }
-    setOrder(next)
-    router.post(roadmap.reorder_url, { milestone: moved, ...place, seen: order }, { preserveScroll: true, onError: () => setOrder(order) })
+    setMoving(next)
+    router.post(roadmap.reorder_url, { milestone: moved, ...place, seen: order }, { preserveScroll: true, onFinish: () => setMoving(null) })
   }
 
   return (
@@ -146,7 +143,7 @@ function Chapters({ roadmap, onClose }: { roadmap: RoadmapProps; onClose: (chapt
         if (!chapter) return null
         const label = index === 0 ? "Ahora" : index === 1 ? "Siguiente" : "Después"
         return (
-          <SortableItem key={key} value={key} className="relative grid grid-cols-1 gap-3 border-t border-border bg-background py-6 data-dragging:z-10 data-dragging:translate-x-(--drag-x) data-dragging:translate-y-(--drag-y) data-dragging:shadow-[0_12px_32px_rgba(15,15,17,0.14)] data-grabbed:rounded-lg data-grabbed:outline-1 data-grabbed:outline-foreground md:grid-cols-[120px_1fr] md:gap-7 md:py-7">
+          <SortableItem key={key} value={key} className="relative grid grid-cols-1 gap-3 border-t border-border bg-background py-6 data-dragging:z-10 data-dragging:translate-y-(--drag-y) data-dragging:shadow-[0_12px_32px_rgba(15,15,17,0.14)] data-grabbed:rounded-lg data-grabbed:outline-1 data-grabbed:outline-foreground md:grid-cols-[120px_1fr] md:gap-7 md:py-7">
             <ChapterLabel chapter={chapter} label={label} now={index === 0} sortable={order.length > 1} />
             <ChapterBody chapter={chapter} now={index === 0} onClose={() => onClose(chapter)} />
           </SortableItem>
@@ -250,7 +247,7 @@ function RecentMilestone({ milestone, heading, window }: { milestone: Closed; he
   const stories = all ? milestone.stories : milestone.stories.slice(0, FOLDED)
   return (
     <div className="flex flex-col gap-3.5">
-      <div className="flex items-baseline justify-between gap-4">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 id={heading ? "recent" : undefined} className="text-xl leading-6 font-medium tracking-[-0.01em] text-foreground">
           {heading ? "Recién terminado" : milestone.title}
         </h2>
@@ -361,17 +358,22 @@ function Choice({ value, title, hint, aside }: { value: string; title: ReactNode
   )
 }
 
+// Un envío cada vez, venga del botón, de ⌘↵ o del formulario: el ref para también dos keydown en el mismo tick.
 function useSubmit(onSuccess: () => void) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const send = (url: string, data: Record<string, unknown>) =>
+  const busy = useRef(false)
+  const send = (url: string, data: Record<string, unknown>) => {
+    if (busy.current) return
+    busy.current = true
     router.post(url, data as never, {
       preserveScroll: true,
       onStart: () => { setSending(true); setError(null) },
-      onFinish: () => setSending(false),
+      onFinish: () => { busy.current = false; setSending(false) },
       onError: (errors) => setError(Object.values(errors).flat().join(" ")),
       onSuccess,
     })
+  }
   return { sending, error, setError, send }
 }
 
@@ -396,7 +398,7 @@ function NewMilestone({ open, onOpenChange, roadmap }: { open: boolean; onOpenCh
     setError(null)
   }, [open, setError])
 
-  const submit = () => send(roadmap.create_url, { title, goal, place })
+  const submit = () => { if (title.trim() !== "") send(roadmap.create_url, { title, goal, place }) }
   return (
     <Window
       open={open}

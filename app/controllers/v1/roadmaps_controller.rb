@@ -9,7 +9,6 @@
 module V1
   class RoadmapsController < ApplicationController
     RECENT = 14.days
-    LABELS = %w[Ahora Siguiente].freeze
 
     def show
       render inertia: "Roadmap", props: { roadmap: InertiaRails.live(@project) { roadmap_props } }
@@ -24,12 +23,13 @@ module V1
         milestone = open.find { it.number == params[:milestone].to_i }
         relation = %i[before after].find { params[it].present? }
         target = relation && open.find { it.number == params[relation].to_i }
-        problem = if milestone.nil? || target.nil? || target == milestone
+        problem = if milestone.nil? || target.nil?
           "Ese hito ya no está abierto. Recarga el roadmap."
         elsif Array(params[:seen]).map(&:to_i) != open.map(&:number)
-          "El roadmap cambió mientras lo mirabas. Recarga y vuelve a moverlo."
+          "El roadmap cambió mientras lo mirabas. Ya ves el orden de ahora: vuelve a moverlo."
         end
-        next if problem
+        # Junto a sí mismo: el orden no cambia.
+        next if problem || target == milestone
 
         milestone.reorder!(position: { relation => target }, actor: Current.actor)
       end
@@ -38,7 +38,6 @@ module V1
 
     # «Nuevo hito»: al final, el siguiente (detrás del de ahora) o el primero.
     def create
-      problem = nil
       milestone = @project.with_lock do
         first = @project.milestones.open.order(:position).first
         created = @project.create_milestone!(params.permit(:title, :goal).to_h.with_defaults("title" => nil), actor: Current.actor)
@@ -50,8 +49,7 @@ module V1
       end
       redirect_to project_v1_roadmap_path(@project), notice: "#{milestone.code} creado."
     rescue ActiveRecord::RecordInvalid => e
-      problem = e.record.errors.full_messages.join(". ")
-      back(problem)
+      back(e.record.errors.full_messages.join(". "))
     end
 
     # «Cerrar un hito»: lo que queda abierto pasa al siguiente hito (al principio, en su
@@ -126,17 +124,15 @@ module V1
         code: milestone.code,
         title: milestone.title,
         goal: milestone.goal.presence,
-        label: LABELS[index] || "Después",
         capabilities: stories.flat_map(&:capabilities).uniq.filter_map { pages[it] }.map do |page|
           { title: page.title, icon: page.icon, url: project_v1_capability_path(@project, page.slug) }
         end,
         done: done,
         total: stories.size,
         next: stories.reject(&:done?).first&.then { { ref: it.reference, title: it.title, url: project_v1_story_path(@project, it.number) } },
-        pending: stories.reject(&:done?).map { { number: it.number, ref: it.reference, title: it.title, state: it.state, human_state: it.human_state } },
+        pending: stories.reject(&:done?).map { { number: it.number, ref: it.reference, title: it.title, human_state: it.human_state } },
         following: following && { number: following.number, code: following.code, title: following.title },
-        close_url: project_v1_milestone_close_path(@project, milestone.number),
-        edit_url: edit_project_v1_milestone_path(@project, milestone.number)
+        close_url: project_v1_milestone_close_path(@project, milestone.number)
       }
     end
 
