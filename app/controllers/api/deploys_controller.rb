@@ -44,7 +44,8 @@ class Api::DeploysController < Api::BaseController
     return "#{summary}\n" if candidates.empty?
 
     rows = candidates.map do |story, event|
-      work = [ ("#{event.commits.size} #{event.commits.one? ? 'commit' : 'commits'}" if event&.commits&.any?), (event&.data&.dig("pr").presence && "PR #{event.data['pr']}") ].compact
+      pr = event&.data&.dig("pr").presence
+      work = [ ("#{event.commits.size} #{event.commits.one? ? 'commit' : 'commits'}" if event&.commits&.any?), ("PR #{pr}" if pr) ].compact
       [ story.reference, story.title, ("done #{Formatting.datetime(event.occurred_at)}" if event), work.join(", ").presence || "nothing to check" ]
     end
     "#{summary}\n\n#{Formatting.table(rows, min: [ 0, Formatting::TITLE_WIDTH ]).join("\n")}\n"

@@ -3,12 +3,11 @@
 # `bin/backup` lo conserva). Los eventos `qa.*` se quedan en el historial y
 # `deployed_at` sigue: `mt deployed` marca lo desplegado.
 #
-# El índice va antes que la columna: SQLite no borra una columna indexada.
-# `down` recrea la columna y su índice vacíos; los valores solo vuelven
-# restaurando la copia.
+# El índice se quita explícito, simétrico con `down`, que recrea la columna y
+# su índice vacíos; los valores solo vuelven restaurando la copia.
 class RemoveQaFromStories < ActiveRecord::Migration[8.1]
   def up
-    remove_index :stories, :qa, name: "index_stories_on_qa", if_exists: true
+    remove_index :stories, :qa, name: "index_stories_on_qa"
     remove_column :stories, :qa
   end
 

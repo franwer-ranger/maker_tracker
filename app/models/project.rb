@@ -120,7 +120,9 @@ class Project < ApplicationRecord
   # Las historias Hechas y sin desplegar: lo que `mt deployed` puede marcar,
   # con los commits y el PR de su evento de Hecha. En un proyecto que ya
   # despliega, solo las hechas desde su primer despliegue: las de antes no
-  # esperan a ninguno (sin la QA, MT-98, nada más las distingue).
+  # esperan a ninguno (sin la QA, MT-98, nada más las distingue). Tampoco
+  # vuelven a esperar las Hechas antes del primer despliegue que este no
+  # contenía: a propósito, el primer `mt deployed` deja atrás todo lo anterior.
   # [[story, event]] (el evento puede faltar en historias antiguas).
   def deploy_candidates
     stories = self.stories.done.where(deployed_at: nil).includes(:milestone).order(:number).to_a
