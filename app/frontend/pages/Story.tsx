@@ -48,9 +48,10 @@ type StoryProps = {
   changes_text: string | null
   documentation:
     | { kind: "unlinked"; prompt: string; candidate: { title: string; icon: string | null; area: string | null; link_url: string } | null }
-    | { kind: "outdated"; prompt: string; pages: { title: string; icon: string | null; url: string }[] }
+    | { kind: "outdated"; prompt: string; relink: boolean; pages: { title: string; icon: string | null; url: string }[] }
     | null
-  criteria: { text: string; done: boolean }[]
+  // Las casillas, los subtítulos que las agrupan y el texto suelto de la sección, en orden.
+  criteria: ({ type: "check"; text: string; done: boolean } | { type: "heading" | "paragraph"; text: string })[]
   out_of_scope: string[]
   context: { title: string | null; blocks: Block[] }[]
   screens: { code: string; title: string; href: string; src: string | null }[]
@@ -75,6 +76,7 @@ const time = (iso: string) => clock.format(new Date(iso))
 export default function Story({ story }: { story: StoryProps }) {
   const { project, nav } = usePage().props
   const crumbs = [{ label: "Historias", href: nav.board }, { label: story.ref }]
+  const checks = story.criteria.filter((item) => item.type === "check")
   const canMarkReady = !story.question && story.ready_url && story.ready_blockers.length === 0
   const markReady = () => story.ready_url && router.post(story.ready_url, {}, { preserveScroll: true })
   useShortcut(canMarkReady ? "l" : null, markReady, { description: "Marcar como Lista" })
@@ -138,17 +140,23 @@ export default function Story({ story }: { story: StoryProps }) {
             <section aria-labelledby="criterios" className="flex flex-col">
               <div className="flex items-baseline justify-between gap-4 pb-4">
                 <h2 id="criterios" className="text-xl leading-6 font-medium tracking-[-0.01em] text-foreground">Criterios de aceptación</h2>
-                <span className="font-mono text-label text-muted-foreground">{story.criteria.filter((item) => item.done).length}/{story.criteria.length}</span>
+                {checks.length > 0 && <span className="font-mono text-label text-muted-foreground">{checks.filter((item) => item.done).length}/{checks.length}</span>}
               </div>
               <ul className="flex flex-col">
-                {story.criteria.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3 border-t border-border py-3.5 text-sm leading-[21px] text-foreground">
-                    <span aria-label={item.done ? "cumplido" : "pendiente"} className={cx("mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm border", item.done ? "border-foreground text-foreground" : "border-muted-foreground")}>
-                      {item.done && <Icon name="check" size={11} strokeWidth={2.4} />}
-                    </span>
-                    <span><InlineMarkdown text={item.text} /></span>
-                  </li>
-                ))}
+                {story.criteria.map((item, index) =>
+                  item.type === "check" ? (
+                    <li key={index} className="flex items-start gap-3 border-t border-border py-3.5 text-sm leading-[21px] text-foreground last:pb-0">
+                      <span aria-label={item.done ? "cumplido" : "pendiente"} className={cx("mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-sm border", item.done ? "border-foreground text-foreground" : "border-muted-foreground")}>
+                        {item.done && <Icon name="check" size={11} strokeWidth={2.4} />}
+                      </span>
+                      <span><InlineMarkdown text={item.text} /></span>
+                    </li>
+                  ) : item.type === "heading" ? (
+                    <li key={index} className="border-t border-border pt-5 pb-2 text-sm leading-[21px] font-medium text-foreground"><InlineMarkdown text={item.text} /></li>
+                  ) : (
+                    <li key={index} className="border-t border-border py-3.5 text-sm leading-[21px] whitespace-pre-line text-body last:pb-0"><InlineMarkdown text={item.text} /></li>
+                  ),
+                )}
               </ul>
             </section>
           )}
@@ -293,8 +301,10 @@ function Documentation({ story, doc }: { story: StoryProps; doc: NonNullable<Sto
           </span>
           <span className="text-sm leading-[21px] text-body">
             {doc.kind === "unlinked"
-              ? "Hasta que lo diga, las páginas del producto no cuentan que esto ya funciona. Elige las capacidades y quedarán al día."
-              : "Las páginas de lo que cambia aún no cuentan cómo queda. Un agente las actualiza y vuelve a cerrarla."}
+              ? "Hasta que lo diga, las páginas del producto no cuentan que esto ya funciona. Elige las capacidades: el aviso sigue hasta que sus páginas lo cuenten."
+              : doc.relink
+                ? "Las páginas de lo que cambia aún no cuentan cómo queda. Un agente las actualiza y vuelve a cerrarla."
+                : "Las páginas de lo que cambia aún no cuentan cómo queda. El aviso se quita cuando un agente las actualiza."}
           </span>
         </div>
       </div>
@@ -318,7 +328,7 @@ function Documentation({ story, doc }: { story: StoryProps; doc: NonNullable<Sto
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         {doc.kind === "unlinked" && <a href={story.edit_url} className="inline-flex h-8 items-center gap-2 rounded-md px-2 text-control text-muted-foreground hover:text-foreground"><Icon name="stories" size={14} />Elegir otras</a>}
         <CopyForAgent text={doc.prompt} label="Copiar prompt" />
-        <span className="ml-auto hidden font-mono text-label text-muted-foreground sm:inline">mt done {story.ref}</span>
+        {doc.kind === "outdated" && doc.relink && <span className="ml-auto hidden font-mono text-label text-muted-foreground sm:inline">mt done {story.ref}</span>}
       </div>
     </div>
   )

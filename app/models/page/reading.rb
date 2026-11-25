@@ -14,6 +14,9 @@
 # entradas si no tienen nada más (intro, cierre, código); si no, salen como
 # prosa en `sections`, igual que todo lo que no reconoce.
 #
+# Con `plain: true` solo trocea: sin frase, reglas ni preguntas, todo va a
+# `sections` (el contexto y los comentarios de una historia, MT-104).
+#
 # Las líneas que son solo una captura de la página (`attachments`, sus
 # `Attachable.path`) no se pintan aquí: son «El recorrido». Las demás imágenes
 # se quedan como párrafo. Una sección que no existe o se queda vacía no sale.
@@ -32,18 +35,22 @@ class Page::Reading
 
   attr_reader :lead, :rules, :questions, :sections
 
-  def initialize(body, attachments: [])
+  def initialize(body, attachments: [], plain: false)
     @fences = []
     text = body.to_s.gsub("\r\n", "\n").gsub(FENCE) { "\n\n#{fence(it)}\n\n" }
     text = text.gsub(IMAGE_LINE) { screenshot?(it, attachments) ? "" : it }.strip
     preamble, *chunks = text.split(/^## +/)
     parsed = chunks.map { |chunk| chunk.split("\n", 2).then { |title, rest| [ title.strip, rest.to_s.strip ] } }
 
-    @lead, preamble_rest = take_first_paragraph(preamble.to_s.strip)
+    @lead, preamble_rest = plain ? [ nil, preamble.to_s.strip ] : take_first_paragraph(preamble.to_s.strip)
     @sections = []
     @sections << { title: nil, blocks: blocks(preamble_rest) } if preamble_rest.present?
 
     parsed.each do |title, content|
+      if plain
+        @sections << { title: title, blocks: blocks(content) } if content.present?
+        next
+      end
       if @lead.nil? && title.match?(LEAD)
         @lead, content = take_first_paragraph(content)
         title = nil if @sections.empty? && @rules.nil? # lo que sigue a la frase va sin título
