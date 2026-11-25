@@ -74,6 +74,9 @@ Rails.application.routes.draw do
     # Prueba del stack v1 (MT-99): Inertia + React, al lado de las vistas de siempre.
     scope "v1", module: :v1, as: :v1 do
       get "/", to: "covers#show", as: :cover
+      # La página de una capacidad (MT-103) y su markdown (el de `mt doc <slug>`).
+      get "capacidades/:slug", to: "capabilities#show", as: :capability
+      get "capacidades/:slug/markdown", to: "capabilities#markdown", as: :capability_markdown
       # El taller (MT-97): la portada de Maker Tracker, un producto cada vez.
       get "taller", to: "workshops#show", as: :workshop
       scope "taller/historias/:number", as: :workshop_story do

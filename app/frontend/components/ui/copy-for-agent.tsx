@@ -1,14 +1,15 @@
 import { useShortcut, useShortcutHint } from "@ui-sdk/react/shortcuts"
 import { useEffect, useState } from "react"
 import { cx } from "./cx"
-import { Icon } from "./icons"
+import { Icon, type IconName } from "./icons"
 import { Kbd } from "./kbd"
 
 // «Copiar para tu agente» (08): acción ligera, nunca protagonista. Copia `text` y confirma unos segundos.
 // `shortcut` (p. ej. "mod+shift+c") lo registra de verdad: solo en una instancia por pantalla.
 // `iconOnly` para la cabecera móvil: solo el icono, con la etiqueta para lectores de pantalla.
+// `icon` cambia el de copiar (p. ej. «Editar» con el lápiz, que copia el encargo para el agente).
 // `shortLabel` en móvil (por debajo de `sm`) en lugar de `label`, para que quepa en la fila (p. ej. «Copiar las 5»).
-export function CopyForAgent({ text, label = "Copiar para tu agente", shortLabel, shortcut = null, iconOnly = false, className }: { text: string; label?: string; shortLabel?: string; shortcut?: string | null; iconOnly?: boolean; className?: string }) {
+export function CopyForAgent({ text, label = "Copiar para tu agente", shortLabel, shortcut = null, iconOnly = false, icon = "copy", className }: { text: string; label?: string; shortLabel?: string; shortcut?: string | null; iconOnly?: boolean; icon?: IconName; className?: string }) {
   const [copied, setCopied] = useState(false)
   const hint = useShortcutHint(shortcut ?? "mod+shift+c")
 
@@ -42,7 +43,7 @@ export function CopyForAgent({ text, label = "Copiar para tu agente", shortLabel
         className,
       )}
     >
-      <Icon name={copied ? "check" : "copy"} size={14} />
+      <Icon name={copied ? "check" : icon} size={14} />
       {!iconOnly && (copied ? <Responsive short={shortLabel ? "Copiado" : undefined} full="Copiado · pégalo en Claude, Codex o el que uses" /> : <Responsive short={shortLabel} full={label} />)}
       {!iconOnly && !copied && shortcut && <Kbd className="border-0 px-0">{hint.text}</Kbd>}
     </button>

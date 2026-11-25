@@ -1,4 +1,4 @@
-import { usePage } from "@inertiajs/react"
+import { Link, usePage } from "@inertiajs/react"
 import { useEffect, useState } from "react"
 import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
@@ -9,7 +9,7 @@ import { AppShell } from "@/layouts/app-shell"
 import { ago } from "@/lib/time"
 
 // `changing`: "now" si un agente la está tocando ahora (el único naranja), "open" si la cambia una historia abierta.
-type Capability = { slug: string; title: string; icon: string | null; summary: string | null; changing: "now" | "open" | null }
+type Capability = { slug: string; title: string; icon: string | null; url: string; summary: string | null; changing: "now" | "open" | null }
 type Story = { ref: string; title: string; capabilities: string[]; agent: string | null; url: string }
 
 type CoverProps = {
@@ -207,19 +207,20 @@ function Screenshots({ items }: { items: CoverProps["screenshots"] }) {
 function CapabilityRow({ capability }: { capability: Capability }) {
   const now = capability.changing === "now"
   return (
-    <li
-      id={`capacidad-${capability.slug}`}
-      className={cx(
-        "flex scroll-mt-6 items-start gap-2.5 border-t border-border py-[9px] target:bg-muted",
-        now && "-mx-1.5 rounded-lg border border-signal px-1.5",
-      )}
-    >
+    <li id={`capacidad-${capability.slug}`} className="scroll-mt-6">
+      <Link
+        href={capability.url}
+        className={cx(
+          "group flex items-start gap-2.5 border-t border-border py-[9px]",
+          now && "-mx-1.5 rounded-lg border border-signal px-1.5",
+        )}
+      >
       <span className="flex size-[30px] shrink-0 items-center justify-center rounded-lg border border-border bg-card text-foreground">
         <Icon name={iconFor(capability.icon)} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-px">
         <span className="flex items-center gap-1.5">
-          <span className="text-sm leading-[18px] font-medium text-foreground">{capability.title}</span>
+          <span className="text-sm leading-[18px] font-medium text-foreground group-hover:underline group-hover:underline-offset-2">{capability.title}</span>
           {capability.changing && (
             <span
               title={now ? "Un agente la está cambiando ahora" : "La cambia una historia abierta"}
@@ -230,6 +231,7 @@ function CapabilityRow({ capability }: { capability: Capability }) {
         {capability.summary && <span className="line-clamp-2 text-xs leading-4 text-muted-foreground">{capability.summary}</span>}
       </span>
       <Icon name="chevronRight" size={14} className="mt-2 shrink-0 text-muted-foreground sm:hidden" />
+      </Link>
     </li>
   )
 }

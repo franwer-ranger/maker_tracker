@@ -191,7 +191,7 @@ export function CommandPalette({ open, onOpenChange, initialQuery = "" }: { open
                         trail={
                           <span className="flex items-center gap-1.5 text-control text-muted-foreground">
                             {item.state && <StateDot state={item.state} />}
-                            {kind === "Capacidad" ? `${kind} · ${item.meta}` : item.meta}
+                            {kind === "Capacidad" ? [kind, item.meta].filter(Boolean).join(" · ") : item.meta}
                           </span>
                         }
                       />
