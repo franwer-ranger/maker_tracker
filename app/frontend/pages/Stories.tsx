@@ -359,7 +359,7 @@ function StoryBoard({ stories, onView }: { stories: ListProps; onView: (view: Vi
                     <StateDot state={column.key} className="size-[7px]" />
                     {column.label}
                   </span>
-                  <span className="font-mono text-label leading-[14px] text-muted-foreground">{column.key === "done" && milestone === ALL && !words.length && capability === ALL ? stories.done : total}</span>
+                  <span className="font-mono text-label leading-[14px] text-muted-foreground">{total}</span>
                 </h2>
                 <BoardColumn value={column.key} className="flex min-h-[120px] flex-col gap-2.5">
                   {refs.length === 0 && <EmptyColumn figure={column.figure} lines={column.empty} />}
