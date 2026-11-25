@@ -34,7 +34,7 @@ module V1
         products: Project.order(:name).map { { key: it.key, name: it.name, url: project_v1_cover_path(it) } },
         taller: workshop.count,
         capabilities: @project.pages.documentation.ordered.group_by { it.area.presence }.map do |area, pages|
-          { area: area, items: pages.map { { slug: it.slug, title: it.title, url: "#{project_v1_cover_path(@project)}#capacidad-#{it.slug}" } } }
+          { area: area, items: pages.map { { slug: it.slug, title: it.title, url: project_v1_capability_path(@project, it.slug) } } }
         end,
         agents: Presence.active(project_id: @project.id).map { { name: it.actor_name, target: it.target } },
         user: Current.actor&.name
@@ -50,7 +50,7 @@ module V1
       end
       capabilities = @project.pages.documentation.ordered.map do |page|
         { value: "page:#{page.slug}", ref: page.slug, title: page.title, meta: page.area.presence || page.kind.humanize,
-          url: "#{project_v1_cover_path(@project)}#capacidad-#{page.slug}" }
+          url: project_v1_capability_path(@project, page.slug) }
       end
       decisions = @project.decisions.includes(:superseded_by).reverse.map do |decision|
         { value: "decision:#{decision.number}", ref: decision.reference, title: decision.title,

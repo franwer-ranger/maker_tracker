@@ -85,9 +85,20 @@ export function AppShell({ title, active, crumbs, actions, copy, ownMobileBar, c
           {frame.capabilities.map(({ area, items }) => (
             <div key={area ?? "-"} className="flex flex-col">
               {area && <span className="px-2.5 pb-1 font-mono text-[10px] leading-3 tracking-[0.12em] text-sidebar-label uppercase">{area}</span>}
-              {items.map((item) => (
-                <Link key={item.slug} href={item.url} className="rounded-md px-2.5 py-[3px] text-control text-sidebar-muted hover:text-sidebar-foreground">{item.title}</Link>
-              ))}
+              {items.map((item) => {
+                // La capacidad que se está leyendo (MT-103), marcada como en Paper.
+                const current = url.split(/[?#]/)[0] === item.url
+                return (
+                  <Link
+                    key={item.slug}
+                    href={item.url}
+                    aria-current={current ? "page" : undefined}
+                    className={cx("rounded-md px-2.5 py-[3px] text-control", current ? "bg-sidebar-accent text-sidebar-active" : "text-sidebar-muted hover:text-sidebar-foreground")}
+                  >
+                    {item.title}
+                  </Link>
+                )
+              })}
             </div>
           ))}
         </nav>

@@ -65,7 +65,7 @@ module V1
     end
 
     def capability_props(page, now:, open:)
-      { slug: page.slug, title: page.title, icon: page.icon, summary: plain(first_paragraph(page.body.to_s.sub(/\A##[^\n]*\n/, ""))),
+      { slug: page.slug, title: page.title, icon: page.icon, url: project_v1_capability_path(@project, page.slug), summary: plain(first_paragraph(page.body.to_s.sub(/\A##[^\n]*\n/, ""))),
         changing: now.include?(page.slug) ? "now" : (open.include?(page.slug) ? "open" : nil) }
     end
 
