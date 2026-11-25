@@ -11,6 +11,7 @@ import { Icon, type IconName } from "@/components/ui/icons"
 import { Kbd } from "@/components/ui/kbd"
 import { StateBadge, type StoryState } from "@/components/ui/state"
 import { AppShell } from "@/layouts/app-shell"
+import { fromRaw, joinBody, parseBody, plain, type Section, sectionText } from "@/lib/story-body"
 
 const isApple = /Mac|iPhone|iPad/.test(navigator.platform)
 
@@ -39,13 +40,6 @@ type Props = {
 
 type Contrast = { kind: "decision" | "story" | "brief"; reference: string; title: string; excerpt: string | null; url: string | null }
 
-// Una sección `## …` del cuerpo: su texto sin los comentarios de la plantilla (las guías), que se guardan
-// aparte y vuelven al juntarlo. `present`: si estaba en el cuerpo; las de la plantilla que faltan se enseñan
-// vacías y solo se añaden si se escribe algo en ellas.
-type Section = { heading: string; comments: string[]; text: string; present: boolean }
-
-const COMMENT = /^\s*<!--[\s\S]*?-->\s*$/
-
 // Lo que dice Paper para las secciones que lo concretan; el resto, la guía de la plantilla (MT-52).
 const GUIDES: Record<string, string> = {
   Historia: "Una frase: quién, qué quiere y para qué. Si cuesta escribirla, la historia aún no está clara.",
@@ -56,41 +50,6 @@ const PLACEHOLDERS: Record<string, string> = {
 }
 const STORY_TEMPLATE = "Como (usuario), quiero (hacer algo), para (cumplir un objetivo)."
 
-function parseBody(body: string, template: string[]) {
-  const chunks = body.replace(/\r\n/g, "\n").split(/^(?=## )/m)
-  const preamble = chunks[0].startsWith("## ") ? "" : chunks.shift()!.trim()
-  const sections: Section[] = chunks.map((chunk) => {
-    const [first, ...rest] = chunk.split("\n")
-    const comments: string[] = []
-    const lines: string[] = []
-    // Solo los comentarios del principio son guías; los de en medio son del texto.
-    for (const line of rest) {
-      if (lines.every((l) => !l.trim()) && COMMENT.test(line)) comments.push(line.trim())
-      else lines.push(line)
-    }
-    return { heading: first.replace(/^## /, "").trim(), comments, text: lines.join("\n").trim(), present: true }
-  })
-  // Las de la plantilla que faltan, en su sitio de la plantilla.
-  template.forEach((heading, index) => {
-    if (sections.some((section) => section.heading === heading)) return
-    const before = template.slice(0, index).reverse().find((previous) => sections.some((s) => s.heading === previous))
-    const at = before ? sections.findIndex((s) => s.heading === before) + 1 : 0
-    sections.splice(at, 0, { heading, comments: [], text: "", present: false })
-  })
-  return { preamble, sections }
-}
-
-function joinBody(preamble: string, sections: Section[]) {
-  const parts = preamble.trim() ? [preamble.trim()] : []
-  for (const section of sections) {
-    if (!section.present && !section.text.trim()) continue
-    parts.push([`## ${section.heading}`, ...section.comments, ...(section.text.trim() ? ["", section.text.trim()] : [])].join("\n"))
-  }
-  return `${parts.join("\n\n")}\n`
-}
-
-const sectionText = (sections: Section[], heading: string) => sections.find((s) => s.heading === heading)?.text.trim() ?? ""
-
 // Editar una historia (MT-112, «v1 · 9 · Editar»): título en serif, propiedades, las secciones de la plantilla con
 // la guía de la enfocada y, al lado, lo que le falta para Lista y el contraste con lo decidido (`mt check`).
 // Barra de guardar abajo con ⌘S; en móvil fija y con cuántas faltan. El conflicto de versión llega como `errors.base`.
@@ -98,11 +57,10 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
   const { nav } = usePage().props
   const template = guides.map((guide) => guide.heading)
   const initial = useMemo(() => parseBody(story.body, template), [story.body]) // eslint-disable-line react-hooks/exhaustive-deps
-  const [preamble] = useState(initial.preamble)
-  const [sections, setSections] = useState(initial.sections)
+  const [doc, setDoc] = useState(initial)
   const [raw, setRaw] = useState<string | null>(null)
-  const [focused, setFocused] = useState<string | null>(null)
-  const [bodyTouched, setBodyTouched] = useState(false)
+  const rawBase = useMemo(() => joinBody(doc), [doc])
+  const [focused, setFocused] = useState<number | null>(null)
 
   const form = useForm({
     title: story.title,
@@ -113,26 +71,24 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
     version: story.version,
   })
   const errors = form.errors as Record<string, string | string[] | undefined>
-  const body = raw ?? (bodyTouched ? joinBody(preamble, sections) : story.body)
+  // Sin tocar nada, `body` es `story.body` byte a byte; tocar una sección cambia solo la suya (lib/story-body).
+  const body = raw === null ? rawBase : fromRaw(raw, rawBase)
   const dirty = form.isDirty || body !== story.body
 
-  const setSection = (heading: string, text: string) => {
-    setBodyTouched(true)
-    setSections((current) => current.map((section) => (section.heading === heading ? { ...section, text } : section)))
-  }
+  const setSection = (id: number, text: string) =>
+    setDoc((current) => ({ ...current, sections: current.sections.map((section) => (section.id === id ? { ...section, text } : section)) }))
 
-  // «Markdown»: el cuerpo entero en crudo; al volver, se parte otra vez en secciones.
+  // «Markdown»: el cuerpo entero en crudo; al volver, se parte otra vez, preámbulo incluido.
   const toggleRaw = () => {
-    if (raw === null) setRaw(joinBody(preamble, sections))
+    if (raw === null) setRaw(plain(rawBase))
     else {
-      setSections(parseBody(raw, template).sections)
-      setBodyTouched(true)
+      setDoc(parseBody(body, template))
       setRaw(null)
     }
   }
 
   const labels = form.data.labels.split(",").map((label) => label.trim()).filter(Boolean)
-  const currentSections = raw === null ? sections : parseBody(raw, template).sections
+  const currentSections = raw === null ? doc.sections : parseBody(body, template).sections
   const storyLine = sectionText(currentSections, "Historia")
   const missing = [
     { label: "Contexto", done: !!sectionText(currentSections, "Contexto") },
@@ -150,7 +106,8 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
   const submit = (event?: FormEvent) => {
     event?.preventDefault()
     if (form.processing) return
-    form.transform((data) => ({ story: { ...data, body } }))
+    // El hito, solo si se cambió: así no deshace un movimiento hecho mientras se editaba.
+    form.transform(({ milestone_id, ...data }) => ({ story: { ...data, body, ...(milestone_id !== story.milestone_id && { milestone_id }) } }))
     form.patch(story.url, { preserveScroll: true, preserveState: true })
   }
 
@@ -237,17 +194,17 @@ export default function StoryEdit({ story, milestones, capabilities, guides }: P
               />
             ) : (
               <>
-                {preamble && <p className="whitespace-pre-wrap text-[15px] leading-6 text-body">{preamble}</p>}
-                {sections.map((section) => (
+                {doc.preamble.trim() && <p className="whitespace-pre-wrap text-[15px] leading-6 text-body">{doc.preamble.trim()}</p>}
+                {doc.sections.map((section) => (
                   <SectionEditor
-                    key={section.heading}
+                    key={section.id}
                     section={section}
                     guide={guideFor(section.heading)}
                     placeholder={PLACEHOLDERS[section.heading] ?? guideFor(section.heading) ?? "Escribe aquí."}
-                    focused={focused === section.heading}
-                    onFocus={() => setFocused(section.heading)}
-                    onBlur={() => setFocused((current) => (current === section.heading ? null : current))}
-                    onChange={(text) => setSection(section.heading, text)}
+                    focused={focused === section.id}
+                    onFocus={() => setFocused(section.id)}
+                    onBlur={() => setFocused((current) => (current === section.id ? null : current))}
+                    onChange={(text) => setSection(section.id, text)}
                   />
                 ))}
               </>
@@ -299,6 +256,7 @@ function Properties({ form, milestones, capabilities, errors }: { form: StoryFor
           selected={form.data.milestone_id ? String(form.data.milestone_id) : ""}
           onChoose={(value) => form.setData("milestone_id", value ? Number(value) : null)}
         />
+        {errors.milestone_id && <span role="alert" className="text-xs text-destructive">{[errors.milestone_id].flat().join(" ")}</span>}
       </Property>
       <Property icon="design" label="Cambia">
         {chosen.map((slug) => (
@@ -371,7 +329,7 @@ function Picker({ label, trigger, items, selected, onChoose }: { label: string; 
 
 // Una sección de la plantilla: su título y el texto; la enfocada, en blanco con borde de tinta y su guía.
 function SectionEditor({ section, guide, placeholder, focused, onFocus, onBlur, onChange }: { section: Section; guide: string | null; placeholder: string; focused: boolean; onFocus: () => void; onBlur: () => void; onChange: (text: string) => void }) {
-  const id = `seccion-${section.heading.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-")}`
+  const id = `seccion-${section.id}`
   const criteria = section.heading === "Criterios de aceptación"
 
   // En los criterios, Enter sigue la lista de casillas.
