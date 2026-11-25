@@ -132,4 +132,11 @@ Rails.application.routes.draw do
       end
     end
   end
+
+  # Editar una historia en la v1 (MT-112, «v1 · 9 · Editar»): el editor con la plantilla y el contraste en vivo.
+  scope "p/:project_slug/v1/historias/:number", module: :v1, as: :project_v1_story do
+    get "editar", to: "story_edits#edit", as: :edit
+    patch "editar", to: "story_edits#update"
+    get "editar/contraste", to: "story_edits#contrast", as: :contrast
+  end
 end
