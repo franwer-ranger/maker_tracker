@@ -29,7 +29,8 @@ export type Frame = {
 export type PresenceEditing = { actor: string; agent: boolean; key: string | null; label: string; url: string | null; left_ms: number }
 
 export type Presence = {
-  actors: { name: string; agent: boolean; target: string | null }[]
+  // `label`: lo que toca, con el mismo nombre que la pestaña ("MT-12", "M2", el título de la página, "D-5").
+  actors: { name: string; agent: boolean; label: string | null }[]
   editing: PresenceEditing[]
 }
 

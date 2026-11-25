@@ -21,7 +21,7 @@ module V1
         # Perezoso: las recargas parciales (live props, índice del ⌘K) no lo piden y no se calcula.
         frame: -> { frame },
         # Quién trabaja y qué está editando ahora (MT-100): en directo en todas las pantallas.
-        presence: InertiaRails.live(@project) { presence_props },
+        presence: InertiaRails.live(streams: Presence.live_streams(@project)) { presence_props },
         # El ⌘K pide su índice al abrirse (recarga parcial), no con cada página.
         search: InertiaRails.optional { search_index }
       }
@@ -64,7 +64,7 @@ module V1
     def presence_props
       now = Time.current
       {
-        actors: Presence.active(project_id: @project.id).map { { name: it.actor_name, agent: it.agent?, target: it.target } },
+        actors: Presence.active(project_id: @project.id).map { { name: it.actor_name, agent: it.agent?, label: presence_subject(it.target)&.dig(:label) } },
         editing: Presence.editing(project_id: @project.id).uniq(&:target).filter_map do |entry|
           subject = presence_subject(entry.target) or next
           { actor: entry.actor_name, agent: entry.agent?, **subject, left_ms: (entry.editing_left(now) * 1000).ceil }

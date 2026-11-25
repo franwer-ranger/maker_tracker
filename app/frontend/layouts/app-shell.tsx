@@ -29,15 +29,6 @@ export function AppShell(props: ShellProps) {
   )
 }
 
-// Un destino de la presencia, legible en la barra lateral: "MT-12", "M2", "revelarlo", "D-5".
-function targetLabel(target: string | null) {
-  if (!target) return null
-  if (target.startsWith("page:")) return target.slice(5)
-  if (target.startsWith("decision:")) return `D-${target.slice(9)}`
-  if (target === "page" || target === "decision") return null
-  return target.replace(/^[A-Z0-9]+ (M\d+)$/, "$1")
-}
-
 function Shell({ title, active, crumbs, actions, copy, ownMobileBar, children }: ShellProps) {
   const { props: { project, nav, notice, frame, presence }, url } = usePage()
   const editing = usePresenceEditing()
@@ -128,7 +119,7 @@ function Shell({ title, active, crumbs, actions, copy, ownMobileBar, children }:
       <div className="mt-auto flex flex-col gap-3 px-2.5">
         {presence.actors.map((actor) => {
           const now = editing.find((entry) => entry.actor === actor.name)
-          return <AgentWorking key={actor.name} agent={actor.name} human={!actor.agent} target={now?.label ?? targetLabel(actor.target)} />
+          return <AgentWorking key={actor.name} agent={actor.name} human={!actor.agent} target={now?.label ?? actor.label} />
         })}
         <div className="flex items-center justify-between gap-2">
           {frame.user && (
