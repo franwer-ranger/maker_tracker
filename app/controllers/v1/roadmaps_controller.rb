@@ -107,7 +107,7 @@ module V1
         recent: recent.map { recent_props(it, pages) },
         recent_window: recent.any? { it.closed_at >= RECENT.ago },
         shipped: (closed - recent).map { { code: it.code, title: it.title, closed_at: it.closed_at.iso8601 } },
-        ideas: { count: @project.ideas.count, url: project_path(@project) },
+        ideas: { count: @project.ideas.count, url: project_v1_story_list_path(@project) },
         reorder_url: project_v1_roadmap_order_path(@project),
         create_url: project_v1_milestones_path(@project),
         next_number: (@project.milestones.maximum(:number) || 0) + 1,
