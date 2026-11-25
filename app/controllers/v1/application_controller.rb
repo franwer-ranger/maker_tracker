@@ -49,7 +49,7 @@ module V1
           url: project_story_path(@project, story) }
       end
       capabilities = @project.pages.documentation.ordered.map do |page|
-        { value: "page:#{page.slug}", ref: page.slug, title: page.title, meta: page.area.presence || page.kind.humanize,
+        { value: "page:#{page.slug}", ref: page.slug, title: page.title, meta: page.area.presence || (page.crosscutting? ? "Transversal" : ""),
           url: project_v1_capability_path(@project, page.slug) }
       end
       decisions = @project.decisions.includes(:superseded_by).reverse.map do |decision|
