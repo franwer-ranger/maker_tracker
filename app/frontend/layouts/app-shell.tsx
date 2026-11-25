@@ -43,7 +43,7 @@ export function AppShell({ title, active, crumbs, actions, copy, ownMobileBar, c
     { key: "product", label: "Producto", icon: "product", href: nav.cover, inertia: true },
     { key: "stories", label: "Historias", icon: "stories", href: nav.board },
     { key: "roadmap", label: "Roadmap", icon: "roadmap", href: nav.roadmap },
-    { key: "decisions", label: "Decisiones", icon: "decision", href: nav.brief },
+    { key: "decisions", label: "Decisiones", icon: "decision", href: nav.decisions, inertia: true },
   ]
   const copyText = copy ?? `mt context --project ${project.key}`
 

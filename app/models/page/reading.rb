@@ -15,11 +15,16 @@
 # prosa en `sections`, igual que todo lo que no reconoce.
 #
 # Con `plain: true` solo trocea: sin frase, reglas ni preguntas, todo va a
-# `sections` (el contexto y los comentarios de una historia, MT-104).
+# `sections` (el contexto y los comentarios de una historia, MT-104), también
+# un `##` sin nada debajo (sin bloques): quien lo lee decide si pinta su título.
 #
 # Las líneas que son solo una captura de la página (`attachments`, sus
 # `Attachable.path`) no se pintan aquí: son «El recorrido». Las demás imágenes
-# se quedan como párrafo. Una sección que no existe o se queda vacía no sale.
+# se quedan como párrafo. Una sección que no existe o se queda vacía no sale
+# (en `to_h`; con `plain`, sí está en `sections`, sin bloques).
+#
+# Una lista pegada al párrafo que la presenta («…dos vistas:\n  - Tablero…»)
+# es una lista, no parte del párrafo, como en markdown.
 class Page::Reading
   RULES = /\A(c[oó]mo funciona|reglas)\b/i
   QUESTIONS = /\A¿?\s*qu[eé] pasa si/i
@@ -30,6 +35,8 @@ class Page::Reading
   FENCE_MARK = /\A\uE000(\d+)\uE000\z/
   IMAGE_LINE = /^[ \t]*!\[[^\]]*\]\([^)]*\)[ \t]*$/
   BULLET = /\A\s*(?:[-*+]|\d+\.)\s+/
+  # Dónde empieza una lista dentro de un párrafo: una línea de viñeta o un «1.» (como CommonMark).
+  LIST_START = /\n(?=[ \t]*(?:[-*+]|1\.)[ \t]+\S)/
   # «(D-52 · D-91)», «(D-45)», «— D-45» o «… móvil. D-45» al final: solo referencias, se quitan del texto.
   ONLY_DECISIONS = /\s*(?:\((?:\s*D-\d+\s*[,·y]?\s*)+\)|[—–-]\s*(?:D-\d+\s*[,·y]?\s*)+\z|(?<=[.!?])\s*(?:D-\d+\s*[,·y]?\s*)+\z)/
 
@@ -48,7 +55,7 @@ class Page::Reading
 
     parsed.each do |title, content|
       if plain
-        @sections << { title: title, blocks: blocks(content) } if content.present?
+        @sections << { title: title, blocks: blocks(content) }
         next
       end
       if @lead.nil? && title.match?(LEAD)
@@ -147,6 +154,8 @@ class Page::Reading
         [ { type: "heading", text: heading.strip }, *blocks(rest.to_s) ]
       elsif chunk.match?(BULLET)
         [ { type: chunk.match?(/\A\s*\d+\./) ? "ordered" : "list", items: bullets(chunk) } ]
+      elsif (lines = chunk.split(LIST_START, 2)).size == 2
+        [ { type: "paragraph", text: lines.first.squish }, *blocks(lines.last) ]
       else
         [ { type: "paragraph", text: chunk.squish } ]
       end

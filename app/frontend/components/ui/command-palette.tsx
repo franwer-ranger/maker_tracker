@@ -61,7 +61,7 @@ export function CommandPalette({ open, onOpenChange, initialQuery = "" }: { open
     { value: "screen:product", ref: "", title: "Producto", meta: "Pantalla", url: nav.cover },
     { value: "screen:stories", ref: "", title: "Historias", meta: "Pantalla", url: nav.board },
     { value: "screen:roadmap", ref: "", title: "Roadmap", meta: "Pantalla", url: nav.roadmap },
-    { value: "screen:decisions", ref: "", title: "Decisiones", meta: "Pantalla", url: nav.brief },
+    { value: "screen:decisions", ref: "", title: "Decisiones", meta: "Pantalla", url: nav.decisions },
   ]
   const goTo: Target[] = [
     ...screens.map((item) => ({ item, icon: "arrowRight" as IconName, kind: "", code: false })),

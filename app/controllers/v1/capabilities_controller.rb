@@ -42,7 +42,7 @@ module V1
         **reading.to_h,
         screens: page.screenshots.each_with_index.map { |shot, index| { code: "C#{index + 1}", title: caption(shot.filename), src: Attachable.path(shot) } },
         changes: changes(page),
-        decisions: Api::Markdown::Page.decisions_in_force(page).map { { reference: it.reference, title: it.title, url: project_brief_path(@project, anchor: it.reference) } },
+        decisions: Api::Markdown::Page.decisions_in_force(page).map { { reference: it.reference, title: it.title, url: project_v1_decision_path(@project, it.number) } },
         related: related(page).map { { slug: it.slug, title: it.title, icon: it.icon, url: project_v1_capability_path(@project, it.slug) } },
         copy: Api::Markdown::Page.new(page).to_s,
         edit: "Edita la página «#{page.title}» de la documentación de #{@project.name}: léela con `mt doc #{page.slug}` y guárdala con `mt doc edit #{page.slug} --file <f.md>`.",

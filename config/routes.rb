@@ -85,6 +85,8 @@ Rails.application.routes.draw do
         post "comentarios", to: "stories#comment", as: :comment
         post "capacidades", to: "stories#link_capability", as: :capability
       end
+      # Las decisiones (MT-105): la lista, una elegida (en móvil, su página) y apuntar una nueva.
+      resources :decisions, path: "decisiones", param: :number, only: %i[index show create]
       # El taller (MT-97): la portada de Maker Tracker, un producto cada vez.
       get "taller", to: "workshops#show", as: :workshop
       scope "taller/historias/:number", as: :workshop_story do
