@@ -7,6 +7,7 @@ import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
 import { Icon, type IconName, Logo } from "@/components/ui/icons"
 import { Kbd } from "@/components/ui/kbd"
+import { PresenceProvider, PresenceTab, usePresenceEditing } from "@/components/ui/presence"
 import { ProductCombo } from "@/components/ui/product-combo"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { TopBar } from "@/components/ui/top-bar"
@@ -17,8 +18,20 @@ type Section = "workshop" | "product" | "stories" | "roadmap" | "decisions"
 // navegación, mapa de capacidades, agente trabajando, usuario y ⌘K; el panel claro con esquinas redondeadas
 // y su barra superior. En móvil, cabecera oscura con producto, copiar y menú.
 // `copy`: lo que copia «Copiar para tu agente» en esta pantalla (por defecto, `mt context` del producto).
-export function AppShell({ title, active, crumbs, actions, copy, ownMobileBar, children }: { title: string; active?: Section; crumbs?: { label: string; href?: string }[]; actions?: ReactNode; copy?: string; ownMobileBar?: boolean; children: ReactNode }) {
-  const { props: { project, nav, notice, frame }, url } = usePage()
+type ShellProps = { title: string; active?: Section; crumbs?: { label: string; href?: string }[]; actions?: ReactNode; copy?: string; ownMobileBar?: boolean; children: ReactNode }
+
+// La presencia (MT-100) envuelve el marco: el panel, la pestaña y los elementos de cada pantalla la leen.
+export function AppShell(props: ShellProps) {
+  return (
+    <PresenceProvider>
+      <Shell {...props} />
+    </PresenceProvider>
+  )
+}
+
+function Shell({ title, active, crumbs, actions, copy, ownMobileBar, children }: ShellProps) {
+  const { props: { project, nav, notice, frame, presence }, url } = usePage()
+  const editing = usePresenceEditing()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [paletteQuery, setPaletteQuery] = useState("")
   const [menuOpen, setMenuOpen] = useState(false)
@@ -104,7 +117,10 @@ export function AppShell({ title, active, crumbs, actions, copy, ownMobileBar, c
         </nav>
       )}
       <div className="mt-auto flex flex-col gap-3 px-2.5">
-        {frame.agents.map((agent) => <AgentWorking key={agent.name} agent={agent.name} target={agent.target} />)}
+        {presence.actors.map((actor) => {
+          const now = editing.find((entry) => entry.actor === actor.name)
+          return <AgentWorking key={actor.name} agent={actor.name} human={!actor.agent} target={now?.label ?? actor.label} />
+        })}
         <div className="flex items-center justify-between gap-2">
           {frame.user && (
             <span className="flex items-center gap-2 text-control text-sidebar-muted">
@@ -135,7 +151,11 @@ export function AppShell({ title, active, crumbs, actions, copy, ownMobileBar, c
       </header>
       <aside className={cx("shrink-0 flex-col gap-[18px] pt-5 pr-3 pb-[18px] pl-4 md:flex md:w-60", menuOpen ? "flex" : "hidden")}>{sidebar}</aside>
       <main className="min-w-0 flex-1 md:py-2.5 md:pr-2.5">
-        <div className="flex h-full flex-col overflow-y-auto rounded-t-[var(--radius-panel)] bg-background md:rounded-[var(--radius-panel)]">
+        <div
+          data-presence-frame={editing.length > 0 ? "" : undefined}
+          className={cx("flex h-full flex-col overflow-y-auto rounded-t-[var(--radius-panel)] bg-background md:rounded-[var(--radius-panel)]", editing.length > 0 && "presence-frame")}
+        >
+          <PresenceTab entries={editing} />
           {/* Con ownMobileBar, la pantalla pone su propia barra en móvil (Paper) y la de migas solo sale desde md. */}
           {crumbs && <div className={cx(ownMobileBar && "hidden md:block")}><TopBar crumbs={crumbs} actions={actions ?? <CopyForAgent text={copyText} shortcut="mod+shift+c" />} /></div>}
           {notice && <p role="status" className="border-b border-border bg-card px-7 py-2 text-control text-foreground">{notice}</p>}

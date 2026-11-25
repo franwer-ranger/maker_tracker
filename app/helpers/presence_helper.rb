@@ -31,7 +31,7 @@ module PresenceHelper
   # La sección de la navegación que toca: una historia es del Tablero; un hito
   # o el roadmap, del Roadmap; el brief, las decisiones o el contexto, del Brief.
   def agent_section(entry)
-    case entry.target.to_s
+    case entry.target.to_s.sub(/:.*\z/, "") # "page:slug" y "decision:5" (MT-100), como "page" y "decision"
     when /\A[A-Z0-9]+-\d+\z/ then :board
     when /\A[A-Z0-9]+ M\d+\z/, "milestone", "roadmap", "next_story" then :roadmap
     when "brief", "decision", "context", "page" then :brief
@@ -42,7 +42,7 @@ module PresenceHelper
 
   # "PG-51", "M2", "el brief"… o nil si no toca nada concreto.
   def agent_subject(entry)
-    case (target = entry.target.to_s)
+    case (target = entry.target.to_s.sub(/:.*\z/, ""))
     when /\A[A-Z0-9]+-\d+\z/ then target
     when /\A[A-Z0-9]+ (M\d+)\z/ then $1
     when "brief", "context" then "el brief"

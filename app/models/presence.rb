@@ -9,7 +9,7 @@
 # actores y habría que mover el registro a una caché compartida.
 #
 # Los cambios (empieza a estar activo, pasa de leer a escribir, cambia de
-# historia, deja de estarlo; la ventana real es de 60 a 65 s por el barrido) se
+# historia, deja de estarlo; la ventana real es de 60 a 61 s por el barrido) se
 # emiten como un `refresh` de Turbo a `[project, :live]` y a `:live` (la
 # portada): la página que lo mira se vuelve a pintar con morph (MT-38). La
 # emisión es en diferido y agrupada, y la presencia nunca rompe una petición:
@@ -18,9 +18,15 @@
 # «Escribiendo» dura WINDOW desde la última escritura (`wrote_at`): un agente
 # que escribe y luego solo lee la misma historia vuelve a «leyendo» al pasar
 # la ventana, aunque siga activo (con wflow puede trabajar horas).
+#
+# «En edición» (MT-100) es más corto: EDITING desde la última escritura, lo que
+# la web v1 pinta en naranja (marco, pestaña y contorno). El barrido lo apaga y
+# emite solo al stream de la presencia (`live_streams`); además la página recibe cuánto le queda y lo apaga sola aunque la
+# emisión no llegue.
 module Presence
   WINDOW = 60.seconds
-  SWEEP_EVERY = 5 # segundos
+  EDITING = 5.seconds
+  SWEEP_EVERY = 1 # segundos: «en edición» no puede quedarse pintado más de la cuenta
   MODES = %i[reading writing].freeze
 
   # Datos planos (sin objetos de ActiveRecord, que no se comparten entre hilos).
@@ -28,11 +34,18 @@ module Presence
   # `detail`: la última escritura; `project_id`: nil si la petición no es de un
   # proyecto (p. ej. listar proyectos); `since`: desde cuándo está activo sin
   # cortes (la «sesión» de MT-38); `wrote_at`: su última escritura.
-  Entry = Data.define(:actor_id, :actor_name, :project_id, :project_key, :target, :mode, :detail, :seen_at, :since, :wrote_at) do
+  # `actor_kind`: "agent" o "human"; `editing`: si la última escritura sigue en
+  # EDITING (lo baja el barrido).
+  Entry = Data.define(:actor_id, :actor_name, :actor_kind, :project_id, :project_key, :target, :mode, :detail, :seen_at, :since, :wrote_at, :editing) do
     def reading? = mode == :reading
     def writing? = mode == :writing
     def active?(now = Time.current) = seen_at > now - WINDOW
     def wrote_recently?(now = Time.current) = wrote_at.present? && wrote_at > now - WINDOW
+    def agent? = actor_kind == "agent"
+
+    # Lo que le queda «en edición», en segundos (0 si ya no lo está).
+    def editing_left(now = Time.current) = editing && wrote_at ? [ wrote_at + EDITING - now, 0 ].max.to_f : 0.0
+    def editing_now?(now = Time.current) = editing_left(now).positive?
   end
 
   REGISTRY = Concurrent::Map.new
@@ -65,6 +78,12 @@ module Presence
       REGISTRY.values.select { it.active?(now) && (project_id.nil? || it.project_id == project_id) }.sort_by(&:seen_at).reverse
     end
 
+    # Quién está editando algo del proyecto ahora mismo (MT-100), lo último primero.
+    def editing(project_id:)
+      now = Time.current
+      active(project_id: project_id).select { it.editing_now?(now) }.sort_by(&:wrote_at).reverse
+    end
+
     # Dónde escucha la página: `turbo_stream_from(*Presence.stream(project))`,
     # o `Presence.stream(:all)` en la portada. Event emite al mismo sitio.
     def stream(key)
@@ -72,6 +91,10 @@ module Presence
 
       [ key.is_a?(Project) ? key : Project.new(id: key), :live ]
     end
+
+    # Los streams de la prop `presence` de la web v1: los del proyecto (cada
+    # escritura) y el suyo (el fin de «en edición», que no recarga nada más).
+    def live_streams(project) = [ project, [ project, :presence ] ]
 
     def reset!
       REGISTRY.clear
@@ -93,6 +116,8 @@ module Presence
       REGISTRY.each_pair do |id, entry|
         if !entry.active?(now)
           enqueue(entry.project_id) if REGISTRY.delete_pair(id, entry)
+        elsif entry.editing && !entry.editing_now?(now)
+          enqueue(entry.project_id, only_editing: true) if REGISTRY.replace_pair(id, entry, entry.with(editing: false))
         elsif entry.writing? && !entry.wrote_recently?(now)
           enqueue(entry.project_id) if REGISTRY.replace_pair(id, entry, entry.with(mode: :reading, detail: nil))
         end
@@ -108,12 +133,15 @@ module Presence
         now = Time.current
         old = nil if old && !old.active?(now)
         target ||= old&.target if keep_target
-        wrote_at = mode == :writing ? now : old&.wrote_at
-        if old && mode == :reading && old.writing? && old.target == target
-          mode, detail = old.mode, old.detail
+        writes = mode == :writing
+        wrote_at = writes ? now : old&.wrote_at
+        same = same_target?(old&.target, target)
+        if old && !writes && old.writing? && same
+          mode, detail, target = old.mode, old.detail, old.target
         end
-        entry = Entry.new(actor_id: actor.id, actor_name: actor.name, project_id: project_id, project_key: project_key,
-          target: target, mode: mode, detail: detail, seen_at: now, since: old&.since || now, wrote_at: wrote_at)
+        editing = writes || (old&.editing_now?(now) && same) || false
+        entry = Entry.new(actor_id: actor.id, actor_name: actor.name, actor_kind: actor.kind.to_s, project_id: project_id, project_key: project_key,
+          target: target, mode: mode, detail: detail, seen_at: now, since: old&.since || now, wrote_at: wrote_at, editing: editing)
         changed = old.nil? || visible(old) != visible(entry)
         enqueue(old.project_id) if old && old.project_id != project_id
         entry
@@ -121,12 +149,21 @@ module Presence
       enqueue(project_id) if changed
     end
 
+    # ¿La petición toca lo mismo que la anterior? Un destino genérico ("page", "decision") cuenta como el
+    # concreto que se escribió ("page:revelarlo"): editar una página y releerla por la API (`mt page show`,
+    # que no da el slug) no la saca de «en edición» ni la devuelve al destino genérico.
+    def same_target?(old_target, target)
+      old_target == target || (target.present? && old_target.to_s.start_with?("#{target}:"))
+    end
+
     # Lo escrito, con el mismo formato que el destino de la petición: la
     # historia (PG-51), el hito (PG M2) o el brief; si no se sabe, el anterior.
     def written_target(event)
       return event.story.reference if event.story
       return "brief" if event.action == "brief.edited"
+      return "page:#{event.data['slug']}" if event.action.start_with?("page.") && event.data["slug"].present?
       return "page" if event.action.start_with?("page.")
+      return "decision:#{event.data['number']}" if event.action == "decision.recorded" && event.data["number"]
       return "decision" if event.action == "decision.recorded"
 
       number = Milestone.where(id: event.data["milestone_id"]).pick(:number) if event.action.start_with?("milestone.")
@@ -135,7 +172,7 @@ module Presence
 
     # Lo que la UI enseña de una entrada: si cambia, se emite. Que siga activo,
     # cuándo escribió por última vez o el detalle no cambian lo que se ve.
-    def visible(entry) = [ entry.project_id, entry.target, entry.mode ]
+    def visible(entry) = [ entry.project_id, entry.target, entry.mode, entry.editing ]
 
     # Un único barrido periódico, arrancado al primer uso en cada proceso.
     def start_sweeper
@@ -154,25 +191,40 @@ module Presence
     # Emite en otro hilo, agrupa y limita a una emisión cada THROTTLE por
     # proyecto: la primera sale al momento y lo que llega mientras tanto, en una
     # sola al final de la ventana (p. ej. un agente que escribe muy seguido).
-    def enqueue(project_id)
-      [ project_id, :all ].compact.each do |key|
-        next if PENDING.put_if_absent(key, true)
-
-        delay = [ LAST_SENT.fetch(key, -THROTTLE) + THROTTLE - clock, 0 ].max
-        Concurrent::ScheduledTask.execute(delay, executor: EXECUTOR) do
-          PENDING.delete(key)
-          LAST_SENT[key] = clock
-          Rails.application.executor.wrap { broadcast(key) }
-        rescue => e
-          Rails.error.report(e, handled: true)
+    # `only_editing`: solo se apagó «en edición», que solo pinta la web v1: va
+    # al stream de la presencia, sin repintar la UI antigua ni recargar las
+    # demás live props. Si en la misma ventana llega otro cambio, sale entero.
+    def enqueue(project_id, only_editing: false)
+      kind = only_editing ? :editing : :full
+      [ project_id, (:all unless only_editing) ].compact.each do |key|
+        loop do
+          pending = PENDING.put_if_absent(key, kind)
+          break schedule(key) if pending.nil?
+          break if pending == :full || pending == kind
+          break if PENDING.replace_pair(key, pending, :full) # si ya salió, la vuelta siguiente la programa
         end
+      end
+    end
+
+    def schedule(key)
+      delay = [ LAST_SENT.fetch(key, -THROTTLE) + THROTTLE - clock, 0 ].max
+      Concurrent::ScheduledTask.execute(delay, executor: EXECUTOR) do
+        kind = PENDING.delete(key)
+        LAST_SENT[key] = clock
+        Rails.application.executor.wrap { broadcast(key, kind) }
+      rescue => e
+        Rails.error.report(e, handled: true)
       end
     end
 
     def clock = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-    # Vuelve a pintar las páginas del proyecto o la portada (MT-38).
-    def broadcast(key)
+    # Vuelve a pintar las páginas del proyecto o la portada (MT-38). La prop
+    # `presence` de la web v1 escucha el stream del proyecto y el suyo
+    # (`live_streams`): con `:editing`, solo el suyo.
+    def broadcast(key, kind)
+      return InertiaRails.broadcast([ Project.new(id: key), :presence ]) if kind == :editing
+
       Turbo::StreamsChannel.broadcast_refresh_to(*stream(key))
       InertiaRails.broadcast(Project.new(id: key)) unless key == :all # la portada v1 (MT-99)
     end

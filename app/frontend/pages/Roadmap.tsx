@@ -6,6 +6,7 @@ import { type ReactNode, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
+import { PresenceOutline } from "@/components/ui/presence"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { TextField } from "@/components/ui/field"
@@ -182,7 +183,7 @@ function ChapterLabel({ chapter, label, now, sortable }: { chapter: Chapter; lab
 function ChapterBody({ chapter, now, onClose }: { chapter: Chapter; now: boolean; onClose: () => void }) {
   const complete = chapter.total > 0 && chapter.done === chapter.total
   return (
-    <div className="flex min-w-0 flex-col gap-3">
+    <PresenceOutline target={`milestone:${chapter.number}`} className="flex min-w-0 flex-col gap-3">
       <h2 className={cx("font-medium tracking-[-0.015em] text-foreground", now ? "text-[22px] leading-7 md:text-2xl md:leading-[30px]" : "text-lg leading-6 md:text-xl md:leading-[26px]")}>{chapter.title}</h2>
       {chapter.goal && <p className="text-[15px] leading-[23px] text-body">{chapter.goal}</p>}
       {chapter.capabilities.length > 0 && (
@@ -213,7 +214,7 @@ function ChapterBody({ chapter, now, onClose }: { chapter: Chapter; now: boolean
           <button type="button" onClick={onClose} className="text-control text-muted-foreground hover:text-foreground">Cerrar</button>
         </div>
       )}
-    </div>
+    </PresenceOutline>
   )
 }
 

@@ -7,6 +7,7 @@ import { type ReactNode, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
+import { PresenceOutline } from "@/components/ui/presence"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { Icon, iconFor } from "@/components/ui/icons"
 import { InlineMarkdown } from "@/components/ui/inline-markdown"
@@ -119,7 +120,7 @@ export default function Story({ story }: { story: StoryProps }) {
   return (
     <AppShell title={`${story.ref} · ${story.title} · ${project.name}`} active="stories" crumbs={crumbs} copy={story.copy} actions={actions}>
       <div className="flex flex-col gap-10 px-5 pt-7 pb-10 lg:flex-row lg:items-start lg:gap-14 lg:pt-12 lg:pr-14 lg:pb-14 lg:pl-[72px]">
-        <article className="flex min-w-0 flex-col gap-10 lg:w-[700px] lg:shrink">
+        <PresenceOutline as="article" target={`story:${story.number}`} className="flex min-w-0 flex-col gap-10 lg:w-[700px] lg:shrink">
           <PageHeader status={<Status story={story} />} title={story.title} lead={story.sentence && <InlineMarkdown text={story.sentence} />} />
 
           {story.question ? (
@@ -174,7 +175,7 @@ export default function Story({ story }: { story: StoryProps }) {
           )}
 
           <Comments story={story} />
-        </article>
+        </PresenceOutline>
 
         <aside aria-label="Contexto de la historia" className="flex flex-col gap-[30px] lg:w-[300px] lg:shrink-0 lg:pt-1.5">
           {side}

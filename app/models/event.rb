@@ -14,8 +14,8 @@ class Event < ApplicationRecord
 
   # Cada escritura se emite en directo (MT-36) para el proyecto y la portada: las
   # páginas abiertas se vuelven a pintar con morph y lo nuevo aparece en su sitio
-  # (MT-38). Si la hizo el actor de una petición de la API, además lo marca
-  # «escribiendo». No es un callback de dominio: no cambia datos, solo avisa.
+  # (MT-38). Si la hizo el actor de una petición de la API (agente o persona con
+  # su token, MT-100), además lo marca «escribiendo». No es un callback de dominio: no cambia datos, solo avisa.
   after_create_commit :broadcast_write
   # Y decide si avisa por push (MT-47); el envío va en un job.
   after_create_commit -> { Push::Notifier.call(self) }
@@ -51,7 +51,7 @@ class Event < ApplicationRecord
       Turbo::StreamsChannel.broadcast_refresh_later_to(*stream)
     end
     InertiaRails.broadcast_later(project) # las páginas de Inertia (MT-99) recargan sus live props
-    if Current.actor == actor && actor.agent?
+    if Current.api_request && Current.actor == actor
       Presence.wrote(self)
       Current.presence_written = true
     end
