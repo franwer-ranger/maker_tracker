@@ -11,7 +11,7 @@ module V1
         nav: {
           cover: project_v1_cover_path(@project),
           workshop: project_v1_workshop_path(@project),
-          board: project_path(@project),
+          board: project_v1_story_list_path(@project),
           roadmap: project_v1_roadmap_path(@project),
           brief: project_brief_path(@project),
           decisions: project_v1_decisions_path(@project)

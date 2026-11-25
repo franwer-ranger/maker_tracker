@@ -84,6 +84,9 @@ Rails.application.routes.draw do
     # Prueba del stack v1 (MT-99): Inertia + React, al lado de las vistas de siempre.
     scope "v1", module: :v1, as: :v1 do
       get "/", to: "covers#show", as: :cover
+      # Las historias por hito (MT-109): la Lista, que sustituye al tablero antiguo, y apuntar una idea.
+      get "historias", to: "story_lists#show", as: :story_list
+      post "historias", to: "story_lists#create"
       # La página de una capacidad (MT-103) y su markdown (el de `mt doc <slug>`).
       get "capacidades/:slug", to: "capabilities#show", as: :capability
       get "capacidades/:slug/markdown", to: "capabilities#markdown", as: :capability_markdown
