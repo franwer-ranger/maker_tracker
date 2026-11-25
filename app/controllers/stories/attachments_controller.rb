@@ -6,10 +6,14 @@ class Stories::AttachmentsController < ApplicationController
   def create
     story = @project.stories.find_by!(number: params[:story_number])
     file = params.require(:file)
+    return render json: { error: "Falta el archivo." }, status: :unprocessable_entity unless file.respond_to?(:read)
+
     attachment = story.attach_file!(file, filename: file.original_filename, content_type: file.content_type, actor: Current.actor)
     render json: { markdown: Attachable.markdown(attachment), filename: attachment.filename.to_s }, status: :created
   rescue Attachable::Invalid => e
     render json: { error: e.message }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages.to_sentence }, status: :unprocessable_entity
   rescue ActionController::ParameterMissing
     render json: { error: "Falta el archivo." }, status: :unprocessable_entity
   end

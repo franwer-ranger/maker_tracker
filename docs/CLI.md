@@ -687,7 +687,7 @@ PG-49 done by claude, with 1 commit and PR #63.
 
 ### Adjuntos (MT-96)
 
-`mt attach <historia|página> <archivo>` sube una captura, un vídeo o un archivo a una historia (`PG-49`, `49`) o a una página de la documentación (su slug: `editor`, `cover`) e imprime solo su enlace en markdown, para pegarlo en el cuerpo con `mt edit` / `mt doc edit`. Las imágenes y los vídeos van con `![]()` y se ven en línea en la web; el resto con `[]()` y se descarga (un HTML también: nunca se sirve como página). El enlace es relativo a la instancia, así vale por cualquiera de sus direcciones.
+`mt attach <historia|página> <archivo>` sube una captura, un vídeo o un archivo a una historia (`PG-49`, `49`) o a una página de la documentación (su slug: `editor`, `cover`) e imprime solo su enlace en markdown, para pegarlo en el cuerpo con `mt edit` / `mt doc edit`. Las imágenes y los vídeos van con `![]()` y se ven en línea en la web; el resto con `[]()` y se descarga (un HTML también: nunca se sirve como página; y un SVG o un HEIC, que el navegador no pinta en línea, van como archivo y no cuentan como captura). El enlace es relativo a la instancia, así vale por cualquiera de sus direcciones.
 
 ```text
 $ mt attach PG-49 captura.png
@@ -699,7 +699,7 @@ Next:
 
 - Hasta 100 MB por archivo, y solo imágenes (PNG, JPEG, GIF, WebP, AVIF, SVG, HEIC), vídeos (MP4, WebM, MOV), PDF, texto (txt, md, csv, json, html) y comprimidos (zip, gz, tar). Si no: `VALIDATION_FAILED` con `x.exe is application/x-dosexec, which is not allowed: images, videos, PDF, text or archives.` o `video.mp4 is 120 MB: the limit is 100 MB.`
 - Deja el evento `attachment.added` (`attached captura.png` en `## History`; en una página, `attached captura.png to page editor`).
-- Las imágenes de una página, en el orden en que se subieron, son sus capturas: las de la portada (`cover`) y las de «El recorrido» de una capacidad.
+- Las imágenes en línea de una página (no SVG ni HEIC), en el orden en que se subieron, son sus capturas: las de la portada (`cover`) y las de «El recorrido» de una capacidad.
 - `--json`: `filename`, `content_type`, `byte_size`, `size`, `url` (absoluta) y `markdown`.
 
 ### La historia como diff (MT-91)

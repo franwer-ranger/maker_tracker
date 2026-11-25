@@ -128,7 +128,7 @@ module Api::Markdown::Formatting
   def attachment_data(attachment, base_url: Current.base_url)
     path = Attachable.path(attachment)
     { filename: attachment.filename.to_s, content_type: attachment.content_type, byte_size: attachment.byte_size,
-      size: ActiveSupport::NumberHelper.number_to_human_size(attachment.byte_size, locale: :en),
+      size: Attachable.human_size(attachment.byte_size),
       url: "#{base_url}#{path}", markdown: Attachable.markdown(attachment) }
   end
 
@@ -136,7 +136,7 @@ module Api::Markdown::Formatting
   #   ## Attachments · 2
   #   captura.png  image/png  120 KB  https://mt.example/rails/active_storage/blobs/redirect/…/captura.png
   def attachments_section(record)
-    items = record.attachments_attachments.includes(:blob).order(:created_at, :id).map { attachment_data(it) }
+    items = record.ordered_attachments.map { attachment_data(it) }
     return if items.empty?
 
     rows = items.map { [ it[:filename], it[:content_type], it[:size], it[:url] ] }

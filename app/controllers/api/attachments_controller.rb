@@ -14,7 +14,7 @@ class Api::AttachmentsController < Api::BaseController
     end
 
     attachment = record.attach_file!(file, filename: file.original_filename, content_type: file.content_type, actor: Current.actor)
-    data = Api::Markdown::Formatting.attachment_data(attachment, base_url: request.base_url)
+    data = Api::Markdown::Formatting.attachment_data(attachment)
     render_ok(data.merge(markdown: "#{data[:markdown]}\n"), status: :created,
       summary: "#{data[:filename]} attached to #{label} (#{data[:size]}).",
       breadcrumbs: [ edit_command ])

@@ -7,12 +7,14 @@
 # vale igual por la tailnet que por internet. Las imágenes y los vídeos van con
 # `![]()` y se ven en línea; el resto con `[]()` y se descarga. Active Storage
 # nunca sirve en línea un HTML ni un SVG (content_types_allowed_inline): bajan
-# como descarga.
+# como descarga. Por eso un SVG, y un HEIC (que no pintan Chrome ni Firefox), se
+# admiten pero van como archivo, no como imagen en línea.
 module Attachable
   extend ActiveSupport::Concern
 
   MAX_SIZE = 100.megabytes
-  IMAGE_TYPES = %w[image/png image/jpeg image/gif image/webp image/avif image/svg+xml image/heic].freeze
+  INLINE_IMAGE_TYPES = %w[image/png image/jpeg image/gif image/webp image/avif].freeze
+  IMAGE_TYPES = (INLINE_IMAGE_TYPES + %w[image/svg+xml image/heic]).freeze
   VIDEO_TYPES = %w[video/mp4 video/webm video/quicktime].freeze
   FILE_TYPES = %w[application/pdf text/plain text/markdown text/csv text/html application/json application/zip application/gzip application/x-tar].freeze
   ALLOWED_TYPES = (IMAGE_TYPES + VIDEO_TYPES + FILE_TYPES).freeze
@@ -45,8 +47,8 @@ module Attachable
     size = io.size
     raise Invalid.new("#{filename} está vacío.", "#{filename} is empty.") if size.zero?
     if size > MAX_SIZE
-      raise Invalid.new("#{filename} ocupa #{human_size(size)}: el máximo es #{human_size(MAX_SIZE)}.",
-        "#{filename} is #{human_size(size)}: the limit is #{human_size(MAX_SIZE)}.")
+      raise Invalid.new("#{filename} ocupa #{Attachable.human_size(size)}: el máximo es #{Attachable.human_size(MAX_SIZE)}.",
+        "#{filename} is #{Attachable.human_size(size)}: the limit is #{Attachable.human_size(MAX_SIZE)}.")
     end
 
     type = Marcel::MimeType.for(io, name: filename, declared_type: content_type)
@@ -58,16 +60,23 @@ module Attachable
 
     blob = ActiveStorage::Blob.create_and_upload!(io: io, filename: filename, content_type: type, identify: false)
     transaction do
-      attachments.attach(blob)
+      # Sobre un registro guardado, `attach` lo guarda: false si no es válido.
+      attachments.attach(blob) || raise(ActiveRecord::RecordInvalid, self)
       record_event!("attachment.added", actor: actor, story: (self if is_a?(Story)),
         data: { filename: blob.filename.to_s, content_type: type, byte_size: blob.byte_size, page_id: (id if is_a?(Page)), slug: (slug if is_a?(Page)) }.compact)
     end
     attachments_attachments.find_by!(blob: blob)
+  rescue ActiveRecord::RecordInvalid
+    blob&.purge
+    raise
   end
 
-  # Las imágenes adjuntas, en el orden en que se subieron: las capturas de la
-  # portada (MT-102) y de «El recorrido» de una capacidad (MT-103).
-  def screenshots = attachments_attachments.includes(:blob).order(:created_at, :id).select { IMAGE_TYPES.include?(it.content_type) }
+  # Los adjuntos, en el orden en que se subieron.
+  def ordered_attachments = attachments_attachments.includes(:blob).order(:created_at, :id)
+
+  # Las imágenes adjuntas que se ven en línea, en el orden en que se subieron:
+  # las capturas de la portada (MT-102) y de «El recorrido» de una capacidad (MT-103).
+  def screenshots = ordered_attachments.select { INLINE_IMAGE_TYPES.include?(it.content_type) }
 
   # "![captura.png](/rails/active_storage/blobs/redirect/…/captura.png)"
   def self.markdown(attachment)
@@ -77,12 +86,11 @@ module Attachable
   end
 
   # Se ve en la página (imagen o vídeo) en vez de descargarse.
-  def self.inline?(content_type) = (IMAGE_TYPES + VIDEO_TYPES).include?(content_type)
+  def self.inline?(content_type) = (INLINE_IMAGE_TYPES + VIDEO_TYPES).include?(content_type)
 
   # El enlace estable del adjunto (redirige al archivo), relativo a la instancia.
   def self.path(attachment) = Rails.application.routes.url_helpers.rails_blob_path(attachment, only_path: true)
 
-  private
-
-  def human_size(bytes) = ActiveSupport::NumberHelper.number_to_human_size(bytes, locale: :en)
+  # "120 KB"
+  def self.human_size(bytes) = ActiveSupport::NumberHelper.number_to_human_size(bytes, locale: :en)
 end
