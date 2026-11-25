@@ -75,11 +75,15 @@ module V1
     # Qué es un destino de la presencia en la web: "MT-12", "MT M2", "brief", "page:slug", "decision:5".
     # Sin destino concreto ("page", "decision"), lo que se toca es la sección, sin elemento.
     def presence_subject(target)
-      case target.to_s
-      when /\A#{@project.key}-(\d+)\z/
-        { key: "story:#{$1}", label: target, url: project_v1_story_path(@project, $1) }
-      when /\A#{@project.key} M(\d+)\z/
-        { key: "milestone:#{$1}", label: "M#{$1}", url: project_v1_roadmap_path(@project) }
+      target = target.to_s
+      if (number = presence_number(target, "#{@project.key}-"))
+        return { key: "story:#{number}", label: target, url: project_v1_story_path(@project, number) }
+      end
+      if (number = presence_number(target, "#{@project.key} M"))
+        return { key: "milestone:#{number}", label: "M#{number}", url: project_v1_roadmap_path(@project) }
+      end
+
+      case target
       when "brief"
         { key: "brief", label: "el brief", url: project_v1_cover_path(@project) }
       when /\Apage:(.+)\z/
@@ -92,6 +96,15 @@ module V1
       when "decision"
         { key: nil, label: "las decisiones", url: project_v1_decisions_path(@project) }
       end
+    end
+
+    # El número tras el prefijo ("MT-" o "MT M") si el destino es exactamente prefijo + dígitos; sin regex
+    # con la clave del proyecto dentro.
+    def presence_number(target, prefix)
+      return unless target.start_with?(prefix)
+
+      number = target.delete_prefix(prefix)
+      number if number.match?(/\A\d+\z/)
     end
 
     # Historias, capacidades y decisiones del proyecto, para buscar en el ⌘K.
