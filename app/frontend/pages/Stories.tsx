@@ -3,6 +3,7 @@ import { Dialog, DialogBackdrop, DialogClose, DialogContent, DialogDescription, 
 import { Input } from "@ui-sdk/react/input"
 import { SegmentedControl, SegmentedControlIndicator, SegmentedControlItem } from "@ui-sdk/react/segmented-control"
 import { useShortcut } from "@ui-sdk/react/shortcuts"
+import { Textarea } from "@ui-sdk/react/textarea"
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Combo } from "@/components/ui/combo"
@@ -68,7 +69,7 @@ export default function Stories({ stories }: { stories: ListProps }) {
     <>
       <CopyForAgent text={stories.copy} shortcut="mod+shift+c" />
       <button type="button" onClick={() => setCreating(true)} className="inline-flex h-8 items-center gap-[7px] rounded-md px-2 text-control text-muted-foreground hover:text-foreground">
-        <Icon name="pencil" size={14} />Nueva historia<Kbd className="hidden md:inline-flex">N</Kbd>
+        <Icon name="pencil" size={14} />Nueva historia<Kbd className="max-md:hidden">N</Kbd>
       </button>
     </>
   )
@@ -130,7 +131,7 @@ function List({ stories, onCreate }: { stories: ListProps; onCreate: () => void 
         <label className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 py-[9px] text-muted-foreground focus-within:border-ring md:py-2">
           <Icon name="search" size={14} strokeWidth={1.8} />
           <Input ref={search} value={query} onValueChange={(value) => setQuery(value)} aria-label="Buscar historias" placeholder="Buscar historias…" className="min-w-0 flex-1 bg-transparent text-sm leading-[18px] text-foreground outline-none placeholder:text-muted-foreground focus-visible:shadow-none" />
-          <Kbd className="hidden md:inline-flex">/</Kbd>
+          <Kbd className="max-md:hidden">/</Kbd>
         </label>
         <SegmentedControl aria-label="Estado" value={status} onValueChange={(next) => setStatus(next as Status)} className="relative isolate hidden gap-0.5 rounded-lg bg-muted p-[3px] md:inline-flex">
           <SegmentedControlIndicator className="absolute top-(--segmented-control-indicator-top) left-(--segmented-control-indicator-left) -z-10 h-(--segmented-control-indicator-height) w-(--segmented-control-indicator-width) rounded-md bg-card shadow-[0_0_0_1px_var(--color-border)] transition-[left,width] duration-200 data-[activation-direction=none]:transition-none" />
@@ -338,15 +339,15 @@ function NewIdea({ open, onOpenChange, url }: { open: boolean; onOpenChange: (op
             <div className="flex items-center gap-2">
               <Icon name="spark" size={14} className="hidden text-muted-foreground md:block" />
               <DialogTitle className="contents"><Eyebrow className="leading-[14px] tracking-[0.1em]">Apuntar una idea</Eyebrow></DialogTitle>
-              <Kbd className="hidden md:inline-flex">N</Kbd>
+              <Kbd className="max-md:hidden">N</Kbd>
             </div>
-            <Kbd className="hidden md:inline-flex">Esc</Kbd>
+            <Kbd className="max-md:hidden">Esc</Kbd>
             <DialogClose className="text-sm text-muted-foreground hover:text-foreground md:hidden">Cancelar</DialogClose>
           </div>
           <DialogDescription className="sr-only">Cae en la Bandeja de ideas, sin hito.</DialogDescription>
           <div className="flex flex-col gap-2 px-5 pt-3.5 pb-[22px]">
             {error && <p role="alert" className="rounded-lg border border-signal/40 px-3 py-2 text-control text-foreground">{error}</p>}
-            <Input autoFocus value={title} onValueChange={(value) => setTitle(value)} aria-label="La idea" placeholder="La idea, en una frase" className="bg-transparent text-[17px] leading-[25px] text-foreground outline-none placeholder:text-kbd focus-visible:shadow-none md:text-lg md:leading-[26px]" />
+            <Textarea autoFocus autoResize rows={1} value={title} onValueChange={(value) => setTitle(value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); submit() } }} aria-label="La idea" placeholder="La idea, en una frase" className="resize-none bg-transparent text-[17px] leading-[25px] text-foreground outline-none placeholder:text-kbd focus-visible:shadow-none md:text-lg md:leading-[26px]" />
             <Input value={body} onValueChange={(value) => setBody(value)} aria-label="Una línea más" placeholder="Una línea más, si hace falta" className="bg-transparent text-sm leading-[21px] text-foreground outline-none placeholder:text-kbd focus-visible:shadow-none" />
           </div>
           <div className="mx-5 flex flex-col gap-4 border-t border-border pt-3.5 pb-6 md:mx-0 md:flex-row md:items-center md:justify-between md:gap-4 md:pt-3 md:pr-3.5 md:pb-3 md:pl-5">
@@ -357,7 +358,7 @@ function NewIdea({ open, onOpenChange, url }: { open: boolean; onOpenChange: (op
               <code className="hidden font-mono text-label leading-4 text-muted-foreground md:block">mt create "{short}"</code>
             </div>
             <Button type="submit" disabled={sending || title.trim() === ""} className="h-12 justify-center rounded-[10px] text-base md:h-[34px] md:rounded-[7px] md:text-sm">
-              Apuntar<Kbd tone="ink" className="hidden md:inline-flex">↵</Kbd>
+              Apuntar<span aria-hidden="true" className="font-mono text-[10px] leading-3 text-kbd max-md:hidden">↵</span>
             </Button>
           </div>
         </form>
