@@ -110,8 +110,17 @@
   from { background: color-mix(in srgb, var(--signal) 10%, transparent); }
   to { background: transparent; }
 }
+/* Presencia (MT-100, «09 · Presencia del agente»): el marco de 2 px del panel y su halo que respira (0,18 ↔ 0,05, ~2 s). */
+@keyframes presence-breathe {
+  0%, 100% { box-shadow: 0 0 0 2px var(--signal), 0 0 18px 4px color-mix(in srgb, var(--signal) 18%, transparent); }
+  50% { box-shadow: 0 0 0 2px var(--signal), 0 0 18px 4px color-mix(in srgb, var(--signal) 5%, transparent); }
+}
 @utility agent-pulse { animation: agent-pulse 1.6s var(--ease-out-soft) infinite; }
 @utility fresh { animation: fresh 2.4s var(--ease-out-soft); }
+@utility presence-frame {
+  box-shadow: 0 0 0 2px var(--signal), 0 0 18px 4px color-mix(in srgb, var(--signal) 12%, transparent);
+  animation: presence-breathe 2s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
-  .agent-pulse, .fresh { animation: none; }
+  .agent-pulse, .fresh, .presence-frame { animation: none; }
 }

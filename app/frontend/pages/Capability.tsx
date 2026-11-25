@@ -2,6 +2,7 @@ import { Link, usePage } from "@inertiajs/react"
 import type { ReactNode } from "react"
 import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
+import { PresenceOutline } from "@/components/ui/presence"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Icon, iconFor } from "@/components/ui/icons"
 import { InlineMarkdown } from "@/components/ui/inline-markdown"
@@ -111,7 +112,7 @@ export default function Capability({ capability }: { capability: CapabilityProps
   return (
     <AppShell title={`${capability.title} · ${project.name}`} active="product" crumbs={crumbs} copy={capability.copy} actions={actions}>
       <div className="flex flex-col gap-10 px-5 pt-7 pb-10 lg:flex-row lg:items-start lg:gap-14 lg:pt-12 lg:pr-14 lg:pb-14 lg:pl-[72px]">
-        <article className="flex min-w-0 flex-col gap-10 lg:w-[700px] lg:shrink">
+        <PresenceOutline as="article" target={`page:${capability.slug}`} className="flex min-w-0 flex-col gap-10 lg:w-[700px] lg:shrink">
           <PageHeader
             icon={iconFor(capability.icon)}
             eyebrow={[kindLabel, capability.area].filter(Boolean).join(" · ")}
@@ -160,7 +161,7 @@ export default function Capability({ capability }: { capability: CapabilityProps
           <a href={capability.markdown_url} className="hidden self-start text-control text-foreground underline decoration-border underline-offset-[3px] hover:decoration-foreground lg:inline">
             Ver la documentación completa en markdown
           </a>
-        </article>
+        </PresenceOutline>
 
         <aside aria-label="Contexto de la capacidad" className="flex flex-col gap-[30px] lg:w-[300px] lg:shrink-0 lg:pt-1.5">
           {side}

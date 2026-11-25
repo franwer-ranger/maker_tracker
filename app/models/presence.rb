@@ -18,9 +18,15 @@
 # «Escribiendo» dura WINDOW desde la última escritura (`wrote_at`): un agente
 # que escribe y luego solo lee la misma historia vuelve a «leyendo» al pasar
 # la ventana, aunque siga activo (con wflow puede trabajar horas).
+#
+# «En edición» (MT-100) es más corto: EDITING desde la última escritura, lo que
+# la web v1 pinta en naranja (marco, pestaña y contorno). El barrido lo apaga y
+# emite; además la página recibe cuánto le queda y lo apaga sola aunque la
+# emisión no llegue.
 module Presence
   WINDOW = 60.seconds
-  SWEEP_EVERY = 5 # segundos
+  EDITING = 5.seconds
+  SWEEP_EVERY = 1 # segundos: «en edición» no puede quedarse pintado más de la cuenta
   MODES = %i[reading writing].freeze
 
   # Datos planos (sin objetos de ActiveRecord, que no se comparten entre hilos).
@@ -28,11 +34,18 @@ module Presence
   # `detail`: la última escritura; `project_id`: nil si la petición no es de un
   # proyecto (p. ej. listar proyectos); `since`: desde cuándo está activo sin
   # cortes (la «sesión» de MT-38); `wrote_at`: su última escritura.
-  Entry = Data.define(:actor_id, :actor_name, :project_id, :project_key, :target, :mode, :detail, :seen_at, :since, :wrote_at) do
+  # `actor_kind`: "agent" o "human"; `editing`: si la última escritura sigue en
+  # EDITING (lo baja el barrido).
+  Entry = Data.define(:actor_id, :actor_name, :actor_kind, :project_id, :project_key, :target, :mode, :detail, :seen_at, :since, :wrote_at, :editing) do
     def reading? = mode == :reading
     def writing? = mode == :writing
     def active?(now = Time.current) = seen_at > now - WINDOW
     def wrote_recently?(now = Time.current) = wrote_at.present? && wrote_at > now - WINDOW
+    def agent? = actor_kind == "agent"
+
+    # Lo que le queda «en edición», en segundos (0 si ya no lo está).
+    def editing_left(now = Time.current) = editing && wrote_at ? [ wrote_at + EDITING - now, 0 ].max.to_f : 0.0
+    def editing_now?(now = Time.current) = editing_left(now).positive?
   end
 
   REGISTRY = Concurrent::Map.new
@@ -65,6 +78,12 @@ module Presence
       REGISTRY.values.select { it.active?(now) && (project_id.nil? || it.project_id == project_id) }.sort_by(&:seen_at).reverse
     end
 
+    # Quién está editando algo del proyecto ahora mismo (MT-100), lo último primero.
+    def editing(project_id:)
+      now = Time.current
+      active(project_id: project_id).select { it.editing_now?(now) }.sort_by(&:wrote_at).reverse
+    end
+
     # Dónde escucha la página: `turbo_stream_from(*Presence.stream(project))`,
     # o `Presence.stream(:all)` en la portada. Event emite al mismo sitio.
     def stream(key)
@@ -93,6 +112,8 @@ module Presence
       REGISTRY.each_pair do |id, entry|
         if !entry.active?(now)
           enqueue(entry.project_id) if REGISTRY.delete_pair(id, entry)
+        elsif entry.editing && !entry.editing_now?(now)
+          enqueue(entry.project_id) if REGISTRY.replace_pair(id, entry, entry.with(editing: false))
         elsif entry.writing? && !entry.wrote_recently?(now)
           enqueue(entry.project_id) if REGISTRY.replace_pair(id, entry, entry.with(mode: :reading, detail: nil))
         end
@@ -112,8 +133,9 @@ module Presence
         if old && mode == :reading && old.writing? && old.target == target
           mode, detail = old.mode, old.detail
         end
-        entry = Entry.new(actor_id: actor.id, actor_name: actor.name, project_id: project_id, project_key: project_key,
-          target: target, mode: mode, detail: detail, seen_at: now, since: old&.since || now, wrote_at: wrote_at)
+        editing = wrote_at.equal?(now) || (old&.editing_now?(now) && old.target == target) || false
+        entry = Entry.new(actor_id: actor.id, actor_name: actor.name, actor_kind: actor.kind.to_s, project_id: project_id, project_key: project_key,
+          target: target, mode: mode, detail: detail, seen_at: now, since: old&.since || now, wrote_at: wrote_at, editing: editing)
         changed = old.nil? || visible(old) != visible(entry)
         enqueue(old.project_id) if old && old.project_id != project_id
         entry
@@ -126,7 +148,9 @@ module Presence
     def written_target(event)
       return event.story.reference if event.story
       return "brief" if event.action == "brief.edited"
+      return "page:#{event.data['slug']}" if event.action.start_with?("page.") && event.data["slug"].present?
       return "page" if event.action.start_with?("page.")
+      return "decision:#{event.data['number']}" if event.action == "decision.recorded" && event.data["number"]
       return "decision" if event.action == "decision.recorded"
 
       number = Milestone.where(id: event.data["milestone_id"]).pick(:number) if event.action.start_with?("milestone.")
@@ -135,7 +159,7 @@ module Presence
 
     # Lo que la UI enseña de una entrada: si cambia, se emite. Que siga activo,
     # cuándo escribió por última vez o el detalle no cambian lo que se ve.
-    def visible(entry) = [ entry.project_id, entry.target, entry.mode ]
+    def visible(entry) = [ entry.project_id, entry.target, entry.mode, entry.editing ]
 
     # Un único barrido periódico, arrancado al primer uso en cada proceso.
     def start_sweeper

@@ -8,6 +8,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
+import { PresenceOutline } from "@/components/ui/presence"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Eyebrow } from "@/components/ui/eyebrow"
 import { TextField } from "@/components/ui/field"
@@ -280,7 +281,7 @@ function Who({ actor, agent, at, className }: { actor: string; agent: boolean; a
 // El detalle (columna lateral): la decisión, por qué, quién la aplica, relacionadas y su línea de sustituciones.
 function DetailCard({ decision }: { decision: Detail }) {
   return (
-    <article className="flex flex-col gap-[26px] rounded-xl border border-border bg-card px-6 py-[22px]">
+    <PresenceOutline as="article" target={`decision:${decision.number}`} className="flex flex-col gap-[26px] rounded-xl border border-border bg-card px-6 py-[22px]">
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between gap-3">
           <span className="font-mono text-xs leading-4 text-foreground">{decision.reference}</span>
@@ -340,7 +341,7 @@ function DetailCard({ decision }: { decision: Detail }) {
       <div className="-mx-2 flex items-center">
         <CopyForAgent text={decision.copy} />
       </div>
-    </article>
+    </PresenceOutline>
   )
 }
 

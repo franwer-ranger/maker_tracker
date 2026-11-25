@@ -2,6 +2,7 @@ import { Link, usePage } from "@inertiajs/react"
 import { useEffect, useState } from "react"
 import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
+import { PresenceOutline } from "@/components/ui/presence"
 import { EmptyState } from "@/components/ui/empty-state"
 import { Icon, iconFor } from "@/components/ui/icons"
 import { ProductMark } from "@/components/ui/product-combo"
@@ -80,11 +81,13 @@ export default function Cover({ cover }: { cover: CoverProps }) {
             <span className="hidden md:inline-flex"><ProductMark code={project.key} logo={cover.logo} size={44} /></span>
             <h1 className="font-display text-[44px] leading-[1.05] text-foreground md:text-[56px] md:leading-[56px]">{project.name}</h1>
           </div>
-          {cover.vision ? (
-            <p className="text-lg leading-[26px] tracking-[-0.01em] text-foreground md:text-xl md:leading-7"><Emphasis text={cover.vision} /></p>
-          ) : (
-            <p className="text-sm text-muted-foreground">Sin visión todavía: escríbela en el brief.</p>
-          )}
+          <PresenceOutline target="brief">
+            {cover.vision ? (
+              <p className="text-lg leading-[26px] tracking-[-0.01em] text-foreground md:text-xl md:leading-7"><Emphasis text={cover.vision} /></p>
+            ) : (
+              <p className="text-sm text-muted-foreground">Sin visión todavía: escríbela en el brief.</p>
+            )}
+          </PresenceOutline>
         </div>
         {cover.screenshots.length > 0 && <Screenshots items={cover.screenshots} />}
       </header>

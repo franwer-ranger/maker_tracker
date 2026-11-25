@@ -22,12 +22,20 @@ export type Frame = {
   products: { key: string; name: string; url: string }[]
   taller: number
   capabilities: { area: string | null; items: { slug: string; title: string; url: string }[] }[]
-  agents: { name: string; target: string | null }[]
   user: string | null
+}
+
+// La presencia (MT-100): quién está activo y qué se está editando ahora (`key`: el `data-presence` del elemento).
+export type PresenceEditing = { actor: string; agent: boolean; key: string | null; label: string; url: string | null; left_ms: number }
+
+export type Presence = {
+  actors: { name: string; agent: boolean; target: string | null }[]
+  editing: PresenceEditing[]
 }
 
 export type SharedProps = {
   frame: Frame
+  presence: Presence
   project: { key: string; name: string; slug: string }
   nav: { cover: string; workshop: string; board: string; roadmap: string; brief: string; decisions: string }
   notice?: string | null

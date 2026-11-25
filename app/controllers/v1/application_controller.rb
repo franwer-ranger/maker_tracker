@@ -20,6 +20,8 @@ module V1
         # El marco (MT-101): combo de producto, Taller, mapa de capacidades, agentes trabajando y usuario.
         # Perezoso: las recargas parciales (live props, índice del ⌘K) no lo piden y no se calcula.
         frame: -> { frame },
+        # Quién trabaja y qué está editando ahora (MT-100): en directo en todas las pantallas.
+        presence: InertiaRails.live(@project) { presence_props },
         # El ⌘K pide su índice al abrirse (recarga parcial), no con cada página.
         search: InertiaRails.optional { search_index }
       }
@@ -51,9 +53,45 @@ module V1
         capabilities: @project.pages.documentation.ordered.group_by { it.area.presence }.map do |area, pages|
           { area: area, items: pages.map { { slug: it.slug, title: it.title, url: project_v1_capability_path(@project, it.slug) } } }
         end,
-        agents: Presence.active(project_id: @project.id).map { { name: it.actor_name, target: it.target } },
         user: Current.actor&.name
       }
+    end
+
+    # La presencia (MT-100, Paper «09 · Presencia del agente»). `actors`: quién está activo, para la barra
+    # lateral; `editing`: lo que se está editando ahora (EDITING desde su última escritura), con la clave del
+    # elemento que lo pinta en pantalla (`data-presence`), su nombre para la pestaña, adónde lleva y cuántos
+    # milisegundos le quedan: la página lo apaga sola aunque no le llegue la emisión del final.
+    def presence_props
+      now = Time.current
+      {
+        actors: Presence.active(project_id: @project.id).map { { name: it.actor_name, agent: it.agent?, target: it.target } },
+        editing: Presence.editing(project_id: @project.id).uniq(&:target).filter_map do |entry|
+          subject = presence_subject(entry.target) or next
+          { actor: entry.actor_name, agent: entry.agent?, **subject, left_ms: (entry.editing_left(now) * 1000).ceil }
+        end
+      }
+    end
+
+    # Qué es un destino de la presencia en la web: "MT-12", "MT M2", "brief", "page:slug", "decision:5".
+    # Sin destino concreto ("page", "decision"), lo que se toca es la sección, sin elemento.
+    def presence_subject(target)
+      case target.to_s
+      when /\A#{@project.key}-(\d+)\z/
+        { key: "story:#{$1}", label: target, url: project_v1_story_path(@project, $1) }
+      when /\A#{@project.key} M(\d+)\z/
+        { key: "milestone:#{$1}", label: "M#{$1}", url: project_v1_roadmap_path(@project) }
+      when "brief"
+        { key: "brief", label: "el brief", url: project_v1_cover_path(@project) }
+      when /\Apage:(.+)\z/
+        page = @project.pages.find_by(slug: $1)
+        { key: "page:#{$1}", label: page&.title || $1, url: (project_v1_capability_path(@project, $1) if page && page.kind != "cover") }
+      when "page"
+        { key: nil, label: "la documentación", url: project_v1_cover_path(@project) }
+      when /\Adecision:(\d+)\z/
+        { key: "decision:#{$1}", label: "D-#{$1}", url: project_v1_decision_path(@project, $1) }
+      when "decision"
+        { key: nil, label: "las decisiones", url: project_v1_decisions_path(@project) }
+      end
     end
 
     # Historias, capacidades y decisiones del proyecto, para buscar en el ⌘K.

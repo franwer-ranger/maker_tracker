@@ -77,6 +77,7 @@ class Api::BaseController < ActionController::API
 
     actor.token_used!
     Current.actor = actor
+    Current.api_request = true
   end
 
   # GET lee, el resto escribe. Solo si la respuesta es 2xx: un 404 o un 422 no
