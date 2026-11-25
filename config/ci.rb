@@ -9,6 +9,7 @@ CI.run do
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
   step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
+  step "Tests: Páginas de la documentación", "env RAILS_ENV=test bin/rails mt:pages:check"
 
   step "CLI: gofmt", "test -z \"$(gofmt -l cli)\""
   step "CLI: go vet y compilar", "make -C cli vet build"
