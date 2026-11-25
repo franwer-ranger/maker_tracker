@@ -58,6 +58,11 @@
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-active: var(--sidebar-active);
   --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-label: var(--sidebar-label);
+  --color-sidebar-chip: var(--sidebar-chip);
+  --color-sidebar-control: var(--sidebar-control);
+  --color-sidebar-kbd: var(--sidebar-kbd);
+  --color-overlay: var(--overlay);
   --color-state-idea: var(--state-idea);
   --color-state-defining: var(--state-defining);
   --color-state-ready: var(--state-ready);

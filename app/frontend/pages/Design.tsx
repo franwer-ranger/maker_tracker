@@ -84,7 +84,7 @@ function Catalog({ theme, products, current }: { theme: string; products: { key:
       </Card>
 
       <Card title="Acción ligera · Copiar para tu agente" note="Secundaria y en muchos sitios. No invita a irse al chat.">
-        <div className="flex"><CopyForAgent text="mt show PG-56" /></div>
+        <div className="flex"><CopyForAgent text="mt show PG-56" shortcut="mod+shift+c" /></div>
       </Card>
 
       <Card title="Combo de producto" note="Dropdown con buscador (escala a muchos productos).">

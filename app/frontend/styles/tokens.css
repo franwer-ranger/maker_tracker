@@ -31,6 +31,11 @@
   --sidebar-accent: #1C1D21;
   --sidebar-border: #2A2A2E;
   --sidebar-active: #F2F3F5;
+  --sidebar-label: #4E5058;
+  --sidebar-chip: #2B2C31;
+  --sidebar-control: #222327;
+  --sidebar-kbd: #3A3B40;
+  --overlay: #0F0F1159;
 
   --state-idea: #8C8A84;
   --state-defining: #D99A1E;

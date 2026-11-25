@@ -8,7 +8,7 @@ export function Kbd({ children, className, tone = "panel" }: { children: ReactNo
       className={cx(
         "inline-flex h-4 min-w-4 items-center justify-center rounded-sm border px-1 font-mono text-[10px] leading-[14px] text-kbd",
         tone === "panel" && "border-border",
-        tone === "sidebar" && "border-[#3A3B40]",
+        tone === "sidebar" && "border-sidebar-kbd",
         tone === "ink" && "border-primary-foreground/25 text-primary-foreground/60",
         className,
       )}

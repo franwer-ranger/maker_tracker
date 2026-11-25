@@ -14,7 +14,7 @@ module PushHelper
   }.freeze
 
   # push_line :sidebar · push_line :page
-  # Con `state:` pinta solo ese estado, sin JavaScript (para /design).
+  # Con `state:` pinta solo ese estado, sin JavaScript (lo usaba el catálogo ERB de /design, quitado en MT-101).
   def push_line(variant, state: nil)
     return unless state || Push.configured?
 

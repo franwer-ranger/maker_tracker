@@ -10,7 +10,8 @@ type Product = { key: string; name: string; url: string }
 
 // Combo de producto (08): un producto por pantalla, dropdown con buscador que escala a muchos.
 // Logo (la clave del producto) y nombre. Comportamiento: Popover + Command de UI SDK.
-export function ProductCombo({ products, current, tone = "sidebar" }: { products: Product[]; current: string; tone?: "sidebar" | "panel" }) {
+// `shortcut` (P) solo en una instancia por pantalla: el registro de atajos no mira si está visible.
+export function ProductCombo({ products, current, tone = "sidebar", shortcut }: { products: Product[]; current: string; tone?: "sidebar" | "panel"; shortcut?: string }) {
   const [open, setOpen] = useState(false)
   const active = products.find((product) => product.key === current)
 
@@ -23,10 +24,10 @@ export function ProductCombo({ products, current, tone = "sidebar" }: { products
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        shortcut="p"
+        shortcut={shortcut}
         className={cx(
           "flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-sm",
-          tone === "sidebar" ? "border-[#222327] text-sidebar-active hover:bg-sidebar-accent" : "border-border bg-card text-foreground hover:bg-muted",
+          tone === "sidebar" ? "border-sidebar-control text-sidebar-active hover:bg-sidebar-accent" : "border-border bg-card text-foreground hover:bg-muted",
         )}
       >
         <span className="flex min-w-0 items-center gap-2.5">
@@ -54,7 +55,7 @@ export function ProductCombo({ products, current, tone = "sidebar" }: { products
           </CommandList>
           <div className="flex h-9 items-center justify-between border-t border-border px-3 text-control text-muted-foreground">
             <span>↑↓ para moverte · ↵ elegir</span>
-            <Kbd>P</Kbd>
+            {shortcut && <Kbd>{shortcut.toUpperCase()}</Kbd>}
           </div>
         </Command>
       </PopoverContent>
@@ -68,7 +69,7 @@ export function ProductMark({ code, size = 18 }: { code: string; size?: number }
     <span
       aria-hidden="true"
       style={{ width: size, height: size }}
-      className="inline-flex shrink-0 items-center justify-center rounded-[5px] bg-[#2B2C31] font-mono text-[10px] text-sidebar-active"
+      className="inline-flex shrink-0 items-center justify-center rounded-[5px] bg-sidebar-chip font-mono text-[10px] text-sidebar-active"
     >
       {code.slice(0, 2)}
     </span>

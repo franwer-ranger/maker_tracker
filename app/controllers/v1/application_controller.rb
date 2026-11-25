@@ -16,7 +16,8 @@ module V1
         },
         notice: flash[:notice],
         # El marco (MT-101): combo de producto, Taller, mapa de capacidades, agentes trabajando y usuario.
-        frame: frame,
+        # Perezoso: las recargas parciales (live props, índice del ⌘K) no lo piden y no se calcula.
+        frame: -> { frame },
         # El ⌘K pide su índice al abrirse (recarga parcial), no con cada página.
         search: InertiaRails.optional { search_index }
       }
