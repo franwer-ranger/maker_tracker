@@ -16,16 +16,18 @@ module V1
       render inertia: "StoryEdit", props: { story: story_props, milestones: milestones, capabilities: capabilities, guides: guides }
     end
 
+    # El hito solo llega si se cambió en el formulario: si no, guardar no deshace un movimiento hecho mientras
+    # tanto (mover no sube la versión). El contenido y el hito, en una sola transacción.
     def update
       attributes = params.expect(story: [ :title, :body, :mockup, :labels, { capabilities: [] } ])
-      attributes[:labels] = attributes[:labels].to_s.split(",").map(&:strip).compact_blank.uniq if attributes.key?(:labels)
-      attributes[:capabilities] = Array(attributes[:capabilities]).compact_blank.uniq if attributes.key?(:capabilities)
-      milestone = @project.milestones.find_by(id: params.dig(:story, :milestone_id)) if params.dig(:story, :milestone_id).present?
+      move = params[:story].key?(:milestone_id)
+      milestone = chosen_milestone if move
+      return redirect_to project_v1_story_edit_path(@project, @story.number), inertia: { errors: { milestone_id: [ "Ese hito no es de este proyecto." ] } } if milestone == false
 
-      changed = @story.edit!(attributes, actor: Current.actor, version: params.dig(:story, :version))
-      if milestone != @story.milestone
-        @story.reorder!(position: :last, milestone: milestone, actor: Current.actor)
-        changed = true
+      changed = Story.transaction do
+        edited = @story.edit!(attributes, actor: Current.actor, version: params.dig(:story, :version))
+        moved = move && milestone != @story.milestone && @story.reorder!(position: :last, milestone: milestone, actor: Current.actor)
+        edited || moved
       end
       redirect_to project_v1_story_path(@project, @story.number), notice: changed ? "#{@story.reference} guardada" : "#{@story.reference} sin cambios"
     rescue ActiveRecord::RecordInvalid => e
@@ -48,6 +50,12 @@ module V1
 
     def set_story
       @story = @project.stories.find_by!(number: params[:number])
+    end
+
+    # Vacío: a la bandeja. Uno que no es del proyecto: false, para que dé error en vez de mandarla a la bandeja.
+    def chosen_milestone
+      id = params.dig(:story, :milestone_id)
+      id.blank? ? nil : @project.milestones.find_by(id: id) || false
     end
 
     def story_props
