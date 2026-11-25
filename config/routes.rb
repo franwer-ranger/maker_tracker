@@ -93,6 +93,11 @@ Rails.application.routes.draw do
         post "lista", to: "workshops#ready", as: :ready
         post "respuesta", to: "workshops#answer", as: :answer
       end
+      # El roadmap como relato (MT-106): reordenar hitos, crear uno y cerrarlo moviendo lo que queda abierto.
+      get "roadmap", to: "roadmaps#show", as: :roadmap
+      post "roadmap/orden", to: "roadmaps#reorder", as: :roadmap_order
+      post "hitos", to: "roadmaps#create", as: :milestones
+      post "hitos/:number/cierre", to: "roadmaps#close", as: :milestone_close
       resources :milestones, path: "hitos", param: :number, only: %i[edit update]
     end
     resource :roadmap, only: :show

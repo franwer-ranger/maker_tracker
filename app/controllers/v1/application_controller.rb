@@ -12,7 +12,7 @@ module V1
           cover: project_v1_cover_path(@project),
           workshop: project_v1_workshop_path(@project),
           board: project_path(@project),
-          roadmap: project_roadmap_path(@project),
+          roadmap: project_v1_roadmap_path(@project),
           brief: project_brief_path(@project),
           decisions: project_v1_decisions_path(@project)
         },
@@ -34,6 +34,12 @@ module V1
         options: question.options.each_with_index.map { |text, index| { value: (index + 1).to_s, label: text } },
         answer_url: answer_url }
     end
+
+    # Una sección del brief (`## Visión`) y su primer párrafo: la portada y el roadmap enseñan la visión.
+    def brief_section(heading) = @project.brief[/^## #{Regexp.escape(heading)}\s*$(.*?)(?=^## |\z)/m, 1].to_s.strip
+
+    # La visión entera (su primer párrafo); el énfasis `*…*` se queda para pintarlo en serif.
+    def first_paragraph(text) = text.to_s.split(/\n\s*\n/).first.to_s.gsub(/\*\*|__|`/, "").squish.presence
 
     # El taller del producto actual: lo leen el marco y la portada, una vez por petición.
     def workshop = @workshop ||= Workshop.new(@project)
