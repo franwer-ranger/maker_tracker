@@ -5,7 +5,8 @@
 # capacidad se filtran en la página. «Apuntar una idea» (N) la deja en la bandeja,
 # sin hito, como `mt create`. Sustituye al tablero antiguo (`boards#show`).
 # El Tablero (MT-120) es la misma página por estado: arrastrar una tarjeta de
-# columna es `mt move`, con sus mismas reglas.
+# columna es `mt move`, con sus mismas reglas. Reordenar en la Lista (MT-121) es `mt reorder`: la página
+# llama a Stories::PositionsController (`story.reorder!`, con motivo y su evento), junto a otra o al final de un hito.
 module V1
   class StoryListsController < ApplicationController
     def show
@@ -65,7 +66,7 @@ module V1
       {
         groups: milestones.map do |milestone|
           items = grouped.fetch(milestone.id, []).sort_by(&:position)
-          { code: milestone.code, title: milestone.title, closed: milestone.closed?,
+          { id: milestone.id, code: milestone.code, title: milestone.title, closed: milestone.closed?,
             done: items.count(&:done?), total: items.size,
             items: items.map { item_props(it, by_slug, done_numbers, closed_at) } }
         end,
@@ -90,7 +91,8 @@ module V1
         closed_on: closed && helpers.short_date(closed),
         closed_at: closed&.iso8601,
         url: project_v1_story_path(@project, story.number),
-        move_url: project_v1_story_state_path(@project, story.number) }
+        move_url: project_v1_story_state_path(@project, story.number),
+        position_url: project_story_position_path(@project, story.number) }
     end
 
     # Por qué espera: a una respuesta o al OK de quien mira («te toca a ti»), o a otras historias.
