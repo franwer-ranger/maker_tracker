@@ -192,4 +192,10 @@ class Api::BaseController < ActionController::API
     project.stories.find_by(number: Integer(number, exception: false)) ||
       raise(Api::Error.not_found("#{project.key}-#{number} does not exist.", hint: "find it with mt list or mt roadmap."))
   end
+
+  # Una página de la documentación por su slug (mt doc, mt doc lint, mt attach <página>).
+  def find_page(slug)
+    project.pages.find_by(slug: slug.to_s.downcase) ||
+      raise(Api::Error.not_found("no page #{slug} in #{project.key}.", hint: "see them with mt doc."))
+  end
 end

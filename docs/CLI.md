@@ -171,6 +171,31 @@ Next:
 - **Autonomía**: un agente edita las páginas que cambia la historia en la que trabaja; crear, separar, juntar o borrar capacidades lo pregunta antes (`mt ask`). La API no lo impide: lo dicen la skill y la sección `## Autonomía` de la plantilla del brief.
 - `--json`: `pages[]` (índice) o `page` con `slug`, `type`, `title`, `icon`, `area`, `version` y `body`; `mt doc <slug> --json` añade `decisions[]` (las vigentes, con los campos de `mt show`), salvo en la portada.
 
+## `mt doc lint` (MT-123)
+
+Comprueba cómo se leerá una página en la web sin abrirla: la lee con el mismo `Page::Reading` que la página de la capacidad, así que lo que dice es lo que se verá. `mt doc lint editor` lee una página (capacidad o transversal; la portada es el brief y es un error de validación) y `mt doc lint --all` todas, con un resumen al final. Una página no se llama `lint` (slug reservado).
+
+```
+$ mt doc lint editor
+editor · Editor: 2 errors, 1 warning
+  0 rules, 1 question
+  Error: no opening sentence: start the page with a paragraph (before any ##), or with the first one of «## Qué hace hoy».
+  Error: image c2 does not load: the page has no attachment named c2.png (upload it with mt attach editor c2.png).
+  Warning: «Cómo funciona» will show as prose, not as rules: it must have only ### entries (from its first line) or only bullets, with no intro, closing, code or empty ###.
+
+Next:
+  mt doc editor
+  mt doc edit editor --file <f.md>
+```
+
+- Por página: `slug · Título: n errors, n warnings` (o `reads well`), `Opening sentence: «…»` si la tiene (recortada a 100), cuántas reglas y preguntas reconoce y una línea por hallazgo.
+- **Errores** (algo impide leerla bien; `mt` sale con 1): sin frase inicial; una decisión (`D-99`) o una historia del proyecto (`PG-999`) citada que no existe; una imagen que no carga: un enlace de adjunto cortado o roto (`eyJ…`), un `attachment:nombre.png` sin adjunto con ese nombre en la página o una ruta que no es de adjunto; o una página que no se deja leer.
+- **Avisos** (se lee, pero es mejorable; sale con 0): «Cómo funciona» o «¿Qué pasa si…?» que acabarán como prosa (con intro, cierre, código o un `###` vacío, o repetidas); una decisión citada sustituida (`D-9 is superseded by D-12.`); una imagen que no es adjunto de la página (de otra historia o página, o externa: de esa no sabe si carga).
+- **Código de salida**: 1 si hay algún error (o la página no existe, `no page editor in PG.`); 0 si solo hay avisos o se lee bien; 2 sin página ni `--all`, o con las dos a la vez.
+- `--all`: un bloque por página (capacidades y transversales, en el orden de `mt doc`) y `4 pages in PG: 1 with errors and 3 read well.`; `Next:` `mt doc lint <slug>`.
+- `--json`: `pages[]` con `slug`, `title`, `lead`, `rules` y `questions` (cuántas), `errors[]` y `warnings[]` (los mensajes), y `errors` / `warnings` con el total.
+- `mt doc --help` explica el formato de una página de capacidad, con un ejemplo corto.
+
 ## `mt daily`
 
 La daily del proyecto para quien la pide: lo que ha pasado desde **su** última daily en ese proyecto (la de otro actor no la mueve), lo que está en curso, bloqueado o esperando a Fran, y lo que toca. Es la versión para agentes de lo que la UI enseña en Actividad. Maker Tracker pone los datos; el resumen y las propuestas los pone el agente (skill `daily`, `/daily`), que los cruza con `git log`. Es un `POST`: ejecutarla deja constancia (evento `daily.held`) y la siguiente cuenta desde ahí. **La daily solo avanza al lanzarla**: si se pierde (falló, o quieres ver otra vez un periodo), se recupera con `--since 2026-10-15` (o `"2026-10-15 22:40"`), que cuenta desde esa fecha. La primera línea imprime la fecha completa de inicio, ISO con zona (`2026-10-20T18:02:11+02:00`), para el `git log --since` de la skill. Sin daily anterior enseña los últimos 7 días; en un proyecto recién creado funciona igual.

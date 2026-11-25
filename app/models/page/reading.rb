@@ -23,6 +23,10 @@
 # se quedan como párrafo. Una sección que no existe o se queda vacía no sale
 # (en `to_h`; con `plain`, sí está en `sections`, sin bloques).
 #
+# `as_prose`: los «Cómo funciona» y «¿Qué pasa si…?» que se quedan en
+# `sections`, en orden, con `repeated` si ya había uno que contaba (lo usa
+# `mt doc lint`, MT-123; no va en `to_h`).
+#
 # Una lista pegada al párrafo que la presenta («…dos vistas:\n  - Tablero…»)
 # es una lista, no parte del párrafo, como en markdown.
 class Page::Reading
@@ -40,7 +44,7 @@ class Page::Reading
   # «(D-52 · D-91)», «(D-45)», «— D-45» o «… móvil. D-45» al final: solo referencias, se quitan del texto.
   ONLY_DECISIONS = /\s*(?:\((?:\s*D-\d+\s*[,·y]?\s*)+\)|[—–-]\s*(?:D-\d+\s*[,·y]?\s*)+\z|(?<=[.!?])\s*(?:D-\d+\s*[,·y]?\s*)+\z)/
 
-  attr_reader :lead, :rules, :questions, :sections
+  attr_reader :lead, :rules, :questions, :sections, :as_prose
 
   def initialize(body, attachments: [], plain: false)
     @fences = []
@@ -51,6 +55,7 @@ class Page::Reading
 
     @lead, preamble_rest = plain ? [ nil, preamble.to_s.strip ] : take_first_paragraph(preamble.to_s.strip)
     @sections = []
+    @as_prose = []
     @sections << { title: nil, blocks: blocks(preamble_rest) } if preamble_rest.present?
 
     parsed.each do |title, content|
@@ -68,6 +73,7 @@ class Page::Reading
         @questions = questions
       elsif content.present?
         @sections << { title: title, blocks: blocks(content) }
+        note_prose(title)
       end
     end
   end
@@ -75,6 +81,13 @@ class Page::Reading
   def to_h = { lead: lead, rules: rules, questions: questions, sections: sections.reject { it[:blocks].empty? } }
 
   private
+
+  def note_prose(title)
+    kind = if title&.match?(RULES) then :rules
+    elsif title&.match?(QUESTIONS) then :questions
+    end
+    @as_prose << { title: title, kind: kind, repeated: !(kind == :rules ? @rules : @questions).nil? } if kind
+  end
 
   # La línea `![…](url)` es una captura de la página (Attachable.markdown escapa los paréntesis).
   def screenshot?(line, attachments)

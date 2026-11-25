@@ -14,7 +14,7 @@ class Page < ApplicationRecord
 
   COVER_SLUG = "cover"
   # Los subcomandos de `mt doc` no pueden ser el slug de una página.
-  RESERVED_SLUGS = %w[create edit delete list show].freeze
+  RESERVED_SLUGS = %w[create edit delete list show lint].freeze
   EDITABLE_FIELDS = %w[title icon area body kind].freeze
 
   belongs_to :project
@@ -101,6 +101,11 @@ class Page < ApplicationRecord
       record_event!("page.deleted", actor: actor, data: { page_id: id, slug: slug, title: title })
     end
   end
+
+  # La página partida como la pinta la web (Page::Reading): con sus
+  # `attachment:` resueltos y sin las líneas que son sus capturas. La misma
+  # lectura para la página de la capacidad y para `mt doc lint` (MT-123).
+  def reading = Page::Reading.new(resolve_attachment_references(body), attachments: screenshots.map { Attachable.path(it) })
 
   def last_editor
     event = history.where(action: %w[brief.edited page.edited page.created]).includes(:actor).first

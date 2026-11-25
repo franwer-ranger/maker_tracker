@@ -121,6 +121,11 @@ module Api::Operations
       description: "The documentation pages: the cover (the brief), the capabilities and the cross-cutting pages, one line each" },
     { method: "GET", path: "/api/projects/:key/docs/:slug", params: {}, command: "mt doc board",
       description: "A page as markdown with frontmatter (slug, version, type, title, icon, area), the decisions in force that govern it, how it has changed (the stories whose closing updated it) and its latest events" },
+    # mt doc lint (MT-123): cómo se leerá en la web, con el mismo Page::Reading.
+    { method: "GET", path: "/api/projects/:key/docs/:slug/lint", params: {}, command: "mt doc lint board",
+      description: "How a page will read on the web: its opening sentence, how many rules and questions it finds, the sections that will show as prose, cited decisions and stories that do not exist or are superseded, and images that do not load or are not its attachments. data.errors > 0 means it does not read well (mt exits with 1)" },
+    { method: "GET", path: "/api/projects/:key/docs/lint", params: {}, command: "mt doc lint --all",
+      description: "The same for every capability and cross-cutting page" },
     { method: "POST", path: "/api/projects/:key/docs", command: "mt doc create board --title \"Board\" [--type …] [--area …] [--icon …] [--file f.md]",
       params: { slug: "lowercase letters, numbers and hyphens", title: "", type: "capability (default) | crosscutting", area: "optional", icon: "optional", body: "markdown", markdown: "the mt doc format instead of the fields" },
       description: "Creates a capability or a cross-cutting page. Agents ask before creating, splitting, merging or deleting capabilities" },
