@@ -357,7 +357,7 @@ Igual que `mt next` sin las dos primeras líneas. Arriba, lo que se puede editar
   ```
 - `capabilities` (MT-91) son las capacidades que cambia la historia: los slugs de sus páginas (capacidades o transversales, no la portada), como los lista `mt doc`. Es una propiedad como `labels`: se escribe con `mt edit` (o `mt create --file`) en el frontmatter, `[editor, calendario]`, y en la web en «Capacidades» al editar (solo sale si el proyecto tiene páginas o la historia ya declara alguna). Se guardan en minúsculas; un slug que no es una página del proyecto es `VALIDATION_FAILED` (`Capabilities includes pages that don't exist in the project's documentation (nada): create them first with mt doc create.`) y `cover` también (`… can't include the cover: it is the brief, not a capability.`). Solo se comprueban los que se añaden: el de una página borrada después puede quedarse y no cuenta. **Es la única fuente de las capacidades de una historia**: las decisiones registradas con `--story` las heredan (ver `mt decide`) y `mt done` pide actualizar sus páginas. La sección `## Qué cambia del producto` del cuerpo es texto libre (cómo quedan), ya no enlaza nada. En `--json`, `capabilities` (si tiene) y `documentation_pending` (los slugs pendientes, si hay).
 - `## Documentation` (MT-91), tras `## Related`, solo si la historia cambia alguna capacidad que existe. Sin Hecha: `It changes editor. Before mt done, update its page: mt doc edit editor --file <f.md>.` Hecha y al día: `## Documentation · up to date` con `It changes editor.` Hecha y pendiente: `## Documentation · pending` con `PG-49 was closed without updating editor. Update it with mt doc edit editor --file <f.md> and run mt done PG-49 again.`, y `Next:` sugiere esos dos comandos en lugar de `mt next`.
-- `## Attachments · n` (MT-96), tras `## Related`, solo si tiene adjuntos: uno por línea, en el orden en que se subieron, con nombre, tipo, tamaño y el enlace absoluto para descargarlo (`curl -L`). En `--json`, `attachments[]` con `filename`, `content_type`, `byte_size`, `size`, `url` y `markdown`. `mt doc <slug>` lleva la misma sección, tras la marca.
+- `## Attachments · n` (MT-96), tras `## Related`, solo si tiene adjuntos: uno por línea, en el orden en que se subieron, con nombre, tipo, tamaño y el enlace absoluto para descargarlo (`curl -L`). En `--json`, `attachments[]` con `filename`, `content_type`, `byte_size`, `size`, `url` y `markdown` (la línea por su nombre, `![captura.png](attachment:captura.png)`, MT-122). `mt doc <slug>` lleva la misma sección, tras la marca.
 
   ```markdown
   ## Attachments · 2
@@ -686,20 +686,22 @@ PG-49 done by claude, with 1 commit and PR #63.
 
 ### Adjuntos (MT-96)
 
-`mt attach <historia|página> <archivo>` sube una captura, un vídeo o un archivo a una historia (`PG-49`, `49`) o a una página de la documentación (su slug: `editor`, `cover`) e imprime solo su enlace en markdown, para pegarlo en el cuerpo con `mt edit` / `mt doc edit`. Las imágenes y los vídeos van con `![]()` y se ven en línea en la web; el resto con `[]()` y se descarga (un HTML también: nunca se sirve como página; y un SVG o un HEIC, que el navegador no pinta en línea, van como archivo y no cuentan como captura). El enlace es relativo a la instancia, así vale por cualquiera de sus direcciones.
+`mt attach <historia|página> <archivo> [--alt "…"]` sube una captura, un vídeo o un archivo a una historia (`PG-49`, `49`) o a una página de la documentación (su slug: `editor`, `cover`) e imprime solo su línea en markdown, **por su nombre** (MT-122), para pegarla tal cual en el cuerpo con `mt edit` / `mt doc edit`. Con `--alt` lleva ese pie; sin él, el nombre. Las imágenes y los vídeos van con `![]()` y se ven en línea en la web; el resto con `[]()` y se descarga (un HTML también: nunca se sirve como página; y un SVG o un HEIC, que el navegador no pinta en línea, van como archivo y no cuentan como captura).
 
 ```text
-$ mt attach PG-49 captura.png
-![captura.png](/rails/active_storage/blobs/redirect/eyJf…/captura.png)
+$ mt attach PG-49 captura.png --alt "El tablero, vacío"
+![El tablero, vacío](attachment:captura.png)
 
 Next:
   mt edit PG-49 --file <f.md>
 ```
 
+- `attachment:captura.png` es el adjunto con ese nombre **de esa misma historia o página** (si se repite, el último que se subió). Un nombre con espacios o paréntesis va con `%20`, `%28` y `%29` (`mt attach` ya lo escribe así). La web lo resuelve al pintar el cuerpo (y sus comentarios); `mt show` y `mt doc` lo muestran tal cual, con el nombre. Si no hay un adjunto con ese nombre, la web enseña un hueco con «Falta la imagen captura.png», nunca una imagen rota.
+- **Nunca se copian URLs de adjuntos** en un cuerpo: son largas y la terminal las corta al mostrarlas. Las que ya hay (`/rails/active_storage/…`) siguen funcionando.
 - Hasta 100 MB por archivo, y solo imágenes (PNG, JPEG, GIF, WebP, AVIF, SVG, HEIC), vídeos (MP4, WebM, MOV), PDF, texto (txt, md, csv, json, html) y comprimidos (zip, gz, tar). Si no: `VALIDATION_FAILED` con `x.exe is application/x-dosexec, which is not allowed: images, videos, PDF, text or archives.` o `video.mp4 is 120 MB: the limit is 100 MB.` (este último lo da `mt` antes de leer el archivo, con código 2, sin subirlo).
 - Deja el evento `attachment.added` (`attached captura.png` en `## History`; en una página, `attached captura.png to page editor`).
 - Las imágenes en línea de una página (no SVG ni HEIC), en el orden en que se subieron, son sus capturas: las de la portada (`cover`) y las de «El recorrido» de una capacidad.
-- `--json`: `filename`, `content_type`, `byte_size`, `size`, `url` (absoluta) y `markdown`.
+- `--json`: `filename`, `content_type`, `byte_size`, `size`, `url` (absoluta, para descargarlo) y `markdown` (la línea por su nombre).
 
 ### La historia como diff (MT-91)
 

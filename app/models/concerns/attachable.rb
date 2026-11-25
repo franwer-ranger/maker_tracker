@@ -18,6 +18,8 @@ module Attachable
   VIDEO_TYPES = %w[video/mp4 video/webm video/quicktime].freeze
   FILE_TYPES = %w[application/pdf text/plain text/markdown text/csv text/html application/json application/zip application/gzip application/x-tar].freeze
   ALLOWED_TYPES = (IMAGE_TYPES + VIDEO_TYPES + FILE_TYPES).freeze
+  # Un adjunto citado por su nombre en el markdown (MT-122): `![pie](attachment:captura.png)`.
+  REFERENCE = /(!?\[[^\]]*\]\()attachment:([^)\s]+)\)/
 
   # El archivo no es válido: vacío, demasiado grande o de un tipo que no se
   # admite. `message` va en castellano (la UI) y `english` en inglés (la API).
@@ -74,6 +76,21 @@ module Attachable
   # Los adjuntos, en el orden en que se subieron.
   def ordered_attachments = attachments_attachments.includes(:blob).order(:created_at, :id)
 
+  # El markdown con sus referencias por nombre (MT-122) resueltas a su enlace:
+  # `![pie](attachment:captura.png)` → `![pie](/rails/active_storage/…/captura.png)`.
+  # Si hay dos con el mismo nombre, vale el último que se subió. La que no
+  # existe se queda como está: la UI la pinta como «Falta la imagen …».
+  def resolve_attachment_references(text)
+    return text if text.blank? || !text.include?("attachment:")
+
+    links = attachment_links
+    text.gsub(REFERENCE) { (link = links[Attachable.decode_name($2)]) ? "#{$1}#{link})" : $& }
+  end
+
+  # Nombre → enlace de cada adjunto (el último si se repite): con lo que la web
+  # resuelve `attachment:` al pintar el markdown en el navegador.
+  def attachment_links = ordered_attachments.to_h { [ it.filename.to_s, Attachable.link(it) ] }
+
   # Las imágenes adjuntas que se ven en línea, en el orden en que se subieron:
   # las capturas de la portada (MT-102) y de «El recorrido» de una capacidad (MT-103).
   def screenshots = ordered_attachments.select { INLINE_IMAGE_TYPES.include?(it.content_type) }
@@ -81,9 +98,23 @@ module Attachable
   # "![captura.png](/rails/active_storage/blobs/redirect/…/captura.png)"
   def self.markdown(attachment)
     name = attachment.filename.to_s.gsub(/[\[\]]/, "")
-    link = path(attachment).gsub("(", "%28").gsub(")", "%29")
-    inline?(attachment.content_type) ? "![#{name}](#{link})" : "[#{name}](#{link})"
+    inline?(attachment.content_type) ? "![#{name}](#{link(attachment)})" : "[#{name}](#{link(attachment)})"
   end
+
+  # La misma línea con el adjunto por su nombre (MT-122), la que imprime `mt attach`:
+  # "![captura.png](attachment:captura.png)", o "![pie](attachment:captura.png)" con `alt`.
+  def self.reference(attachment, alt: nil)
+    filename = attachment.filename.to_s
+    text = (alt.presence || filename).to_s.gsub(/[\[\]\n]/, "")
+    name = filename.gsub("%", "%25").gsub(" ", "%20").gsub("(", "%28").gsub(")", "%29")
+    inline?(attachment.content_type) ? "![#{text}](attachment:#{name})" : "[#{text}](attachment:#{name})"
+  end
+
+  # "captura%20(2).png" → "captura (2).png"
+  def self.decode_name(name) = URI.decode_uri_component(name)
+
+  # El enlace con los paréntesis escapados, para que no corten el `()` del markdown.
+  def self.link(attachment) = path(attachment).gsub("(", "%28").gsub(")", "%29")
 
   # Se ve en la página (imagen o vídeo) en vez de descargarse.
   def self.inline?(content_type) = (INLINE_IMAGE_TYPES + VIDEO_TYPES).include?(content_type)

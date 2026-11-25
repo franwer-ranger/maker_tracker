@@ -64,9 +64,11 @@ func newClient(cfg Config) *Client {
 }
 
 // Upload es el cuerpo de una subida (mt attach): el archivo Path en el campo
-// "file" de un multipart/form-data, en vez de JSON.
+// "file" de un multipart/form-data, en vez de JSON, y Fields como campos de texto
+// del mismo formulario (alt, MT-122).
 type Upload struct {
-	Path string
+	Path   string
+	Fields map[string]string
 }
 
 // UploadTimeout es lo que espera una subida: un vídeo de 100 MB no cabe en 20 s.
@@ -90,6 +92,11 @@ func multipartBody(up Upload) (io.Reader, string, error) {
 	}
 	var buf bytes.Buffer
 	form := multipart.NewWriter(&buf)
+	for name, value := range up.Fields {
+		if err := form.WriteField(name, value); err != nil {
+			return nil, "", err
+		}
+	}
 	part, err := form.CreateFormFile("file", filepath.Base(up.Path))
 	if err != nil {
 		return nil, "", err

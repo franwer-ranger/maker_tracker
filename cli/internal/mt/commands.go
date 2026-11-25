@@ -274,17 +274,21 @@ func init() {
 			}
 			return e.storyCall("POST", e.arg(0), "/comments", map[string]any{"body": body})
 		}})
-	def(&command{name: "attach", group: workGroup, usage: "mt attach <story|page> <file>", minArgs: 2, maxArgs: 2,
-		summary:     "Uploads a screenshot, video or file to a story or a documentation page and prints its markdown link",
-		description: "The link goes in the body: images and videos are seen inline, the rest downloads. A story is PG-49 or 49; anything else is a page slug (board, cover). Up to 100 MB: images, videos, PDF, text and archives. mt show and mt doc list the attachments.",
-		example:     "mt attach PG-49 screenshot.png",
+	def(&command{name: "attach", group: workGroup, usage: "mt attach <story|page> <file> [--alt \"…\"]", minArgs: 2, maxArgs: 2,
+		summary:     "Uploads a screenshot, video or file to a story or a documentation page and prints its markdown line, by name",
+		description: "Paste the line in the body as is: ![screenshot.png](attachment:screenshot.png) refers to the attachment by its name, so never copy attachment URLs. Images and videos are seen inline, the rest downloads. A story is PG-49 or 49; anything else is a page slug (board, cover). Up to 100 MB: images, videos, PDF, text and archives. mt show and mt doc list the attachments.",
+		example:     "mt attach PG-49 screenshot.png --alt \"The board, empty\"",
 		run: func(e *env) error {
+			upload := Upload{Path: e.arg(1)}
+			if e.opts.has("alt") {
+				upload.Fields = map[string]string{"alt": e.opts.get("alt")}
+			}
 			target := strings.TrimPrefix(e.arg(0), "#")
 			if referencePattern.MatchString(target) {
-				return e.storyCall("POST", target, "/attachments", Upload{Path: e.arg(1)})
+				return e.storyCall("POST", target, "/attachments", upload)
 			}
-			return e.projectCall("POST", "/docs/"+url.PathEscape(strings.ToLower(target))+"/attachments", nil, Upload{Path: e.arg(1)})
-		}})
+			return e.projectCall("POST", "/docs/"+url.PathEscape(strings.ToLower(target))+"/attachments", nil, upload)
+		}}, "alt the caption of the image (by default, its name)")
 	def(&command{name: "ask", group: workGroup, usage: "mt ask <story> \"…\" --option \"…\" --option \"…\" [--recommend n] [--context \"…\"] [--reversible] [--no-bloqueante]", minArgs: 2, maxArgs: 2,
 		summary:     "Asks a question with its options and your recommendation, instead of a comment",
 		description: "It blocks by default: if the story was yours it lets it go, and nobody picks it up until the question is answered. With --no-bloqueante it does not block: you carry on with the recommended option (--recommend is then required) unless it is answered otherwise. Without --reversible the question does not say whether it can be undone.",

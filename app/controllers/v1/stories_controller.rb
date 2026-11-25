@@ -206,7 +206,7 @@ module V1
     end
 
     def comment_props(comment)
-      { id: comment.id, actor: comment.actor.name, agent: comment.actor.agent?, at: comment.created_at.iso8601, blocks: comment_blocks(comment.body) }
+      { id: comment.id, actor: comment.actor.name, agent: comment.actor.agent?, at: comment.created_at.iso8601, blocks: comment_blocks(comment.story.resolve_attachment_references(comment.body)) }
     end
 
     # El comentario tal cual, en bloques: sus `##` como subtítulos.

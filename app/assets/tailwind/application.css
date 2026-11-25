@@ -252,6 +252,10 @@
   .markdown video {
     @apply h-auto max-w-full rounded-lg border border-border;
   }
+  /* La imagen que cita un adjunto que no existe (MT-122): un hueco, nunca rota. */
+  .markdown .missing-attachment {
+    @apply inline-flex max-w-full items-center rounded-lg border border-dashed border-border px-3 py-2 text-control text-text-muted;
+  }
   /* Casillas de criterios (- [ ] / - [x]) */
   /* Bloque con sangría, no flex: así el texto, el `código` y los enlaces de la
      casilla fluyen en una sola línea en vez de partirse en columnas. */
