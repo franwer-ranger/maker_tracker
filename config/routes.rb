@@ -87,6 +87,8 @@ Rails.application.routes.draw do
       # Las historias por hito (MT-109): la Lista, que sustituye al tablero antiguo, y apuntar una idea.
       get "historias", to: "story_lists#show", as: :story_list
       post "historias", to: "story_lists#create"
+      # Moverla de columna en el Tablero (MT-120): las mismas reglas que `mt move`.
+      post "historias/:number/estado", to: "story_lists#move", as: :story_state
       # La página de una capacidad (MT-103) y su markdown (el de `mt doc <slug>`).
       get "capacidades/:slug", to: "capabilities#show", as: :capability
       get "capacidades/:slug/markdown", to: "capabilities#markdown", as: :capability_markdown
