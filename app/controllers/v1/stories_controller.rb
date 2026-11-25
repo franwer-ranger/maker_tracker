@@ -92,7 +92,7 @@ module V1
         end,
         activity: activity(story),
         events: story.events.count,
-        comments: story.comments.includes(:actor).map { comment_props(it) },
+        comments: story.comments.includes(:actor).map { comment_props(it, story) },
         copy: Api::Markdown::Story.new(story).to_s,
         edit_url: edit_project_story_path(@project, story),
         history_url: project_story_path(@project, story),
@@ -205,8 +205,10 @@ module V1
       end
     end
 
-    def comment_props(comment)
-      { id: comment.id, actor: comment.actor.name, agent: comment.actor.agent?, at: comment.created_at.iso8601, blocks: comment_blocks(comment.story.resolve_attachment_references(comment.body)) }
+    # Los adjuntos de la historia se buscan una vez para todos sus comentarios.
+    def comment_props(comment, story)
+      body = story.resolve_attachment_references(comment.body, links: (@attachment_links ||= story.attachment_links))
+      { id: comment.id, actor: comment.actor.name, agent: comment.actor.agent?, at: comment.created_at.iso8601, blocks: comment_blocks(body) }
     end
 
     # El comentario tal cual, en bloques: sus `##` como subtítulos.

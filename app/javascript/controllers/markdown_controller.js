@@ -50,7 +50,11 @@ export default class extends Controller {
   }
 
   #resolveAttachments(text) {
-    return text.replace(REFERENCE, (_, start, name) => `${start}${this.attachmentsValue[decodeName(name)] || MISSING + name})`)
+    return text.replace(REFERENCE, (_, start, name) => {
+      const key = decodeName(name)
+      const link = Object.hasOwn(this.attachmentsValue, key) ? this.attachmentsValue[key] : MISSING + name
+      return `${start}${link})`
+    })
   }
 
   #markMissing() {

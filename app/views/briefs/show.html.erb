@@ -20,10 +20,10 @@
       </div>
     </header>
 
-    <div data-controller="markdown">
+    <%= tag.div data: { controller: "markdown", markdown_attachments_value: (@project.cover&.attachment_links || {}).to_json } do %>
       <textarea hidden data-markdown-target="source"><%= @project.brief %></textarea>
       <div class="markdown markdown-doc" data-markdown-target="output"></div>
-    </div>
+    <% end %>
   </article>
 
   <%= render "briefs/decisions" %>

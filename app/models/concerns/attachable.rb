@@ -80,10 +80,11 @@ module Attachable
   # `![pie](attachment:captura.png)` → `![pie](/rails/active_storage/…/captura.png)`.
   # Si hay dos con el mismo nombre, vale el último que se subió. La que no
   # existe se queda como está: la UI la pinta como «Falta la imagen …».
-  def resolve_attachment_references(text)
+  # `links:` (opcional) es el `attachment_links` ya calculado, para no repetirlo.
+  def resolve_attachment_references(text, links: nil)
     return text if text.blank? || !text.include?("attachment:")
 
-    links = attachment_links
+    links ||= attachment_links
     text.gsub(REFERENCE) { (link = links[Attachable.decode_name($2)]) ? "#{$1}#{link})" : $& }
   end
 
@@ -110,8 +111,12 @@ module Attachable
     inline?(attachment.content_type) ? "![#{text}](attachment:#{name})" : "[#{text}](attachment:#{name})"
   end
 
-  # "captura%20(2).png" → "captura (2).png"
-  def self.decode_name(name) = URI.decode_uri_component(name)
+  # "captura%20(2).png" → "captura (2).png"; con un `%` mal escrito ("100%.png"), tal cual.
+  def self.decode_name(name)
+    URI.decode_uri_component(name)
+  rescue ArgumentError
+    name
+  end
 
   # El enlace con los paréntesis escapados, para que no corten el `()` del markdown.
   def self.link(attachment) = path(attachment).gsub("(", "%28").gsub(")", "%29")
