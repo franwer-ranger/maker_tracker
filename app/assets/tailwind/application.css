@@ -247,6 +247,11 @@
   .markdown strong {
     @apply font-semibold text-text;
   }
+  /* Adjuntos (MT-96): capturas y vídeos en línea, al ancho del texto como mucho. */
+  .markdown img,
+  .markdown video {
+    @apply h-auto max-w-full rounded-lg border border-border;
+  }
   /* Casillas de criterios (- [ ] / - [x]) */
   /* Bloque con sangría, no flex: así el texto, el `código` y los enlaces de la
      casilla fluyen en una sola línea en vez de partirse en columnas. */
