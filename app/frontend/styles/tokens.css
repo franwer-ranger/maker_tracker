@@ -1,0 +1,77 @@
+/*
+ * Tokens de la UI v1, copiados de Paper (archivo Maker Tracker, «v1 · 1 · Sistema · 01 · Tokens»,
+ * get_tokens) y documentados en docs/DESIGN.md. Claro en :root; oscuro en .dark con los --dark-*.
+ * El oscuro sigue al sistema salvo que se elija a mano (lib/theme.ts). La barra lateral es oscura siempre.
+ */
+:root,
+.light {
+  --background: #F7F8FA;
+  --foreground: #111113;
+  --card: #FFFFFF;
+  --card-foreground: #111113;
+  --popover: #111113;
+  --popover-foreground: #EDEEF0;
+  --muted: #ECEEF1;
+  --muted-foreground: #6B6F76;
+  --border: #E4E6EA;
+  --input: #E4E6EA;
+  --ring: #111113;
+  --primary: #111113;
+  --primary-foreground: #F6F7F8;
+  --signal: #FF3F01;
+  --signal-soft: #FFE7DC;
+  --success: #2E7D4F;
+  --destructive: #C2341B;
+  --body: #3A3D44;
+  --kbd: #9EA3AB;
+
+  --sidebar: #0F0F11;
+  --sidebar-foreground: #C9CBD0;
+  --sidebar-muted: #6E7078;
+  --sidebar-accent: #1C1D21;
+  --sidebar-border: #2A2A2E;
+  --sidebar-active: #F2F3F5;
+  --sidebar-label: #4E5058;
+  --sidebar-chip: #2B2C31;
+  --sidebar-control: #222327;
+  --sidebar-kbd: #3A3B40;
+  --overlay: #0F0F1159;
+
+  --state-idea: #8C8A84;
+  --state-defining: #D99A1E;
+  --state-ready: #111113;
+  --state-in-progress: #FF3F01;
+  --state-done: #2E7D4F;
+
+  --radius: 6px;
+  --radius-panel: 14px;
+}
+
+.dark,
+.light .dark {
+  --background: #17171A;
+  --foreground: #EDEDED;
+  --card: #1F1F23;
+  --card-foreground: #EDEDED;
+  --popover: #ECEBE6;
+  --popover-foreground: #111113;
+  --muted: #26262A;
+  --muted-foreground: #8A8A8F;
+  --border: #2E2E33;
+  --input: #2E2E33;
+  --ring: #EDEDED;
+  --primary: #EDEDED;
+  --primary-foreground: #111113;
+  --signal: #FF3F01;
+  --signal-soft: #3A1A0E;
+  --success: #5FB37A;
+  --body: #B9B9BD;
+
+  --sidebar: #0B0B0C;
+  --sidebar-accent: #1F1F23;
+  --sidebar-border: #222226;
+  --sidebar-active: #F2F3F5;
+
+  --state-ready: #EDEDED;
+  --state-done: #5FB37A;
+}

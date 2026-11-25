@@ -1,0 +1,117 @@
+/*
+ * CSS de las páginas de Inertia (MT-99): Tailwind 4 por Vite, solo sobre app/frontend,
+ * con los tokens de Paper (tokens.css, MT-101). UI SDK no trae estilos: todo el aspecto sale de aquí.
+ */
+@import "tailwindcss" source("../");
+@import "./tokens.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../assets/fonts/Geist-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../assets/fonts/GeistMono-Variable.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Instrument Serif";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../assets/fonts/InstrumentSerif-Regular.woff2") format("woff2");
+}
+
+/* Los tokens con nombres de shadcn (tokens.css) como utilidades: bg-background, text-muted-foreground… */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-body: var(--body);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-success: var(--success);
+  --color-kbd: var(--kbd);
+  --color-destructive: var(--destructive);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-label: var(--sidebar-label);
+  --color-sidebar-chip: var(--sidebar-chip);
+  --color-sidebar-control: var(--sidebar-control);
+  --color-sidebar-kbd: var(--sidebar-kbd);
+  --color-overlay: var(--overlay);
+  --color-state-idea: var(--state-idea);
+  --color-state-defining: var(--state-defining);
+  --color-state-ready: var(--state-ready);
+  --color-state-in-progress: var(--state-in-progress);
+  --color-state-done: var(--state-done);
+
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+
+  --text-label: 11px;
+  --text-label--line-height: 14px;
+  --text-control: 13px;
+  --text-control--line-height: 18px;
+  --tracking-label: 0.08em;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-frame: var(--radius-panel);
+
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@layer base {
+  html { color-scheme: light; }
+  html.dark { color-scheme: dark; }
+  body {
+    @apply bg-sidebar font-sans text-foreground antialiased;
+  }
+  /* Foco siempre visible (DESIGN.md): 2px del fondo + 2px de color. */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+}
+
+/* Vida del agente (DESIGN.md · Agente trabajando): el punto naranja que late. */
+@keyframes agent-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--signal) 40%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--signal) 0%, transparent); }
+}
+@keyframes fresh {
+  from { background: color-mix(in srgb, var(--signal) 10%, transparent); }
+  to { background: transparent; }
+}
+@utility agent-pulse { animation: agent-pulse 1.6s var(--ease-out-soft) infinite; }
+@utility fresh { animation: fresh 2.4s var(--ease-out-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .agent-pulse, .fresh { animation: none; }
+}

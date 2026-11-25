@@ -74,3 +74,7 @@ end
 
 
 gem "positioning"
+
+# Live props (InertiaRails.live) están en master desde el 2026-11-24 y aún no en una versión publicada (3.23.0): prueba MT-99.
+gem "inertia_rails", github: "inertiajs/inertia-rails", ref: "4723d714eb7b"
+gem "vite_rails", "~> 3.11"

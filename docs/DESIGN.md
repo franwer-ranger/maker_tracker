@@ -49,6 +49,11 @@ Claro en `:root`, oscuro en `.dark`. La barra lateral es oscura en los dos temas
 | `--body` | `#3A3D44` | `#B9B9BD` | Texto de lectura (párrafos) |
 | `--sidebar-active` | `#F2F3F5` | `#F2F3F5` | Texto del elemento activo de la barra |
 | `--kbd` | `#9EA3AB` | `igual` | Atajos de teclado |
+| `--sidebar-label` | `#4E5058` | `igual` | Áreas del mapa de capacidades en la barra (Paper, «v1 · 11», valor suelto) |
+| `--sidebar-chip` | `#2B2C31` | `igual` | Casilla del producto y avatar en la barra |
+| `--sidebar-control` | `#222327` | `igual` | Borde del combo de producto en la barra |
+| `--sidebar-kbd` | `#3A3B40` | `igual` | Borde de un atajo sobre la barra |
+| `--overlay` | `#0F0F1159` | `igual` | Velo detrás del ⌘K y las ventanas |
 
 ## Tipografía, tamaños, espacio y forma
 

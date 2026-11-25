@@ -1,0 +1,19 @@
+<%# Páginas de Inertia + React (MT-99): sin Tailwind de la app, Basecoat ni importmap; el CSS y el JS salen de Vite (app/frontend). %>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#0F0F11">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= action_cable_meta_tag %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= inertia_ssr_head %>
+    <%= vite_react_refresh_tag %>
+    <%= vite_client_tag %>
+    <%= vite_typescript_tag "inertia.tsx" %>
+  </head>
+  <body>
+    <%= yield %>
+  </body>
+</html>

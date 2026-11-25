@@ -51,3 +51,5 @@
 # Frontend (Vite, MT-99 en adelante).
 node_modules/
 /public/vite*
+# Vite usa dotenv: ficheros de entorno locales.
+*.local

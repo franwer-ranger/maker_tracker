@@ -113,6 +113,16 @@ docker compose exec backup bin/restore   # list them
 docker compose logs backup               # see what it did
 ```
 
+Before an upgrade that changes the app (a new UI, a migration), take a backup, copy it off the container's data folder and check that it opens:
+
+```sh
+docker compose exec backup bin/backup                                   # take one now
+mkdir -p ~/maker-tracker-backups && cp -r data/backups/$(ls data/backups | tail -1) ~/maker-tracker-backups/
+sqlite3 ~/maker-tracker-backups/$(ls data/backups | tail -1)/production.sqlite3 "PRAGMA integrity_check; SELECT count(*) FROM stories;"
+```
+
+`integrity_check` must print `ok`. To go back to it, use `bin/restore` as below.
+
 These backups live on the same disk as the app. To survive a dead disk, copy `data/backups/` to another machine or drive regularly (for example with `rsync` from cron).
 
 ## Restoring

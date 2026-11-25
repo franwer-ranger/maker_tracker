@@ -1,6 +1,7 @@
 # Componentes del sistema de diseño v3 (Paper → v3 · Sistema → 03 · Componentes).
 # Código propio al estilo de shadcn: helpers y partials pequeños que usan los
-# tokens de app/assets/tailwind/application.css. Se ven todos juntos en /design (development).
+# tokens de app/assets/tailwind/application.css. Su catálogo en /design se quitó en MT-101 (ahora es el
+# de la UI v1 en React); estas piezas se van con la UI antigua.
 module ComponentsHelper
   STATES = Story::STATE_NAMES
 

@@ -50,6 +50,7 @@ class Event < ApplicationRecord
     [ Presence.stream(project), Presence.stream(:all) ].each do |stream|
       Turbo::StreamsChannel.broadcast_refresh_later_to(*stream)
     end
+    InertiaRails.broadcast_later(project) # las páginas de Inertia (MT-99) recargan sus live props
     if Current.actor == actor && actor.agent?
       Presence.wrote(self)
       Current.presence_written = true

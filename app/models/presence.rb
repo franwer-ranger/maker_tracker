@@ -174,6 +174,7 @@ module Presence
     # Vuelve a pintar las páginas del proyecto o la portada (MT-38).
     def broadcast(key)
       Turbo::StreamsChannel.broadcast_refresh_to(*stream(key))
+      InertiaRails.broadcast(Project.new(id: key)) unless key == :all # la portada v1 (MT-99)
     end
   end
 end

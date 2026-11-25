@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/inertiajs/inertia-rails.git
+  revision: 4723d714eb7b0db24ef131f95d0b521d7693012a
+  ref: 4723d714eb7b
+  specs:
+    inertia_rails (3.23.0)
+      railties (>= 6)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -106,6 +114,7 @@ GEM
       reline (>= 0.3.8)
     debug_inspector (1.2.0)
     drb (2.2.3)
+    dry-cli (1.4.1)
     erb (6.0.7)
     erb_lint (0.9.0)
       activesupport
@@ -115,7 +124,6 @@ GEM
       rubocop (>= 1)
       smart_properties
     erubi (1.13.1)
-    ffi (1.17.4)
     ffi (1.17.4-aarch64-linux-gnu)
     ffi (1.17.4-arm64-darwin)
     ffi (1.17.4-x86_64-linux-gnu)
@@ -165,6 +173,7 @@ GEM
       drb (~> 2.0)
       prism (~> 1.5)
     msgpack (1.8.5)
+    mutex_m (0.3.0)
     net-imap (0.6.8)
       date
       net-protocol
@@ -197,6 +206,8 @@ GEM
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.7)
+    rack-proxy (2.0.2)
+      rack (>= 2.0, < 4)
     rack-session (2.1.2)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -326,6 +337,15 @@ GEM
     unicode-emoji (4.3.0)
     uri (1.1.2)
     useragent (0.16.11)
+    vite_rails (3.11.1)
+      railties (>= 5.1, < 9)
+      vite_ruby (~> 3.0, >= 3.2.2)
+    vite_ruby (3.11.1)
+      dry-cli (>= 0.7, < 2)
+      logger (~> 1.6)
+      mutex_m
+      rack-proxy (>= 0.6.1)
+      zeitwerk (~> 2.2)
     web-console (4.3.0)
       actionview (>= 8.0.0)
       bindex (>= 0.4.0)
@@ -355,6 +375,7 @@ DEPENDENCIES
   erb_lint
   hotwire-livereload
   importmap-rails
+  inertia_rails!
   jbuilder
   positioning
   puma (>= 5.0)
@@ -369,6 +390,7 @@ DEPENDENCIES
   tailwindcss-ruby (~> 4.3)
   turbo-rails
   tzinfo-data
+  vite_rails (~> 3.11)
   web-console
   web-push (~> 3.1)
 

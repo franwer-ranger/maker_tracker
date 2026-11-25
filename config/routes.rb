@@ -12,8 +12,8 @@ Rails.application.routes.draw do
   delete "push_subscriptions", to: "push_subscriptions#destroy"
 
   if Rails.env.development?
-    get "design" => "design#show"
-    get "design/movil" => "design#mobile" # las piezas del móvil, dentro de un iframe de 390px
+    # Catálogo de la UI v1 (MT-101): todas las piezas dentro del marco, para comparar con Paper.
+    get "design" => "v1/design#show"
   end
 
   # API para agentes (mt, MCP). Proyectos por su clave: /api/projects/PG/stories/49.
@@ -67,6 +67,11 @@ Rails.application.routes.draw do
   # Todo lo de un proyecto cuelga de su slug: /p/postgram, /p/postgram/roadmap…
   scope "p/:project_slug", as: :project do
     get "/", to: "boards#show", as: ""
+    # Prueba del stack v1 (MT-99): Inertia + React, al lado de las vistas de siempre.
+    scope "v1", module: :v1, as: :v1 do
+      get "/", to: "covers#show", as: :cover
+      resources :milestones, path: "hitos", param: :number, only: %i[edit update]
+    end
     resource :roadmap, only: :show
     resources :milestones, only: :create do
       scope module: :milestones do
