@@ -16,26 +16,27 @@ import { Icon, type IconName } from "./icons"
 import { Kbd } from "./kbd"
 
 // Escribir de seguido (MT-118, Paper «v1 · 9 · Editar», columna «Escribir»): un textarea donde `/` abre los
-// comandos del editor, `@` busca y enlaza historias, decisiones y capacidades, y pegar (⌘V) o arrastrar un archivo
+// comandos del editor, `@` busca y cita historias, decisiones y capacidades, y pegar (⌘V) o arrastrar un archivo
 // lo sube como adjunto y deja su referencia por nombre, `![captura.png](attachment:captura.png)` (MT-96, MT-122).
 // El menú es el Trigger Menu de UI SDK (se abre en el cursor, filtra y lo elegido entra en el texto, con deshacer).
 
 // Un comando de `/`: inserta texto donde estaba (`text`, con el cursor `back` caracteres antes del final; `block`, en
 // su propia línea), elige un archivo para subirlo (`file`) o hace algo (`run`) tras borrar lo escrito. `hint`, a la derecha.
 export type WritingCommand = { value: string; label: string; icon: IconName; hint?: string; text?: string; back?: number; block?: boolean; file?: boolean; run?: () => void }
-// Algo que `@` puede enlazar: `ref` (MT-12, D-54) o vacío en las capacidades, que se citan por su título.
-export type WritingLink = { value: string; ref: string; title: string; kind: "story" | "decision" | "capability"; url: string }
+// Algo que `@` puede citar: `ref` (MT-12, D-54) o vacío en las capacidades, que se citan por su título.
+export type WritingLink = { value: string; ref: string; title: string; kind: "story" | "decision" | "capability" }
 
 const LINK_ICONS: Record<WritingLink["kind"], IconName> = { story: "stories", decision: "decision", capability: "file" }
 const LINK_KINDS: Record<WritingLink["kind"], string> = { story: "Historia", decision: "Decisión", capability: "Capacidad" }
 // `@` busca entre todo el producto: solo los primeros que coinciden, para que la lista no sea un muro.
 const LINKS_SHOWN = 8
 
-// El markdown que deja `@`: el enlace con la referencia (o el título de la capacidad) como texto.
-export const linkMarkdown = (link: WritingLink) => `[${(link.ref || link.title).replace(/[[\]]/g, "")}](${link.url})`
+// Lo que deja `@`: la referencia a secas (`MT-12`, `D-12`), como las citan las historias y la imprime `mt show`;
+// una capacidad, por su título.
+const linkText = (link: WritingLink) => link.ref || link.title
 
 // Escribe en el textarea como si se tecleara (deshacer y onChange de React incluidos); si el navegador no deja, a mano.
-export function insertText(area: HTMLTextAreaElement, start: number, end: number, text: string) {
+function insertText(area: HTMLTextAreaElement, start: number, end: number, text: string) {
   area.focus()
   area.setSelectionRange(start, end)
   if (document.execCommand("insertText", false, text)) return
@@ -43,8 +44,25 @@ export function insertText(area: HTMLTextAreaElement, start: number, end: number
   area.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: text }))
 }
 
+// El portapapeles entrega las capturas como `image.png`: se les da un nombre propio, `captura-20261125-170701.png`.
+const GENERIC_NAME = /^(image|imagen|pasted image|screenshot)?(\.[a-z0-9]+)?$/i
+const stamp = () => new Date().toISOString().slice(0, 19).replace(/[-:]/g, "").replace("T", "-")
+
+// Un nombre que no repita otro adjunto: `attachment:` se resuelve por nombre y, si se repite, al último subido.
+function uniqueName(file: File, taken: (name: string) => boolean): File {
+  const generic = GENERIC_NAME.test(file.name)
+  const base = generic ? `captura-${stamp()}` : file.name.replace(/(\.[^.]+)?$/, "")
+  const suffix = generic ? (file.name.match(/\.[a-z0-9]+$/i)?.[0] ?? `.${file.type.split("/")[1] || "png"}`) : file.name.slice(base.length)
+  let name = `${base}${suffix}`
+  for (let n = 2; taken(name); n++) name = `${base}-${n}${suffix}`
+  return name === file.name ? file : new File([file], name, { type: file.type, lastModified: file.lastModified })
+}
+
+// El nombre como lo escribe `Attachable.reference` tras `attachment:`.
+const encodeName = (name: string) => name.replace(/%/g, "%25").replace(/ /g, "%20").replace(/\(/g, "%28").replace(/\)/g, "%29")
+
 // Sube un archivo como adjunto de la historia y devuelve su referencia por nombre.
-export async function uploadAttachment(url: string, file: File): Promise<string> {
+async function uploadAttachment(url: string, file: File): Promise<string> {
   const data = new FormData()
   data.append("file", file)
   const token = document.querySelector<HTMLMetaElement>("meta[name=csrf-token]")?.content ?? ""
@@ -75,28 +93,43 @@ export function WritingField({ value, onChange, commands, links, attachmentsUrl,
   const area = useRef<HTMLTextAreaElement | null>(null)
   const picker = useRef<HTMLInputElement | null>(null)
   const pickAt = useRef(0)
+  const named = useRef(new Set<string>())
   const [uploads, setUploads] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  // Lo que se pega o se suelta se sube y entra donde estaba el cursor, cada archivo en su línea.
-  const upload = async (files: File[], at: number) => {
+  // Lo que se pega o se suelta entra donde estaba el cursor, cada archivo en su línea, primero como marcador
+  // («[Subiendo captura.png…]()»), que se cambia por su referencia al subir: lo escrito mientras tanto no lo mueve.
+  const upload = async (picked: File[], at: number) => {
     const target = area.current
-    if (!target || files.length === 0) return
+    if (!target || picked.length === 0) return
     setError(null)
+    const taken = (name: string) => named.current.has(name) || target.value.includes(`(attachment:${encodeName(name)})`)
+    const files = picked.map((file) => { const renamed = uniqueName(file, taken); named.current.add(renamed.name); return renamed })
+    const markers = files.map((file) => `[Subiendo ${file.name.replace(/[[\]]/g, "")}…]()`)
+    const before = target.value.slice(0, at)
+    const after = target.value.slice(at)
+    insertText(target, at, at, `${before && !before.endsWith("\n") ? "\n" : ""}${markers.join("\n")}${after && !after.startsWith("\n") ? "\n" : ""}`)
     setUploads((current) => [...current, ...files.map((file) => file.name)])
-    let caret = at
-    for (const file of files) {
+    for (const [i, file] of files.entries()) {
+      let reference = ""
       try {
-        const reference = await uploadAttachment(attachmentsUrl, file)
-        const before = target.value.slice(0, caret)
-        const after = target.value.slice(caret)
-        const text = `${before && !before.endsWith("\n") ? "\n" : ""}${reference}${after && !after.startsWith("\n") ? "\n" : ""}`
-        insertText(target, caret, caret, text)
-        caret += text.length
+        reference = await uploadAttachment(attachmentsUrl, file)
       } catch (failure) {
         setError(failure instanceof Error ? failure.message : `No se pudo subir ${file.name}.`)
       } finally {
-        setUploads((current) => { const index = current.indexOf(file.name); return current.filter((_, i) => i !== index) })
+        setUploads((current) => { const index = current.indexOf(file.name); return current.filter((_, j) => j !== index) })
+      }
+      // Si se pasó a «Markdown» (o volvió) mientras subía, el marcador sigue en el textarea que lo tenga ahora.
+      const marker = markers[i]
+      const host = target.isConnected && target.value.includes(marker) ? target
+        : Array.from(document.querySelectorAll("textarea")).find((item) => item.value.includes(marker))
+      if (host) {
+        // Sin referencia (falló), se quita el marcador con su salto de línea.
+        const start = host.value.indexOf(marker)
+        const end = start + marker.length + (!reference && host.value[start + marker.length] === "\n" ? 1 : 0)
+        insertText(host, start, end, reference)
+      } else if (reference) {
+        setError(`${file.name} se subió, pero no se pudo dejar en el texto: cópialo, ${reference}`)
       }
     }
   }
@@ -120,7 +153,7 @@ export function WritingField({ value, onChange, commands, links, attachmentsUrl,
     const target = area.current
     if (details.trigger === "@") {
       const link = links.find((item) => item.value === value)
-      if (link) details.insert(`${linkMarkdown(link)} `)
+      if (link) details.insert(`${linkText(link)} `)
       return
     }
     const command = commands.find((item) => item.value === value)

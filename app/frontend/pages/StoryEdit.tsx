@@ -38,7 +38,7 @@ type Props = {
   milestones: { id: number; label: string }[]
   capabilities: { slug: string; title: string }[]
   guides: { heading: string; guide: string | null }[]
-  links: Record<"stories" | "decisions" | "capabilities", { value: string; ref: string; title: string; url: string }[]>
+  links: Record<"stories" | "decisions" | "capabilities", { value: string; ref: string; title: string }[]>
 }
 
 type Contrast = { kind: "decision" | "story" | "brief"; reference: string; title: string; excerpt: string | null; url: string | null }
@@ -370,7 +370,9 @@ function SectionEditor({ section, guide, placeholder, focused, onFocus, onBlur, 
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (!criteria || event.key !== "Enter" || event.shiftKey || event.metaKey || event.ctrlKey) return
     const area = event.currentTarget
-    if (event.defaultPrevented || area.getAttribute("aria-expanded") === "true") return // Enter elige en el menú de / o @
+    // Con el menú de / o @ abierto, Enter elige en él: el SDK marca el textarea con `data-open` (en un textarea no
+    // pone `aria-expanded`) y su onKeyDown va después de este, así que aquí no se puede mirar `defaultPrevented`.
+    if (area.hasAttribute("data-open")) return
     const start = area.selectionStart
     const line = area.value.slice(area.value.lastIndexOf("\n", start - 1) + 1, start)
     const box = line.match(/^(\s*[-*] )\[[ xX]\] /)
