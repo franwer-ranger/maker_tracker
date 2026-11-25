@@ -13,7 +13,8 @@ module V1
           workshop: project_v1_workshop_path(@project),
           board: project_path(@project),
           roadmap: project_roadmap_path(@project),
-          brief: project_brief_path(@project)
+          brief: project_brief_path(@project),
+          decisions: project_v1_decisions_path(@project)
         },
         notice: flash[:notice],
         # El marco (MT-101): combo de producto, Taller, mapa de capacidades, agentes trabajando y usuario.
@@ -63,7 +64,7 @@ module V1
       decisions = @project.decisions.includes(:superseded_by).reverse.map do |decision|
         { value: "decision:#{decision.number}", ref: decision.reference, title: decision.title,
           meta: decision.superseded_by ? "sustituida por #{decision.superseded_by.reference}" : "vigente",
-          url: project_brief_path(@project, anchor: decision.reference) }
+          url: project_v1_decision_path(@project, decision.number) }
       end
       { stories: stories, capabilities: capabilities, decisions: decisions }
     end

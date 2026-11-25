@@ -29,7 +29,7 @@ export type Frame = {
 export type SharedProps = {
   frame: Frame
   project: { key: string; name: string; slug: string }
-  nav: { cover: string; workshop: string; board: string; roadmap: string; brief: string }
+  nav: { cover: string; workshop: string; board: string; roadmap: string; brief: string; decisions: string }
   notice?: string | null
   search?: SearchIndex
 }

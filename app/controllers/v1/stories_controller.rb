@@ -88,7 +88,7 @@ module V1
         context: reading.context,
         screens: screens(story),
         decisions: story.related_decisions.map do
-          { reference: it.reference, title: it.title, superseded: it.superseded_by&.reference, url: project_brief_path(@project, anchor: it.reference) }
+          { reference: it.reference, title: it.title, superseded: it.superseded_by&.reference, url: project_v1_decision_path(@project, it.number) }
         end,
         activity: activity(story),
         events: story.events.count,
