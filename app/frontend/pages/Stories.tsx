@@ -299,8 +299,6 @@ function StoryBoard({ stories, onView }: { stories: ListProps; onView: (view: Vi
     const items = byColumn[column.key]
     return [column.key, (expanded[column.key] ? items : items.slice(0, column.fold)).map((item) => item.ref)]
   }))
-  // Lo que viene del servidor manda: en cuanto llegan las props nuevas, se olvida lo que se soltó.
-  useEffect(() => setPending(null), [stories])
 
   const move = (value: Lists, details: { key: string; from: string; to: string; cancel: () => void }) => {
     const item = byRef.get(details.key)

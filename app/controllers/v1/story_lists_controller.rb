@@ -23,20 +23,25 @@ module V1
       redirect_to project_v1_story_list_path(@project), inertia: { errors: { base: [ e.record.errors.full_messages.join(". ") ] } }
     end
 
+    # Las columnas del Tablero: «En curso» no es una, es Lista con la marca «en construcción».
+    BOARD_STATES = %w[idea defining ready done].freeze
+
     # Arrastrar una tarjeta a otra columna del Tablero: como `mt move`, Story#move_to! decide. Pasar a Lista
     # sin cumplir la regla se hace y se avisa (el warning de `mt move`); si no se puede, se dice por qué.
+    # Sacar de En curso a Idea o Definiendo la libera (como `mt move`), y el aviso dice a quién se le quitó.
     def move
       story = @project.stories.find_by!(number: params[:number])
       state = params[:state].to_s
-      return back_to_list("Estado desconocido: #{state}.") unless Story.states.key?(state)
+      return back_to_list("Estado desconocido: #{state}.") unless BOARD_STATES.include?(state)
 
+      holder = story.claimed_by if story.in_progress?
       changed = story.move_to!(state, actor: Current.actor)
       return back_to_list("#{story.reference} ya estaba en #{Story.human_state(state)}.") unless changed
 
       issues = state == "ready" ? story.readiness_issues : []
-      back_to_list(issues.empty? ? "#{story.reference} pasó a #{Story.human_state(state)}." : "#{story.reference} pasó a Lista, pero: #{issues.join(' ')}")
-    rescue Story::ClaimedByOther => e
-      back_to_list("No se ha movido: #{e.message}.")
+      notice = issues.empty? ? "#{story.reference} pasó a #{Story.human_state(state)}." : "#{story.reference} pasó a Lista, pero: #{issues.join(' ')}"
+      notice += " Se liberó: la tenía #{holder.name}." if holder && story.claimed_by.nil?
+      back_to_list(notice)
     rescue ActiveRecord::RecordInvalid => e
       back_to_list("#{story.reference} no se ha movido: #{e.record.errors.full_messages.join('. ')}.")
     end
@@ -54,18 +59,18 @@ module V1
                    @project.milestones.closed.order(closed_at: :desc, number: :desc).to_a
       grouped = stories.group_by(&:milestone_id)
       # Cuándo pasó cada una a Hecha (el Tablero enseña las últimas, con su fecha).
-      @closed_at = @project.events.where(action: "story.state_changed").where("json_extract(data, '$.to') = 'done'")
-                           .group(:story_id).maximum(:occurred_at)
+      closed_at = @project.events.where(action: "story.state_changed").where("json_extract(data, '$.to') = 'done'")
+                          .group(:story_id).maximum(:occurred_at)
 
       {
         groups: milestones.map do |milestone|
           items = grouped.fetch(milestone.id, []).sort_by(&:position)
           { code: milestone.code, title: milestone.title, closed: milestone.closed?,
             done: items.count(&:done?), total: items.size,
-            items: items.map { item_props(it, by_slug, done_numbers) } }
+            items: items.map { item_props(it, by_slug, done_numbers, closed_at) } }
         end,
         # La bandeja no tiene orden: la última apuntada, arriba.
-        ideas: grouped.fetch(nil, []).sort_by { -it.number }.map { item_props(it, by_slug, done_numbers) },
+        ideas: grouped.fetch(nil, []).sort_by { -it.number }.map { item_props(it, by_slug, done_numbers, closed_at) },
         capabilities: pages.map { { slug: it.slug, title: it.title, icon: it.icon } },
         open: stories.count { !it.done? },
         done: done_numbers.size,
@@ -75,14 +80,15 @@ module V1
       }
     end
 
-    def item_props(story, pages, done_numbers)
+    def item_props(story, pages, done_numbers, closed_at)
+      closed = (closed_at[story.id] || story.updated_at) if story.done?
       { number: story.number, ref: story.reference, title: story.title, state: story.state,
         capabilities: story.capabilities.filter_map { pages[it] }.map { { slug: it.slug, title: it.title, icon: it.icon } },
         waiting: (waiting(story, done_numbers) unless story.done?),
         building: story.claimed_by && !story.done? ? { actor: story.claimed_by.name, agent: story.claimed_by.agent? } : nil,
         milestone: story.milestone&.code,
-        closed_on: (helpers.short_date(@closed_at[story.id] || story.updated_at) if story.done?),
-        closed_at: ((@closed_at[story.id] || story.updated_at).iso8601 if story.done?),
+        closed_on: closed && helpers.short_date(closed),
+        closed_at: closed&.iso8601,
         url: project_v1_story_path(@project, story.number),
         move_url: project_v1_story_state_path(@project, story.number) }
     end
