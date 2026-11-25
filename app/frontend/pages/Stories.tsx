@@ -1,4 +1,5 @@
 import { Link, router, usePage } from "@inertiajs/react"
+import { Button as BaseButton } from "@ui-sdk/react/button"
 import { Dialog, DialogBackdrop, DialogClose, DialogContent, DialogDescription, DialogTitle } from "@ui-sdk/react/dialog"
 import { Input } from "@ui-sdk/react/input"
 import { SegmentedControl, SegmentedControlIndicator, SegmentedControlItem } from "@ui-sdk/react/segmented-control"
@@ -73,19 +74,24 @@ function useView() {
   const [view, setView] = useState<View>(() => {
     try { return localStorage.getItem(VIEW_KEY) === "board" ? "board" : "list" } catch { return "list" }
   })
-  const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches)
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 768px)")
-    const update = () => setWide(query.matches)
-    update()
-    query.addEventListener("change", update)
-    return () => query.removeEventListener("change", update)
-  }, [])
+  const wide = useMediaQuery("(min-width: 768px)")
   const choose = (next: View) => {
     setView(next)
     try { localStorage.setItem(VIEW_KEY, next) } catch { /* sin almacenamiento: no se recuerda */ }
   }
   return [wide ? view : "list", choose] as const
+}
+
+function useMediaQuery(media: string) {
+  const [matches, setMatches] = useState(() => typeof window !== "undefined" && window.matchMedia(media).matches)
+  useEffect(() => {
+    const query = window.matchMedia(media)
+    const update = () => setMatches(query.matches)
+    update()
+    query.addEventListener("change", update)
+    return () => query.removeEventListener("change", update)
+  }, [media])
+  return matches
 }
 
 // Historias (MT-109 · «v1 · 8 · Historias»): la Lista por hito en el orden del roadmap y la bandeja de ideas al
@@ -155,7 +161,8 @@ function List({ stories, onCreate, onView }: { stories: ListProps; onCreate: () 
   // «Quitar el filtro» lo quita todo, también el estado: pasa a Todas («para verlas todas»).
   const clear = () => { setQuery(""); setCapability(ALL); setStatus("all") }
   // Se reordena lo que se ve entero: las abiertas, sin buscar ni filtrar, y en escritorio (en móvil no hay arrastre).
-  const sortable = useWide() && status === "open" && !filtering && groups.length > 0
+  // Escritorio: la Lista de fila con código a la izquierda (lg).
+  const sortable = useMediaQuery("(min-width: 1024px)") && status === "open" && !filtering && groups.length > 0
 
   return (
     <>
@@ -229,19 +236,6 @@ function MilestoneHeading({ group }: { group: Group }) {
       <span className="text-base leading-5 font-medium text-foreground lg:text-lg lg:leading-[22px]">{group.title}</span>
     </>
   )
-}
-
-// Escritorio: la Lista de fila con código a la izquierda (lg). Es donde se puede arrastrar.
-function useWide() {
-  const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1024px)").matches)
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1024px)")
-    const update = () => setWide(query.matches)
-    update()
-    query.addEventListener("change", update)
-    return () => query.removeEventListener("change", update)
-  }, [])
-  return wide
 }
 
 const useWords = (query: string) => useMemo(() => normalize(query).split(/\s+/).filter(Boolean), [query])
@@ -535,92 +529,130 @@ function RowBody({ item }: { item: Item }) {
 }
 
 type Target = { before: number } | { after: number } | { milestone: number }
-type Move = { item: Item; lists: Lists; target: Target; back: Target; sentence: ReactNode; command: string }
+type Move = { item: Item; before: Lists; target: Target; back: Target; sentence: ReactNode; command: string }
+type Done = { move: Move; sent: Promise<boolean> }
 type Shown = Group & { shown: Item[] }
 
 const SETTLE_MS = 8000
 const csrf = () => document.querySelector<HTMLMetaElement>("meta[name=csrf-token]")?.content ?? ""
 
+// Las filas de arriba y de abajo de una en su lista.
+const neighbors = (list: string[], ref: string) => {
+  const index = list.indexOf(ref)
+  return { above: list[index - 1] as string | undefined, below: list[index + 1] as string | undefined }
+}
+
+const patch = (item: Item, target: Target, motive?: string) => fetch(item.position_url, {
+  method: "PATCH",
+  keepalive: true,
+  headers: { Accept: "application/json", "Content-Type": "application/json", "X-CSRF-Token": csrf() },
+  body: JSON.stringify({ ...target, reason: motive?.trim() || undefined }),
+})
+
 // Reordenar (MT-121 · «Historias · Lista · Arrastrando» y «Tras soltar»): es `mt reorder` (Stories::PositionsController,
-// `story.reorder!` con su evento); el servidor decide. Al soltar, la fila se queda donde cae y se pide el motivo: se
-// manda al guardar, o sin motivo cuando el aviso se cierra solo. Deshacer (⌘Z) antes de eso la devuelve sin tocar nada;
-// después, la vuelve a mover a su sitio como otro `mt reorder`, que queda en el historial.
+// `story.reorder!` con su evento); el servidor decide. Al soltar, la fila se queda donde cae y se pide el motivo. Se
+// manda al guardarlo, sin motivo cuando el aviso se cierra solo, al soltar otra fila, al desmontar la Lista (filtro,
+// Tablero, otra página) o al cerrar la pestaña; una recarga de la Lista no la manda. Deshacer (⌘Z) antes la devuelve
+// sin tocar nada; después, mientras se ve «Deshacer», la vuelve a mover a su sitio como otro `mt reorder`.
+// Un agente hace lo mismo con `moveCard` del tablero «Historias por hito», «Por qué» y «Guardar».
 function SortableGroups({ groups }: { groups: Shown[] }) {
-  const byRef = useMemo(() => new Map(groups.flatMap((group) => group.items.map((item) => [item.ref, item]))), [groups])
+  const byRef = new Map(groups.flatMap((group) => group.items.map((item) => [item.ref, item])))
   const groupOf = (code: string) => groups.find((group) => group.code === code)
   const lists: Lists = Object.fromEntries(groups.map((group) => [group.code, group.shown.map((item) => item.ref)]))
   const [shown, setShown] = useState<Lists | null>(null)
   const [pending, setPending] = useState<Move | null>(null)
-  const [done, setDone] = useState<Move | null>(null)
+  const [done, setDone] = useState<Done | null>(null)
   const [reason, setReason] = useState("")
   const [error, setError] = useState<string | null>(null)
   const pendingRef = useRef<Move | null>(null)
+  const reasonRef = useRef("")
   const queue = useRef<Promise<unknown>>(Promise.resolve())
   const visits = useRef(0)
   const dropped = useRef(0)
-  pendingRef.current = pending
+  const path = useRef(window.location.pathname)
+  reasonRef.current = reason
 
-  // Una petición detrás de otra, en el orden en que se soltaron; al acabar, la Lista vuelve a ser la del servidor.
+  const hold = (move: Move | null) => {
+    pendingRef.current = move
+    setPending(move)
+    setReason("")
+  }
+
+  // Una petición detrás de otra, en el orden en que se soltaron. Al acabar, la Lista vuelve a ser la del servidor,
+  // salvo si hay otra fila a la espera de su motivo (esa se queda donde cayó) o ya no se está en la página.
   const send = (item: Item, target: Target, motive?: string) => {
     const visit = ++visits.current
-    queue.current = queue.current.then(async () => {
-      const response = await fetch(item.position_url, {
-        method: "PATCH",
-        keepalive: true,
-        headers: { Accept: "application/json", "Content-Type": "application/json", "X-CSRF-Token": csrf() },
-        body: JSON.stringify({ ...target, reason: motive?.trim() || undefined }),
-      })
+    const sent = queue.current.then(async () => {
+      const response = await patch(item, target, motive)
       if (!response.ok) throw new Error((await response.json().catch(() => null))?.error ?? `${item.ref} no se ha movido.`)
     }).then(() => true, (problem: Error) => { setError(problem.message); return false })
-      .finally(() => router.reload({ only: ["stories"], onFinish: () => { if (visit === visits.current) setShown(null) } }))
-    return queue.current as Promise<boolean>
+    queue.current = sent.finally(() => {
+      if (window.location.pathname !== path.current) return
+      router.reload({ only: ["stories"], onFinish: () => { if (visit === visits.current && !pendingRef.current) setShown(null) } })
+    })
+    return sent
   }
 
   const commit = (motive?: string) => {
     const move = pendingRef.current
     if (!move) return
-    pendingRef.current = null
-    setPending(null)
-    setReason("")
-    send(move.item, move.target, motive).then((ok) => setDone(ok ? move : null))
+    hold(null)
+    const sent = send(move.item, move.target, motive)
+    setDone({ move, sent })
+    sent.then((ok) => { if (!ok) setDone((now) => (now?.move === move ? null : now)) })
   }
 
   const undo = () => {
     if (pendingRef.current) {
-      pendingRef.current = null
-      setPending(null)
-      setReason("")
+      hold(null)
       setShown(null)
     } else if (done) {
+      const { move, sent } = done
       setDone(null)
-      send(done.item, done.back)
+      // Vuelve a su sitio ya; la recarga de la primera ya no la mueve (no es la última visita).
+      visits.current++
+      setShown(move.before)
+      void sent.then((ok) => { if (ok) send(move.item, move.back); else setShown(null) })
     }
   }
   useShortcut("mod+z", undo, { description: "Deshacer el último orden", when: () => (pending !== null && reason === "") || (pending === null && done !== null) })
 
-  // Sin motivo también vale: se cierra solo (y se manda) si no se escribe nada. Al irse de la página, se manda ya.
+  // Sin motivo también vale: se cierra solo (y se manda) si no se escribe nada.
   useEffect(() => {
     if (!pending || reason !== "") return
     const timer = window.setTimeout(() => commit(), SETTLE_MS)
     return () => window.clearTimeout(timer)
   }, [pending, reason])
+  // Deshacer lo ya mandado solo mientras se ve que se puede.
   useEffect(() => {
-    const leave = () => commit()
-    const off = router.on("before", leave)
+    if (!done) return
+    const timer = window.setTimeout(() => setDone((now) => (now === done ? null : now)), SETTLE_MS)
+    return () => window.clearTimeout(timer)
+  }, [done])
+  useEffect(() => {
+    // Al cerrar o recargar la pestaña, directo y sin la cola: la página se va antes de que acabe lo que esté en vuelo.
+    const leave = () => {
+      const move = pendingRef.current
+      if (!move) return
+      pendingRef.current = null
+      void patch(move.item, move.target, reasonRef.current)
+    }
     window.addEventListener("pagehide", leave)
-    return () => { off(); window.removeEventListener("pagehide", leave) }
+    // Al desmontar la Lista (filtro, Tablero, otra página), con el motivo que se haya escrito.
+    return () => {
+      window.removeEventListener("pagehide", leave)
+      commit(reasonRef.current)
+    }
   }, [])
 
   const number = (ref: string) => byRef.get(ref)!.number
   // Dónde queda una fila: detrás de la de arriba, delante de la de abajo o, si está sola, al final del hito.
   const place = (list: string[], ref: string, code: string): Target => {
-    const index = list.indexOf(ref)
-    const [above, below] = [list[index - 1], list[index + 1]]
+    const { above, below } = neighbors(list, ref)
     return above ? { after: number(above) } : below ? { before: number(below) } : { milestone: groupOf(code)!.id }
   }
   const describe = (list: string[], ref: string, code: string) => {
-    const index = list.indexOf(ref)
-    const [above, below] = [list[index - 1], list[index + 1]]
+    const { above, below } = neighbors(list, ref)
     return above ? <>detrás de <Mono>{above}</Mono></> : below ? <>delante de <Mono>{below}</Mono></> : <>en <Mono>{code}</Mono></>
   }
 
@@ -629,22 +661,21 @@ function SortableGroups({ groups }: { groups: Shown[] }) {
     const item = byRef.get(details.key)
     const group = groupOf(details.to)
     if (!item || !group || (details.from === details.to && current[details.from].indexOf(details.key) === details.index)) return
-    if (pendingRef.current) commit()
+    if (pendingRef.current) commit(reasonRef.current)
     dropped.current = Date.now()
     const list = value[details.to]
     const target = place(list, details.key, details.to)
     // La posición que imprime `mt reorder`: entre todas las del hito, también las hechas que aquí no se ven.
     const all = group.items.map((other) => other.ref).filter((ref) => ref !== details.key)
-    const above = list[list.indexOf(details.key) - 1]
-    const below = list[list.indexOf(details.key) + 1]
+    const { above, below } = neighbors(list, details.key)
     const position = (above ? all.indexOf(above) + 1 : below ? all.indexOf(below) : all.length) + 1
     const elsewhere = details.from !== details.to
     setShown(value)
     setError(null)
     setDone(null)
-    setPending({
+    hold({
       item,
-      lists: value,
+      before: current,
       target,
       back: place(current[details.from], details.key, details.from),
       sentence: <><Mono>{item.ref}</Mono> va ahora {describe(list, details.key, details.to)}{elsewhere && !("milestone" in target) && <> en <Mono>{details.to}</Mono></>}</>,
@@ -707,7 +738,27 @@ function SortableGroups({ groups }: { groups: Shown[] }) {
           <span role="alert" className="text-sm leading-[18px] text-foreground">{error}</span>
         </Notice>
       )}
+      {done && !pending && !error && (
+        <Notice>
+          <span className="flex items-center gap-4">
+            <span role="status" className="flex items-center gap-2 text-sm leading-[18px] text-foreground">
+              <Icon name="check" size={15} strokeWidth={2} />
+              <span>{done.move.sentence}</span>
+            </span>
+            <Undo onUndo={undo} />
+          </span>
+        </Notice>
+      )}
     </>
+  )
+}
+
+// Deshacer (⌘Z), en los dos avisos.
+function Undo({ onUndo }: { onUndo: () => void }) {
+  return (
+    <BaseButton onClick={onUndo} aria-label="Deshacer" className="flex items-center gap-1.5 text-control leading-4 text-muted-foreground hover:text-foreground">
+      Deshacer<Kbd>⌘Z</Kbd>
+    </BaseButton>
   )
 }
 
@@ -741,9 +792,7 @@ function Settle({ move, reason, onReason, onSave, onUndo }: { move: Move; reason
           <Icon name="check" size={15} strokeWidth={2} />
           <span>{move.sentence}</span>
         </span>
-        <button type="button" onClick={onUndo} className="flex items-center gap-1.5 text-control leading-4 text-muted-foreground hover:text-foreground">
-          Deshacer<Kbd>⌘Z</Kbd>
-        </button>
+        <Undo onUndo={onUndo} />
       </span>
       <form onSubmit={(event) => { event.preventDefault(); onSave() }} className="flex items-center gap-2.5">
         <Input
