@@ -27,9 +27,33 @@ const paths = {
   arrowRight: <path d="M5 12h14M14 7l5 5-5 5" />,
   enter: <path d="M19 6v6H6M9 9l-3 3 3 3" />,
   tab: <path d="M4 12h12M12 8l4 4-4 4M20 6v12" />,
+  // Capacidades (Paper «v1 · 2 · Portada»): el icono de cada página de la documentación (`page.icon`).
+  camera: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7l1.5-3h3L15 7" /><circle cx="12" cy="13.5" r="3.5" /></>,
+  link: <><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" /><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" /></>,
+  bell: <><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z" /><path d="M10 20a2 2 0 0 0 4 0" /></>,
+  users: <><circle cx="9" cy="9" r="3.2" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0" /><circle cx="17" cy="10" r="2.5" /><path d="M16 14.5a4.5 4.5 0 0 1 5 4.5" /></>,
+  mail: <><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3.5 7l8.5 6 8.5-6" /></>,
+  ban: <><circle cx="12" cy="12" r="8.5" /><path d="M6 18L18 6" /></>,
+  book: <><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z" /><path d="M4 19V5" /></>,
+  settings: <><circle cx="12" cy="12" r="3" /><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" /></>,
+  calendar: <><rect x="4" y="5" width="16" height="15" rx="2" /><path d="M4 10h16M8 3v4M16 3v4" /></>,
 } as const
 
 export type IconName = keyof typeof paths
+
+// El icono de una capacidad: `page.icon` es texto libre (lo escribe un agente con `mt doc`); los nombres
+// habituales que no coinciden con los nuestros se traducen y, si no hay ninguno, va el de página.
+const aliases: Record<string, IconName> = {
+  "pencil-square": "pencil", edit: "pencil", photo: "camera", image: "camera", map: "pin", location: "pin",
+  "map-pin": "pin", notification: "bell", people: "users", friends: "users", envelope: "mail", block: "ban",
+  album: "book", gear: "settings", cog: "settings", phone: "vibrate", "device-phone-mobile": "vibrate",
+}
+
+export function iconFor(name: string | null | undefined): IconName {
+  if (!name) return "file"
+  if (name in paths) return name as IconName
+  return aliases[name] ?? "file"
+}
 
 export function Icon({ name, size = 15, ...props }: { name: IconName; size?: number } & SVGProps<SVGSVGElement>) {
   return (

@@ -17,7 +17,7 @@ type Section = "workshop" | "product" | "stories" | "roadmap" | "decisions"
 // navegación, mapa de capacidades, agente trabajando, usuario y ⌘K; el panel claro con esquinas redondeadas
 // y su barra superior. En móvil, cabecera oscura con producto, copiar y menú.
 // `copy`: lo que copia «Copiar para tu agente» en esta pantalla (por defecto, `mt context` del producto).
-export function AppShell({ title, active, crumbs, actions, copy, children }: { title: string; active?: Section; crumbs?: { label: string; href?: string }[]; actions?: ReactNode; copy?: string; children: ReactNode }) {
+export function AppShell({ title, active, crumbs, actions, copy, ownMobileBar, children }: { title: string; active?: Section; crumbs?: { label: string; href?: string }[]; actions?: ReactNode; copy?: string; ownMobileBar?: boolean; children: ReactNode }) {
   const { props: { project, nav, notice, frame }, url } = usePage()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [paletteQuery, setPaletteQuery] = useState("")
@@ -62,7 +62,7 @@ export function AppShell({ title, active, crumbs, actions, copy, children }: { t
         )}
       >
         <span className="flex items-center gap-2.5"><Icon name="taller" />Taller</span>
-        {frame.taller > 0 && <span className="font-mono text-label text-signal">{frame.taller}</span>}
+        {frame.taller > 0 && <span className="font-mono text-label text-sidebar-muted">{frame.taller}</span>}
       </Link>
       <ProductCombo products={frame.products} current={project.key} shortcut="p" />
       <nav aria-label="Producto" className="flex flex-col gap-px">
@@ -125,7 +125,8 @@ export function AppShell({ title, active, crumbs, actions, copy, children }: { t
       <aside className={cx("shrink-0 flex-col gap-[18px] pt-5 pr-3 pb-[18px] pl-4 md:flex md:w-60", menuOpen ? "flex" : "hidden")}>{sidebar}</aside>
       <main className="min-w-0 flex-1 md:py-2.5 md:pr-2.5">
         <div className="flex h-full flex-col overflow-y-auto rounded-t-[var(--radius-panel)] bg-background md:rounded-[var(--radius-panel)]">
-          {crumbs && <TopBar crumbs={crumbs} actions={actions ?? <CopyForAgent text={copyText} shortcut="mod+shift+c" />} />}
+          {/* Con ownMobileBar, la pantalla pone su propia barra en móvil (Paper) y la de migas solo sale desde md. */}
+          {crumbs && <div className={cx(ownMobileBar && "hidden md:block")}><TopBar crumbs={crumbs} actions={actions ?? <CopyForAgent text={copyText} shortcut="mod+shift+c" />} /></div>}
           {notice && <p role="status" className="border-b border-border bg-card px-7 py-2 text-control text-foreground">{notice}</p>}
           {children}
         </div>

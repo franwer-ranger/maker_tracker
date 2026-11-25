@@ -32,6 +32,8 @@ export default function Design() {
 
   return (
     <AppShell title="Sistema de diseño" crumbs={[{ label: project.name }, { label: "Sistema de diseño" }]} actions={<Segmented value={mode} onChange={setMode} />}>
+      {/* En móvil la barra superior no muestra acciones: el selector va bajo las migas. */}
+      <div className="flex justify-end border-b border-border px-5 py-2.5 md:hidden"><Segmented value={mode} onChange={setMode} /></div>
       <div className={cx("grid gap-px bg-border", mode === "both" && "xl:grid-cols-2")}>
         {(mode === "both" ? (["light", "dark"] as const) : [mode]).map((theme) => (
           <div key={theme} className={cx(theme, "bg-background text-foreground")}>

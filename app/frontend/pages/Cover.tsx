@@ -1,189 +1,284 @@
-import { Link, usePage } from "@inertiajs/react"
-import { useEffect, useRef, useState } from "react"
+import { usePage } from "@inertiajs/react"
+import { useEffect, useState } from "react"
+import { CopyForAgent } from "@/components/ui/copy-for-agent"
 import { cx } from "@/components/ui/cx"
-import { Section } from "@/components/ui/section"
+import { EmptyState } from "@/components/ui/empty-state"
+import { Icon, iconFor } from "@/components/ui/icons"
+import { ProductMark } from "@/components/ui/product-combo"
 import { AppShell } from "@/layouts/app-shell"
 import { ago } from "@/lib/time"
 
-type Capability = { slug: string; title: string; summary: string | null; changing: boolean }
-type Story = { ref: string; title: string; actor: string | null; milestone: string | null; since: string; url: string }
-type Activity = { id: number; actor: string; agent: boolean; text: string; at: string }
+// `changing`: "now" si un agente la está tocando ahora (el único naranja), "open" si la cambia una historia abierta.
+type Capability = { slug: string; title: string; icon: string | null; summary: string | null; changing: "now" | "open" | null }
+type Story = { ref: string; title: string; capabilities: string[]; agent: string | null; url: string }
 
 type CoverProps = {
+  empty: boolean
+  logo: string | null
+  status: { pending: number; at: string | null; by: string | null }
   vision: string | null
+  screenshots: { url: string; name: string }[]
+  capabilities: { area: string; items: Capability[] }[]
+  capability_count: number
   principles: string[]
   out_of_scope: string[]
-  capabilities: { area: string; items: Capability[] }[]
-  now: { code: string; title: string; goal: string; status: string; done: number; total: number; edit_url: string } | null
+  now: { code: string; title: string; done: number; total: number; next: string | null } | null
   changing: Story[]
-  recent: Activity[]
-  agents: { name: string; writing: boolean; target: string | null }[]
+  context: string
+  brief_url: string
+  markdown_url: string
 }
 
-// Portada del proyecto (MT-88 · «v1 · 2 · Producto · Portada»): qué es el producto en una pantalla,
-// sus capacidades por áreas y lo que está cambiando. `cover` es una live prop: se repinta sola.
+// Portada del producto (MT-102 · «v1 · 2 · Producto · Portada»): qué es el producto en una pantalla, sus
+// capacidades por áreas y lo que está cambiando. `cover` es una live prop: se repinta sola.
 export default function Cover({ cover }: { cover: CoverProps }) {
   const { project } = usePage().props
-  const fresh = useFresh(cover.recent.map((event) => event.id))
   useTick(30_000)
 
-  return (
-    <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]}>
-      <div className="mx-auto flex max-w-[1120px] flex-col gap-12 px-6 py-10 lg:flex-row lg:gap-16 lg:px-12 lg:py-14">
-        <div className="flex min-w-0 flex-1 flex-col gap-12">
-          <header className="flex flex-col gap-5">
-            <div className="flex items-center gap-3">
-              <span className="flex size-9 items-center justify-center rounded-lg bg-foreground font-mono text-control font-medium text-background">{project.key}</span>
-              <span className="text-sm font-medium text-foreground">{project.name}</span>
-              <AgentsAtWork agents={cover.agents} />
-            </div>
-            <h1 className="max-w-[24ch] font-display text-[44px] leading-[1.05] tracking-[-0.015em] text-foreground text-balance">
-              {cover.vision ?? "Sin visión todavía: escríbela en el brief."}
-            </h1>
-          </header>
+  const actions = (
+    <>
+      <DocStatus status={cover.status} />
+      <CopyForAgent text={cover.context} shortcut="mod+shift+c" />
+      <a href={cover.markdown_url} className="inline-flex h-8 items-center gap-2 rounded-md px-2 text-control text-muted-foreground hover:text-foreground">
+        <Icon name="file" size={14} />Markdown
+      </a>
+    </>
+  )
 
-          <Section index="01" title="Qué permite hacer">
+  if (cover.empty) {
+    return (
+      <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]} copy={cover.context} actions={actions} ownMobileBar>
+        <div className="flex flex-1 items-center justify-center px-5 py-11">
+          <EmptyState
+            figure="book"
+            title="Todavía no hay nada escrito"
+            actions={
+              <>
+                <a href={cover.brief_url} className="inline-flex h-8 items-center rounded-md bg-primary px-3.5 text-sm text-primary-foreground hover:opacity-90">Escribir el brief</a>
+                <CopyForAgent text={cover.context} />
+              </>
+            }
+          >
+            Empieza por el brief: qué es, para quién y qué problema resuelve. Lo demás se va escribiendo al cerrar historias.
+          </EmptyState>
+        </div>
+      </AppShell>
+    )
+  }
+
+  return (
+    <AppShell title={project.name} active="product" crumbs={[{ label: project.name }, { label: "Producto" }]} copy={cover.context} actions={actions} ownMobileBar>
+      {/* Móvil: «Producto» y el estado de la documentación, como en Paper. */}
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-5 text-control text-foreground md:hidden">
+        Producto
+        <DocStatus status={cover.status} short />
+      </div>
+
+      <header className="flex flex-col gap-6 border-b border-border px-6 pt-8 pb-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8 lg:px-8 lg:pt-[26px] lg:pb-[22px]">
+        <div className="flex max-w-[600px] flex-col gap-3.5">
+          <div className="flex items-center gap-3.5">
+            <span className="hidden md:inline-flex"><ProductMark code={project.key} logo={cover.logo} size={44} /></span>
+            <h1 className="font-display text-[44px] leading-[1.05] text-foreground md:text-[56px] md:leading-[56px]">{project.name}</h1>
+          </div>
+          {cover.vision ? (
+            <p className="text-lg leading-[26px] tracking-[-0.01em] text-foreground md:text-xl md:leading-7"><Emphasis text={cover.vision} /></p>
+          ) : (
+            <p className="text-sm text-muted-foreground">Sin visión todavía: escríbela en el brief.</p>
+          )}
+        </div>
+        {cover.screenshots.length > 0 && <Screenshots items={cover.screenshots} />}
+      </header>
+
+      <div className="grid flex-1 lg:grid-cols-[1fr_320px]">
+        <div className="order-2 flex min-w-0 flex-col gap-[18px] px-5 py-5 lg:order-1 lg:px-8">
+          <section aria-labelledby="capacidades" className="flex flex-col gap-[18px]">
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 id="capacidades" className="text-[15px] leading-[18px] font-semibold text-foreground">Qué permite hacer</h2>
+              {cover.capability_count > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  <span className="font-mono">{cover.capability_count}</span><span className="hidden sm:inline"> {cover.capability_count === 1 ? "capacidad" : "capacidades"}</span>
+                </span>
+              )}
+            </div>
             {cover.capabilities.length === 0 ? (
               <p className="text-sm text-muted-foreground">Sin capacidades documentadas. Un agente las crea con <code className="font-mono">mt doc create</code>.</p>
             ) : (
-              <div className="flex flex-col gap-6">
+              <div className="grid gap-[18px] sm:grid-cols-2 xl:grid-cols-4">
                 {cover.capabilities.map(({ area, items }) => (
-                  <div key={area} className="flex flex-col gap-2">
-                    <h3 className="text-control font-medium text-muted-foreground">{area}</h3>
-                    <ul className="grid gap-3 sm:grid-cols-2">
-                      {items.map((capability) => (
-                        <li key={capability.slug} id={`capacidad-${capability.slug}`} className="flex scroll-mt-6 flex-col gap-1 rounded-xl border border-border bg-card p-4 target:border-foreground">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-medium text-foreground">{capability.title}</span>
-                            {capability.changing && (
-                              <span className="flex items-center gap-1.5 font-mono text-label text-signal">
-                                <span className="size-1.5 rounded-full bg-signal" aria-hidden="true" />cambiando
-                              </span>
-                            )}
-                          </div>
-                          {capability.summary && <p className="text-control text-muted-foreground">{capability.summary}</p>}
-                        </li>
-                      ))}
+                  <div key={area} className="flex min-w-0 flex-col gap-0.5">
+                    <h3 className="pb-1.5 font-mono text-[10px] leading-3 tracking-[0.12em] text-muted-foreground uppercase">{area}</h3>
+                    <ul className="flex flex-col">
+                      {items.map((capability) => <CapabilityRow key={capability.slug} capability={capability} />)}
                     </ul>
                   </div>
                 ))}
               </div>
             )}
-          </Section>
+          </section>
 
-          {cover.now && (
-            <Section
-              index="02"
-              title="Ahora"
-              aside={
-                <Link href={cover.now.edit_url} className="rounded-sm text-control text-muted-foreground hover:text-foreground">
-                  Editar hito
-                </Link>
-              }
-            >
-              <div className="flex flex-col gap-3">
-                <p className="font-mono text-label uppercase tracking-label text-muted-foreground">
-                  {cover.now.code} · {cover.now.status} · {cover.now.done}/{cover.now.total}
-                </p>
-                <h3 className="text-xl font-semibold text-foreground">{cover.now.title}</h3>
-                {cover.now.goal && <p className="max-w-[60ch] text-sm leading-6 text-body">{cover.now.goal}</p>}
-                <div
-                  role="progressbar"
-                  aria-label={`Progreso de ${cover.now.code}`}
-                  aria-valuemin={0}
-                  aria-valuemax={cover.now.total}
-                  aria-valuenow={cover.now.done}
-                  className="h-1 w-full max-w-md overflow-hidden rounded-full bg-muted"
-                >
-                  <div className="h-full bg-foreground transition-[width] duration-500" style={{ width: `${cover.now.total ? (cover.now.done / cover.now.total) * 100 : 0}%` }} />
-                </div>
-              </div>
-            </Section>
-          )}
-
-          <Section index="03" title="Qué está cambiando">
-            {cover.changing.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nada en curso.</p>
-            ) : (
-              <ul className="flex flex-col">
-                {cover.changing.map((story) => (
-                  <li key={story.ref}>
-                    <a href={story.url} className="flex h-11 items-center gap-3 rounded-md px-2 -mx-2 text-sm hover:bg-muted">
-                      <span className="size-1.5 shrink-0 rounded-full bg-signal agent-pulse" aria-hidden="true" />
-                      <span className="w-14 shrink-0 font-mono text-control text-muted-foreground">{story.ref}</span>
-                      <span className="min-w-0 flex-1 truncate text-foreground">{story.title}</span>
-                      <span className="shrink-0 font-mono text-label text-muted-foreground">
-                        {[story.actor, story.milestone, ago(story.since)].filter(Boolean).join(" · ")}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
+          <div className="grid gap-7 pt-1.5 lg:grid-cols-[1.4fr_1fr]">
+            {cover.principles.length > 0 && (
+              <section aria-labelledby="principios" className="flex flex-col gap-2.5">
+                <h2 id="principios" className="text-[15px] leading-[18px] font-semibold text-foreground">Principios</h2>
+                <ol className="grid gap-x-5 sm:grid-cols-2">
+                  {cover.principles.map((principle, index) => (
+                    <li key={principle} className="flex items-baseline gap-2.5 border-t border-border py-2">
+                      <span className="w-[18px] shrink-0 font-mono text-label text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+                      <span className="text-sm leading-[18px] text-foreground">{principle}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )}
-          </Section>
-
-          <div className="grid gap-12 sm:grid-cols-2">
-            <Section index="04" title="Principios">
-              <List items={cover.principles} empty="Sin principios en el brief." />
-            </Section>
-            <Section index="05" title="Lo que no es">
-              <List items={cover.out_of_scope} empty="Sin «Fuera de alcance» en el brief." />
-            </Section>
+            {cover.out_of_scope.length > 0 && (
+              <section aria-labelledby="no-es" className="flex flex-col gap-2.5">
+                <h2 id="no-es" className="text-[15px] leading-[18px] font-semibold text-foreground">Lo que no es</h2>
+                <ul className="flex flex-wrap gap-2">
+                  {cover.out_of_scope.map((item) => (
+                    <li key={item} className="flex items-center gap-2 text-control text-muted-foreground">
+                      <s className="decoration-1">{item}</s>
+                      <span aria-hidden="true" className="text-border">·</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         </div>
 
-        <aside aria-labelledby="ultimo-titulo" className="flex shrink-0 flex-col gap-4 lg:w-72">
-          <h2 id="ultimo-titulo" className="border-b border-border pb-2 font-mono text-label uppercase tracking-label text-muted-foreground">Lo último</h2>
-          <ol aria-live="polite" className="flex flex-col">
-            {cover.recent.map((event) => (
-              <li key={event.id} className={cx("-mx-2 flex flex-col gap-0.5 rounded-md px-2 py-2", fresh.has(event.id) && "fresh")}>
-                <span className={cx("font-mono text-label", event.agent ? "text-foreground" : "text-muted-foreground")}>
-                  {event.actor} · {ago(event.at)}
-                </span>
-                <span className="text-control text-body">{event.text}</span>
-              </li>
-            ))}
-          </ol>
-          <p className="font-mono text-label text-muted-foreground">En directo: lo que hace un agente con <span className="text-foreground">mt</span> aparece aquí sin recargar.</p>
+        <aside className="order-1 flex flex-col gap-3.5 px-5 pt-5 lg:order-2 lg:border-l lg:border-border lg:px-6 lg:py-5">
+          {cover.now && <Now now={cover.now} />}
+          <section aria-labelledby="cambiando" className="hidden flex-col gap-3.5 lg:flex">
+            <h2 id="cambiando" className="text-[15px] leading-[18px] font-semibold text-foreground">Qué está cambiando</h2>
+            <Changing stories={cover.changing} />
+          </section>
         </aside>
+
+        {/* En móvil, «Qué está cambiando» va después de las capacidades. */}
+        <section aria-labelledby="cambiando-movil" className="order-3 flex flex-col gap-3.5 border-t border-border px-5 py-5 lg:hidden">
+          <h2 id="cambiando-movil" className="text-[15px] leading-[18px] font-semibold text-foreground">Qué está cambiando</h2>
+          <Changing stories={cover.changing} />
+        </section>
       </div>
     </AppShell>
   )
 }
 
-function List({ items, empty }: { items: string[]; empty: string }) {
-  if (items.length === 0) return <p className="text-sm text-muted-foreground">{empty}</p>
+// «Al día · hace 2 días por claude», o cuántas historias Hechas faltan por documentar (MT-91).
+function DocStatus({ status, short = false }: { status: CoverProps["status"]; short?: boolean }) {
+  const pending = status.pending > 0
   return (
-    <ul className="flex flex-col gap-2.5">
-      {items.map((item) => (
-        <li key={item} className="text-sm leading-6 text-body">{item}</li>
-      ))}
-    </ul>
-  )
-}
-
-// Vida del agente: el naranja solo aquí, mientras alguien trabaja (se apaga a los 60 s, Presence).
-function AgentsAtWork({ agents }: { agents: CoverProps["agents"] }) {
-  if (agents.length === 0) return null
-  return (
-    <span className="ml-auto flex items-center gap-2 font-mono text-label text-signal">
-      <span className="size-1.5 rounded-full bg-signal agent-pulse" aria-hidden="true" />
-      {agents.map((agent) => `${agent.name} ${agent.writing ? "escribiendo" : "leyendo"}${agent.target ? ` ${agent.target}` : ""}`).join(" · ")}
+    <span className={cx("flex items-center gap-[7px] text-control text-muted-foreground", !short && "mr-2")}>
+      <span aria-hidden="true" className={cx("size-1.5 shrink-0 rounded-full", pending ? "bg-state-defining" : "bg-success")} />
+      <span>
+        {pending ? `${status.pending} sin documentar` : "Al día"}
+        {!short && status.at && ` · ${ago(status.at)}`}
+        {!short && status.at && status.by && <> por <span className="font-mono">{status.by}</span></>}
+      </span>
     </span>
   )
 }
 
-// Lo que entra con una recarga en directo se resalta un momento (no en la primera carga).
-function useFresh(ids: number[]) {
-  const seen = useRef<Set<number> | null>(null)
-  const [fresh, setFresh] = useState<Set<number>>(new Set())
-  const key = ids.join(",")
-  useEffect(() => {
-    if (seen.current) setFresh(new Set(ids.filter((id) => !seen.current!.has(id))))
-    seen.current = new Set(ids)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key])
-  return fresh
+// `*así*` en la visión se pinta en Instrument Serif cursiva, como en Paper.
+function Emphasis({ text }: { text: string }) {
+  return text.split(/(\*[^*]+\*|_[^_]+_)/).map((part, index) =>
+    /^(\*[^*]+\*|_[^_]+_)$/.test(part) ? (
+      <em key={index} className="font-display text-[1.15em] tracking-[-0.01em]">{part.slice(1, -1)}</em>
+    ) : (
+      part
+    ),
+  )
+}
+
+// Las pantallas del producto: las imágenes adjuntas a la portada (MT-96), giradas como en Paper.
+const tilts = ["-rotate-6", "rotate-3", "-rotate-2"]
+function Screenshots({ items }: { items: CoverProps["screenshots"] }) {
+  return (
+    <div className="flex items-center justify-center pr-2.5">
+      {items.map((shot, index) => (
+        <div key={shot.url} className={cx("shrink-0 rounded-2xl border border-border bg-card p-1 shadow-[0_10px_24px_rgb(17_17_17/0.12)]", tilts[index], index > 0 && "-ml-[30px]")}>
+          <img src={shot.url} alt={shot.name} className="h-[220px] w-[102px] rounded-xl object-cover md:h-[255px] md:w-[118px]" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CapabilityRow({ capability }: { capability: Capability }) {
+  const now = capability.changing === "now"
+  return (
+    <li
+      id={`capacidad-${capability.slug}`}
+      className={cx(
+        "flex scroll-mt-6 items-start gap-2.5 border-t border-border py-[9px] target:bg-muted",
+        now && "-mx-1.5 rounded-lg border border-signal px-1.5",
+      )}
+    >
+      <span className="flex size-[30px] shrink-0 items-center justify-center rounded-lg border border-border bg-card text-foreground">
+        <Icon name={iconFor(capability.icon)} />
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col gap-px">
+        <span className="flex items-center gap-1.5">
+          <span className="text-sm leading-[18px] font-medium text-foreground">{capability.title}</span>
+          {capability.changing && (
+            <span
+              title={now ? "Un agente la está cambiando ahora" : "La cambia una historia abierta"}
+              className={cx("size-1.5 shrink-0 rounded-full border-[1.5px] border-dashed", now ? "border-signal" : "border-muted-foreground/60")}
+            />
+          )}
+        </span>
+        {capability.summary && <span className="line-clamp-2 text-xs leading-4 text-muted-foreground">{capability.summary}</span>}
+      </span>
+      <Icon name="chevronRight" size={14} className="mt-2 shrink-0 text-muted-foreground sm:hidden" />
+    </li>
+  )
+}
+
+function Now({ now }: { now: NonNullable<CoverProps["now"]> }) {
+  const percent = now.total ? (now.done / now.total) * 100 : 0
+  return (
+    <div className="flex flex-col gap-2 rounded-[10px] border border-border bg-card p-3.5">
+      <span className="font-mono text-[10px] leading-3 tracking-[0.12em] text-muted-foreground uppercase">Ahora</span>
+      <span className="text-base leading-[21px] font-medium text-foreground">{now.title}</span>
+      <div
+        role="progressbar"
+        aria-label={`Progreso de ${now.code}`}
+        aria-valuemin={0}
+        aria-valuemax={now.total}
+        aria-valuenow={now.done}
+        className="h-1 overflow-hidden rounded-[2px] bg-border"
+      >
+        <div className="h-full bg-foreground transition-[width] duration-500" style={{ width: `${percent}%` }} />
+      </div>
+      <span className="text-xs text-muted-foreground">
+        <span className="font-mono">{now.done}</span> de <span className="font-mono">{now.total}</span> historias hechas
+        {now.next && <> · sigue <span className="font-mono">{now.next}</span></>}
+      </span>
+    </div>
+  )
+}
+
+function Changing({ stories }: { stories: Story[] }) {
+  if (stories.length === 0) return <p className="text-sm text-muted-foreground">Ninguna historia abierta cambia el producto ahora.</p>
+  return (
+    <ol className="flex flex-col">
+      {stories.map((story, index) => (
+        <li key={story.ref} className="flex gap-3">
+          <span className="flex flex-col items-center">
+            <span aria-hidden="true" className={cx("mt-[3px] size-[11px] shrink-0 rounded-full border-2 border-dashed", story.agent ? "border-signal" : "border-muted-foreground/60")} />
+            {index < stories.length - 1 && <span aria-hidden="true" className="w-px grow bg-border" />}
+          </span>
+          <a href={story.url} className="flex flex-col gap-0.5 pb-3 hover:underline-offset-2">
+            <span className="text-sm leading-[19px] text-foreground">{story.title}</span>
+            <span className="text-xs text-muted-foreground">
+              {[...story.capabilities, story.ref].join(" · ")}
+              {story.agent && <> · <span className="text-signal">{story.agent} trabajando ahora</span></>}
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  )
 }
 
 // Para que «hace 3 min» no se quede quieto.
