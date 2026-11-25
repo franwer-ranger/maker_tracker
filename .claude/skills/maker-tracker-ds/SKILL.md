@@ -65,6 +65,8 @@ Referencias en Paper, página `v1 · 0 · Referencias`.
 
 Con **agent-browser** (headless): cada pantalla en claro, oscuro y a 390 de ancho, al lado de su artboard de Paper. Una diferencia que rompa la receta o la estructura es un fallo.
 
+Y como agente: la UI es agent-first, así que cada acción importante de una pantalla tiene que poder usarla un agente, con UI SDK (`window.agent.snapshot()` / `act`) y con WebMCP (`document.modelContext`), aunque WebMCP esté en fase experimental: usar lo que viene es parte del producto. Al crear un componente, dale nombre accesible y acciones claras; lo irreversible, con `data-agent-confirm`.
+
 ## Si diseñas en Paper
 
 - Una sola versión: lo que se rehace sustituye a lo anterior; lo antiguo va al archivo o se borra.
