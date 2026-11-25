@@ -44,13 +44,17 @@ class Page < ApplicationRecord
 
   # Sus eventos, del más reciente al más antiguo. Los de la portada son los del
   # brief; los de las demás, sus cambios y el registro de las decisiones que la
-  # rigen (MT-90), también las ya sustituidas.
+  # rigen (MT-90), también las ya sustituidas, y quién las enlazó o desenlazó
+  # después (MT-115).
   def history
     events = project.events.recent_first
     return events.where(action: "brief.edited") if cover?
 
     events.where("json_extract(data, '$.page_id') = ?", id)
       .or(events.where(action: "decision.recorded").where("json_extract(data, '$.number') IN (?)", decisions.select(:number)))
+      .or(events.where(action: %w[decision.linked decision.unlinked]).where(<<~SQL.squish, id))
+        EXISTS (SELECT 1 FROM json_each(events.data, '$.links') WHERE json_extract(json_each.value, '$.page_id') = ?)
+      SQL
   end
 
   # Cómo ha cambiado (MT-91): los cierres de historia (`story.state_changed` a

@@ -339,6 +339,25 @@ func init() {
 			return e.projectCall("POST", "/decisions", nil, body)
 		}}, "why the why", "story the story it comes from", "supersedes the decision it replaces (D-9)",
 		"capability* a page it governs, by slug (can be repeated)")
+	// Enlazar decisiones que ya existen (MT-115): no cambia lo decidido, así que no se sustituyen.
+	decisionLinks := func(e *env, suffix string) error {
+		capabilities := e.opts.all("capability")
+		if len(capabilities) == 0 {
+			return usageHint("mt decision "+suffix+" D-52 --capability board", "missing --capability.")
+		}
+		return e.projectCall("POST", "/decisions/"+suffix, nil, map[string]any{"decisions": e.opts.args, "capabilities": capabilities})
+	}
+	def(&command{name: "decision link", group: workGroup, usage: "mt decision link <decision>… --capability <page>…", minArgs: 1, maxArgs: -1,
+		summary:     "Links decisions that already exist to the capabilities they govern",
+		description: "Linking does not change what was decided, so the decision is not superseded. Several decisions and pages at once; what is already linked stays as it is. Only capabilities and cross-cutting pages, not the cover. mt decision unlink removes the link.",
+		example:     "mt decision link D-45 D-52 --capability board",
+		run:         func(e *env) error { return decisionLinks(e, "link") }},
+		"capability* a page they govern, by slug (can be repeated)")
+	def(&command{name: "decision unlink", group: workGroup, usage: "mt decision unlink <decision>… --capability <page>…", minArgs: 1, maxArgs: -1,
+		summary: "Removes the link between decisions and capabilities; the decisions stay",
+		example: "mt decision unlink D-52 --capability board",
+		run:     func(e *env) error { return decisionLinks(e, "unlink") }},
+		"capability* a page they no longer govern, by slug (can be repeated)")
 
 	def(&command{name: "create", group: defineGroup, usage: "mt create [\"Title\"] [--milestone M2] [--state …] [--number n] [--file f.md]", maxArgs: 1,
 		summary:     "Creates a story: from a title or from a file in the mt show format",

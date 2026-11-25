@@ -25,6 +25,8 @@ module StoriesHelper
     when "story.deployed" then "Desplegada · #{data['sha'].to_s.first(7)}"
     when "project.deployed" then deployed_sentence(event)
     when "decision.recorded" then "Se decide D-#{data['number']}"
+    when "decision.linked" then "#{event.actor.name} enlaza #{decision_links_text(data)}"
+    when "decision.unlinked" then "#{event.actor.name} desenlaza #{decision_links_text(data, "de")}"
     when "brief.edited" then "#{event.actor.name} edita el brief"
     when "story.documented" then "#{event.actor.name} actualiza la documentación: #{Array(data['docs']).map { it['slug'] }.join(', ')}"
     when "page.created" then "#{event.actor.name} crea la página #{data['slug']}"
@@ -128,6 +130,11 @@ module StoriesHelper
   def decision_title(event)
     @decision_titles ||= Decision.pluck(:project_id, :number, :title).to_h { |project_id, number, title| [ [ project_id, number ], title ] }
     @decision_titles[[ event.project_id, event.data["number"] ]]
+  end
+
+  # Los enlaces de `decision.linked` y `decision.unlinked` (MT-115): "D-45 a revelarlo; D-52 a ir-a-buscarlo y revelarlo".
+  def decision_links_text(data, preposition = "a")
+    Array(data["links"]).group_by { it["number"] }.map { |number, links| "D-#{number} #{preposition} #{y_sentence(links.map { it['slug'] })}" }.join("; ")
   end
 
   # «codex marcó 2 criterios · 2 de 3»; los eventos de antes del dato dicen «edita el cuerpo».

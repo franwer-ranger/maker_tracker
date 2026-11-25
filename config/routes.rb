@@ -47,7 +47,12 @@ Rails.application.routes.draw do
         resources :questions, only: :create
         resources :attachments, only: :create
       end
-      resources :decisions, only: %i[index create]
+      resources :decisions, only: %i[index create] do
+        collection do
+          post :link
+          post :unlink
+        end
+      end
       match "check", to: "checks#show", via: %i[get post]
       resources :milestones, param: :code, only: %i[create show update] do
         member do
