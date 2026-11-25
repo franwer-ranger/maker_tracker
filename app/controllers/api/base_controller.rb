@@ -143,11 +143,16 @@ class Api::BaseController < ActionController::API
     @story ||= find_story(params[:story_number] || params[:number])
   end
 
-  # Hito por su código (M2) o su título.
+  # Hito por su código (M2) o su título, sin distinguir mayúsculas. El título se
+  # compara en Ruby: LOWER() de SQLite solo baja ASCII y «Álbum» no casaba con
+  # «álbum» (MT-124). NFC para que una «Á» compuesta y otra descompuesta casen.
+  # El título exacto gana: dos hitos pueden diferir solo en mayúsculas.
   def find_milestone(value)
     value = value.to_s.strip
     milestone = project.milestones.find_by(number: value[/\AM(\d+)\z/i, 1]) if value.match?(/\AM\d+\z/i)
-    milestone ||= project.milestones.find_by("LOWER(title) = ?", value.downcase)
+    fold_case = ->(text) { text.to_s.unicode_normalize(:nfc).downcase(:fold) }
+    key = fold_case.(value)
+    milestone ||= project.milestones.find_by(title: value) || project.milestones.find { fold_case.(it.title) == key }
     milestone || raise(Api::Error.not_found("no milestone #{value} in #{project.key}.", hint: "see them with mt roadmap --closed."))
   end
 
