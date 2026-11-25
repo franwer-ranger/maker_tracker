@@ -148,7 +148,7 @@ module Api::Markdown::Formatting
     { reference: story.reference, number: story.number, title: story.title, state: story.state,
       milestone: story.milestone&.code, claimed_by: story.claimed_by&.name, version: story.version,
       blocked_by: story.pending_blockers(done_numbers: done_numbers).presence,
-      blocked_by_questions: story.blocking_questions.map(&:reference).presence, qa: story.qa,
+      blocked_by_questions: story.blocking_questions.map(&:reference).presence,
       capabilities: story.capabilities.presence, documentation_pending: story.pending_documentation.map(&:slug).presence }.compact
   end
 

@@ -9,8 +9,6 @@ class ActivityController < ApplicationController
     @cards = Activity.for_you
     @activity = Activity.new
     @in_progress = @activity.in_progress
-    @qa = @activity.qa_pending
-    @qa_undeployed = @activity.qa_undeployed_count
     @ready_work = ReadyWork.all.values
     @recent = @activity.recent_events if @cards.empty?
     @away = visit_home

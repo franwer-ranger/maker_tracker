@@ -46,7 +46,7 @@ class Api::Markdown::Story
   end
 
   def read_only
-    [ READ_ONLY_MARK, related, attachments_section(@story), documentation, qa, questions, comments, history ].compact.join("\n\n")
+    [ READ_ONLY_MARK, related, attachments_section(@story), documentation, questions, comments, history ].compact.join("\n\n")
   end
 
   # Las páginas de las capacidades que cambia (MT-91). Antes de cerrarla, qué
@@ -67,31 +67,6 @@ class Api::Markdown::Story
 
     "## Documentation · pending\n\n#{@story.reference} was closed without updating #{sentence(pending.map(&:slug))}. " \
       "Update #{pending.one? ? 'it' : 'them'} with mt doc edit #{pending.first.slug} --file <f.md> and run mt done #{@story.reference} again."
-  end
-
-  # Solo si espera QA o ya la tuvo (MT-32). Lo que se prueba son los criterios de aceptación.
-  #   ## QA · pending
-  #   Test it at https://testing.postgram.app. mt qa PG-49 ok | mt qa PG-49 fail --note "…"
-  def qa
-    return unless @story.qa
-
-    url = @story.project.qa_url
-    case @story.qa
-    when "pending"
-      total = @story.usage_total
-      cost = total ? "It cost #{usage_line(total)} (estimated). " : ""
-      return waiting_for_deploy(cost) if @story.qa_awaiting_deploy?
-
-      where = url ? "Test it at #{url}." : "There is no \"Dónde se prueba\" line in the brief to say where."
-      "## QA · pending\n\n#{where} #{@story.reference} is done and does not block anything. #{cost}Waiting for #{Actor.human.name}: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
-    else
-      "## QA · #{@story.qa}"
-    end
-  end
-
-  # MT-46: la historia está hecha pero aún no se ha desplegado. `mt qa ok|fail` sigue funcionando.
-  def waiting_for_deploy(cost = "")
-    "## QA · waiting for deploy\n\n#{@story.reference} is done but not deployed yet: it shows up in mt qa when mt deployed marks it. #{cost}#{Actor.human.name} can still pass or fail it already: mt qa #{@story.reference} ok | mt qa #{@story.reference} fail --note \"…\"."
   end
 
   # "Blocked by PG-47 Borradores automáticos (done): no longer blocking."

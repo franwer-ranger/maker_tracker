@@ -69,18 +69,12 @@ module Api::Operations
     { method: "GET", path: "/api/questions", params: { project: "a project key (optional)" }, command: "mt questions [--project PG]",
       description: "Open questions of all the projects (or one), the one waiting the longest first, with their options" },
 
-    # QA pendiente (MT-32): lo hecho que la persona aún no ha probado. Solo una persona prueba.
-    { method: "GET", path: "/api/qa", params: { project: "a project key (optional)", undeployed: "true to list the done stories still waiting for a deploy" }, command: "mt qa [--undeployed] [--project PG]",
-      description: "Stories done and ready to be tested by the person, in all the projects (or one): the oldest first, with their acceptance criteria and where to test them (the \"Dónde se prueba\" line of the brief). In a project that deploys with mt deployed, only what is deployed; the rest is counted at the end" },
-    # La QA espera al despliegue (MT-46): el CLI decide con git, la API no necesita el repo.
+    # Lo desplegado (MT-46): el CLI decide con git, la API no necesita el repo.
     { method: "GET", path: "/api/projects/:key/deployed", command: "mt deployed [<sha>]",
-      description: "The candidates of a deploy: stories done, with QA pending and not deployed yet, with the commits and the PR of their done event. active says if the project already waits for deploys" },
+      description: "The candidates of a deploy: stories done and not deployed yet (once the project deploys, only those done since its first deploy), with the commits and the PR of their done event. active says if the project already deploys with mt" },
     { method: "POST", path: "/api/projects/:key/deployed", params: { sha: "the deployed commit", stories: "list of story numbers the sha contains" },
       command: "mt deployed [<sha>]",
-      description: "Marks those stories as deployed (they appear in mt qa) and records the deploy. The first call turns on the wait for deploys in the project; calling again with the same or a later sha is idempotent. Any actor can call it" },
-    { method: "POST", path: "/api/projects/:key/stories/:number/qa", params: { result: "ok | fail", note: "markdown; required with fail, optional with ok" },
-      command: "mt qa PG-49 ok [--note \"…\"] | mt qa PG-49 fail --note \"…\"",
-      description: "Passes the QA of a story, or fails it: fail creates a story in defining in the same milestone and links it in the event. FORBIDDEN for agents; NOT_PENDING if the story does not wait for QA" },
+      description: "Marks those stories as deployed and records the deploy. Calling again with the same or a later sha is idempotent. Any actor can call it" },
 
     # Coste por historia (MT-34): una estimación que reporta el hook SessionEnd de Claude Code (o wflow).
     { method: "POST", path: "/api/projects/:key/usage", command: "mt usage <transcript.jsonl> [--story 49] | mt usage --hook",

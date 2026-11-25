@@ -37,7 +37,7 @@ class Story < ApplicationRecord
   MARKDOWN
 
   # La plantilla con `text` en «Contexto», en lugar de su guía (las ideas de la
-  # daily y las historias que crea un fallo de QA).
+  # daily).
   def self.body_with_context(text)
     # Con bloque: el replacement como cadena interpretaría las barras del texto.
     BODY_TEMPLATE.sub("## Contexto\n#{CONTEXT_GUIDE}\n") { "## Contexto\n\n#{text.strip}\n" }
@@ -52,7 +52,7 @@ class Story < ApplicationRecord
 
   include NumberedInProject
   include Operations
-  include Qa
+  include Deploy
   include Usage
   include Documentation
   include Attachable
@@ -187,9 +187,6 @@ class Story < ApplicationRecord
 
   # El texto bajo «## Preguntas abiertas» del cuerpo, o nil si está vacío.
   def open_questions_text = section_text("Preguntas abiertas")
-
-  # El texto bajo «## Cómo probarlo», sin la guía, o nil si está vacío (MT-52).
-  def how_to_test = section_text("Cómo probarlo")
 
   # Las historias que tienen a esta en su `blocked_by`.
   def blocking

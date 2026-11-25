@@ -89,15 +89,10 @@ module Story::Operations
         data[:released] = true
       end
 
-      # Hecha deja QA pendiente (MT-32) y sin desplegar (MT-46); salir de Hecha lo quita.
-      # Y enlaza las páginas de sus capacidades que se actualizaron (MT-91).
-      if new_state == "done"
-        data[:qa] = "pending"
-        data.merge!(documentation_on_close)
-        update!(state: new_state, qa: "pending", deployed_at: nil)
-      else
-        update!(state: new_state, qa: nil, deployed_at: nil)
-      end
+      # Pasar a Hecha o salir de ella la deja sin desplegar (MT-46). Al cerrarla
+      # enlaza las páginas de sus capacidades que se actualizaron (MT-91).
+      data.merge!(documentation_on_close) if new_state == "done"
+      update!(state: new_state, deployed_at: nil)
       record_event!("story.state_changed", actor: actor, story: self, data: data, reason: reason)
     end
   end

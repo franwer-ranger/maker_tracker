@@ -5,8 +5,8 @@
 #   bin/deploy
 #
 # git pull, docker compose up -d --build, waits for /up to answer and then runs
-# `mt deployed` with the HEAD that was deployed, so the stories done in it show
-# up in "Por probar" (MT-46). Run it at the root of the repo, on the server.
+# `mt deployed` with the HEAD that was deployed, so the stories done in it are
+# marked as deployed (MT-46). Run it at the root of the repo, on the server.
 #
 # If mt is missing or `mt deployed` fails it only warns: the deploy is already
 # done. Settings (all optional): MAKER_TRACKER_PORT (read from .env, 3002),
@@ -43,5 +43,5 @@ echo "== mt deployed ${sha:0:7} =="
 if ! command -v mt >/dev/null 2>&1; then
   echo "Warning: mt is not installed here, so Maker Tracker was not told about the deploy (see docs/SELF_HOSTING.md)." >&2
 elif ! mt deployed "$sha"; then
-  echo "Warning: mt deployed failed. The deploy is done; run 'mt deployed' by hand to mark what can be tested." >&2
+  echo "Warning: mt deployed failed. The deploy is done; run 'mt deployed' by hand to mark what is deployed." >&2
 fi

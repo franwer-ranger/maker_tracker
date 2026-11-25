@@ -4,7 +4,7 @@
 #
 # «Te toca» son tarjetas (`Card`) con una fecha desde la que esperan; salen
 # ordenadas por ella, la que más lleva esperando primero. Los bloques que lleguen
-# después (QA pendiente, trabajo listo…) añaden su método a `for_you` y su
+# después (trabajo listo…) añaden su método a `for_you` y su
 # partial en `app/views/activity/`; el contador de la barra es el número de tarjetas.
 class Activity
   # Una historia en Definiendo está parada tras tanto tiempo sin cambios: el mismo umbral que el daily.
@@ -23,13 +23,6 @@ class Activity
     def question? = kind == :question
   end
 
-  # Una historia Hecha que Fran aún no ha probado (MT-32). `done_at` y `done_by`
-  # salen de su evento de Hecha; `url`, de la línea «Dónde se prueba» del brief;
-  # `how_to_test`, de la sección «Cómo probarlo» de la historia (MT-52).
-  QaCard = Data.define(:story, :project, :done_at, :done_by, :commits, :url, :criteria, :how_to_test) do
-    def host = (URI.parse(url).host if url)
-  end
-
   # Memoizado por petición: la barra lateral y la pantalla lo piden a la vez.
   def self.for_you
     Current.activity_for_you ||= new.for_you
@@ -40,19 +33,6 @@ class Activity
     cards.each_with_index.sort_by { |card, index| [ card.since, index ] }.map(&:first)
   end
 
-  # QA pendiente de todos los proyectos (MT-32): no cuenta en «Te toca» ni en el
-  # contador. Las que llevan más tiempo hechas, primero. Tres consultas en total
-  # (historias con su proyecto, y sus eventos de Hecha con su actor), no una por proyecto.
-  # Solo lo que ya se puede probar (MT-46): en un proyecto con espera al despliegue,
-  # lo desplegado; las demás van en `qa_undeployed`.
-  def qa_pending = qa_cards(Story.qa_testable)
-
-  # Las Hechas sin desplegar de proyectos con espera activa (MT-46), con el mismo
-  # formato: es lo que lista `mt qa --undeployed`.
-  def qa_undeployed = qa_cards(Story.qa_undeployed)
-
-  def qa_undeployed_count = Story.qa_undeployed.count
-
   # Historias En curso de todos los proyectos, la que lleva más tiempo primero.
   def in_progress
     Story.in_progress.includes(:project, :claimed_by).order(:claimed_at, :id).to_a
@@ -60,24 +40,10 @@ class Activity
 
   # Lo último que ha pasado, de todos los proyectos.
   def recent_events(limit = RECENT)
-    Event.where.not(action: Changes::GROUPED).includes(:project, :story, :actor).recent_first.limit(limit).to_a
+    Event.where.not(action: Changes::GROUPED + Changes::RETIRED).includes(:project, :story, :actor).recent_first.limit(limit).to_a
   end
 
   private
-
-  def qa_cards(scope)
-    stories = scope.includes(:project, :milestone).to_a
-    return [] if stories.empty?
-
-    done = Event.where(story_id: stories.map(&:id), action: "story.state_changed").includes(:actor).order(:occurred_at, :id)
-      .select { it.data["to"] == "done" }.index_by(&:story_id) # el último gana
-    stories.map do |story|
-      event = done[story.id]
-      QaCard.new(story: story, project: story.project, done_at: event&.occurred_at || story.updated_at, done_by: event&.actor,
-        commits: event&.commits || [], url: story.project.qa_url, criteria: story.criteria_list,
-        how_to_test: story.how_to_test)
-    end.sort_by { [ it.done_at, it.story.id ] }
-  end
 
   # Las abiertas, bloqueen o no (una que no bloquea también espera su respuesta).
   def question_cards

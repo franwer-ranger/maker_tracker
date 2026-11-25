@@ -120,13 +120,6 @@
         <% end %>
       </div>
 
-      <% if !form && story.qa %>
-        <div class="<%= row %>">
-          <span class="<%= label %>">QA</span>
-          <%= qa_status story %>
-        </div>
-      <% end %>
-
       <% if !form && (usage = story.usage_total) %>
         <div class="<%= row %>">
           <span class="<%= label %>">Coste</span>
