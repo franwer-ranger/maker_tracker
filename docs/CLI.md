@@ -311,7 +311,7 @@ El taller, para el agente: lo mismo y en el mismo orden que la portada de la app
 $ mt workshop
 # Workshop · Postgram · PG
 
-5 of 7 things to define in PG, in roadmap order. 3 ready to build.
+3 of 5 things to define in PG, in roadmap order. 3 ready to build.
 
 1. answer · PG-50 · Vista previa por red · M2
    Q12 from codex (blocking, reversible): ¿Qué redes enseñamos en la vista previa?

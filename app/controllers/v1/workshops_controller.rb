@@ -5,24 +5,30 @@
 module V1
   class WorkshopsController < ApplicationController
     def show
-      workshop = Workshop.new(@project)
+      current = @project.current_milestone
       render inertia: "Workshop", props: {
         workshop: {
-          items: workshop.items.map { item_props(it) },
+          items: workshop.items.map { item_props(it, current) },
           waiting: workshop.waiting_count,
+          # Lo plegado («Mostrar»): solo lo justo para una línea por historia.
+          waiting_items: workshop.all.drop(Workshop::LIMIT).map { waiting_props(it, current) },
           ready: workshop.ready_count,
           today: today,
           prompt: helpers.workshop_prompt(@project, workshop),
-          roadmap_url: project_roadmap_path(@project),
           products: Project.order(:name).with_attached_logo.map do |project|
-            { key: project.key, name: project.name, url: project_v1_workshop_path(project), count: Workshop.new(project).count, logo: logo_url(project) }
+            { key: project.key, name: project.name, url: project_v1_workshop_path(project), count: project == @project ? workshop.count : Workshop.new(project).count, logo: logo_url(project) }
           end
         }
       }
     end
 
+    # Solo de Definiendo a Lista, y solo si ya no le falta nada (lo que el taller marca como «Revisar»):
+    # una pantalla vieja o un POST a mano no deben devolver a Lista una historia en curso o hecha.
     def ready
       story = @project.stories.find_by!(number: params[:number])
+      unless reviewable?(story)
+        return redirect_to project_v1_workshop_path(@project), notice: "#{story.reference} ya no está pendiente de tu OK"
+      end
       story.move_to!("ready", actor: Current.actor)
       redirect_to project_v1_workshop_path(@project), notice: "#{story.reference} está Lista para construir"
     rescue Story::ClaimedByOther => e
@@ -42,10 +48,22 @@ module V1
 
     private
 
-    def item_props(item)
+    def reviewable?(story)
+      story.defining? && story.criteria? && story.open_questions_asked.empty? && story.readiness_problems.empty?
+    end
+
+    def milestone_label(story, current)
+      story.milestone && [ story.milestone.code, story.milestone == current ? "Ahora" : nil ].compact.join(" ")
+    end
+
+    def waiting_props(item, current)
       story = item.story
-      props = { kind: item.kind, ref: story.reference, number: story.number, title: story.title,
-                milestone: story.milestone && [ story.milestone.code, story.milestone == @project.current_milestone ? "Ahora" : nil ].compact.join(" "),
+      { kind: item.kind, ref: story.reference, title: story.title, milestone: milestone_label(story, current), url: project_story_path(@project, story) }
+    end
+
+    def item_props(item, current)
+      story = item.story
+      props = { kind: item.kind, ref: story.reference, title: story.title, milestone: milestone_label(story, current),
                 reason: helpers.workshop_reason(item), url: project_story_path(@project, story),
                 edit_url: edit_project_story_path(@project, story) }
       case item.kind

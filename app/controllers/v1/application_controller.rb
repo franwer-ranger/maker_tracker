@@ -26,10 +26,13 @@ module V1
 
     private
 
+    # El taller del producto actual: lo leen el marco y la portada, una vez por petición.
+    def workshop = @workshop ||= Workshop.new(@project)
+
     def frame
       {
         products: Project.order(:name).map { { key: it.key, name: it.name, url: project_v1_cover_path(it) } },
-        taller: Workshop.new(@project).count,
+        taller: workshop.count,
         capabilities: @project.pages.documentation.ordered.group_by { it.area.presence }.map do |area, pages|
           { area: area, items: pages.map { { slug: it.slug, title: it.title, url: "#{project_v1_cover_path(@project)}#capacidad-#{it.slug}" } } }
         end,
