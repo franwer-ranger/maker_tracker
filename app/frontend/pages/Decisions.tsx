@@ -63,7 +63,7 @@ type Detail = {
   copy: string
 }
 
-const ALL = ""
+const ALL = "__all"
 const NONE = "__none"
 // Grupos visibles de entrada y filas por grupo: con más de MAX, se ven FOLDED y «+ N más».
 const GROUPS = 3
@@ -400,7 +400,7 @@ function Combo({ label, value, options, onChange, className }: { label: string; 
           <CommandEmpty className="px-3 py-4 text-control text-muted-foreground not-data-empty:hidden">{(state) => `Nada con «${state.query}».`}</CommandEmpty>
           <CommandList className="max-h-72 overflow-y-auto">
             {options.map((option) => (
-              <CommandItem key={option.value || "all"} value={option.value || "all"} label={option.label} className="flex h-10 cursor-default items-center gap-2.5 px-3 text-sm data-highlighted:bg-muted">
+              <CommandItem key={option.value} value={option.value} label={option.label} className="flex h-10 cursor-default items-center gap-2.5 px-3 text-sm data-highlighted:bg-muted">
                 <CommandItemText className="min-w-0 flex-1 truncate [&_mark]:bg-transparent [&_mark]:font-semibold [&_mark]:text-foreground">{option.label}</CommandItemText>
                 {option.value === value && <Icon name="check" size={13} className="text-muted-foreground" />}
               </CommandItem>
@@ -419,6 +419,8 @@ function NewDecision({ open, onOpenChange, decisions }: { open: boolean; onOpenC
   const [capability, setCapability] = useState(NONE)
   const [supersedes, setSupersedes] = useState(ALL)
   const [sending, setSending] = useState(false)
+  // Lo que el servidor rechaza (ya sustituida, no existe…) vuelve como `errors.base`: el diálogo sigue abierto con lo escrito.
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) return
@@ -426,19 +428,27 @@ function NewDecision({ open, onOpenChange, decisions }: { open: boolean; onOpenC
     setWhy("")
     setCapability(NONE)
     setSupersedes(ALL)
+    setError(null)
   }, [open])
 
   const submit = () => {
     router.post(
       decisions.create_url,
       { title, why, capabilities: capability === NONE ? [] : [capability], supersedes: supersedes === ALL ? "" : supersedes },
-      { onStart: () => setSending(true), onFinish: () => setSending(false), onSuccess: () => onOpenChange(false) },
+      {
+        preserveScroll: true,
+        onStart: () => { setSending(true); setError(null) },
+        onFinish: () => setSending(false),
+        onError: (errors) => setError(Object.values(errors).flat().join(" ")),
+        onSuccess: () => onOpenChange(false),
+      },
     )
   }
   const capabilityOptions = [{ value: NONE, label: "Sin capacidad" }, ...decisions.capabilities.map((cap) => ({ value: cap.slug, label: cap.title }))]
   const supersedeOptions = [
     { value: ALL, label: "No sustituye a ninguna" },
-    ...decisions.items.filter((item) => !item.superseded_by).map((item) => ({ value: String(item.number), label: `${item.reference} · ${item.title}` })),
+    // La elegida se queda aunque otra pantalla la acabe de sustituir: así el combo no miente al volver el rechazo.
+    ...decisions.items.filter((item) => !item.superseded_by || String(item.number) === supersedes).map((item) => ({ value: String(item.number), label: `${item.reference} · ${item.title}` })),
   ]
 
   return (
@@ -450,6 +460,9 @@ function NewDecision({ open, onOpenChange, decisions }: { open: boolean; onOpenC
           <DialogDescription className="text-control text-muted-foreground">Las decisiones no se editan: para cambiar una, apunta otra que la sustituya.</DialogDescription>
         </div>
         <form onSubmit={(event) => { event.preventDefault(); submit() }} className="flex flex-col gap-4">
+          {error && (
+            <p role="alert" className="rounded-lg border border-signal/40 bg-card px-4 py-3 text-control text-foreground shadow-[inset_2px_0_0_var(--signal)]">{error}</p>
+          )}
           <TextField label="La decisión" name="title" value={title} onChange={setTitle} />
           <TextField label="Por qué" name="why" value={why} onChange={setWhy} multiline description="Es lo que se lee después: el motivo, no solo el qué." />
           <div className="flex flex-col gap-1.5">
