@@ -24,6 +24,7 @@ es:
       reserved_slug: "es un subcomando de mt doc (%{value}); elige otro"
       cover_kind: "no puede pasar a portada ni dejar de serlo: la portada es el brief"
       cover_body_only: "no cambia en la portada: de la portada solo cambia el cuerpo (el brief)"
+      already_superseded: "%{decision} ya está sustituida por %{by}: sustituye a %{by}"
       cover_not_capability: "no puede incluir la portada: una decisión rige capacidades y páginas transversales"
       not_page_slugs: "tienen que ser slugs de páginas (editor, tablero)"
       missing_pages: "incluye páginas que no existen en la documentación del proyecto (%{slugs}): créalas antes con mt doc create"

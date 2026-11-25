@@ -19,7 +19,7 @@
       </div>
       <div class="flex grow flex-col gap-2">
         <%= form.label :supersedes_id, "Sustituye a", class: "text-sm font-medium leading-[18px] text-text" %>
-        <%= form.select :supersedes_id, options_for_select(@project.decisions.reorder(number: :desc).map { [ it.reference, it.id ] }),
+        <%= form.select :supersedes_id, options_for_select(@project.decisions.in_force.reorder(number: :desc).map { [ it.reference, it.id ] }),
               { include_blank: "Ninguna" },
               class: "h-control w-full rounded-md border border-strong bg-bg pl-3 font-mono text-sm text-text focus:border-strong focus:outline-hidden focus:ring-0 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-text)_12%,transparent)]" %>
       </div>
