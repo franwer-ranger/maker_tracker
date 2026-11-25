@@ -10,6 +10,7 @@ module V1
         project: { key: @project.key, name: @project.name, slug: @project.slug },
         nav: {
           cover: project_v1_cover_path(@project),
+          workshop: project_v1_workshop_path(@project),
           board: project_path(@project),
           roadmap: project_roadmap_path(@project),
           brief: project_brief_path(@project)
@@ -28,7 +29,7 @@ module V1
     def frame
       {
         products: Project.order(:name).map { { key: it.key, name: it.name, url: project_v1_cover_path(it) } },
-        taller: Daily.new(@project, Current.actor).waiting_for_human.size,
+        taller: Workshop.new(@project).count,
         capabilities: @project.pages.documentation.ordered.group_by { it.area.presence }.map do |area, pages|
           { area: area, items: pages.map { { slug: it.slug, title: it.title, url: "#{project_v1_cover_path(@project)}#capacidad-#{it.slug}" } } }
         end,

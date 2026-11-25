@@ -11,12 +11,13 @@ import { ProductCombo } from "@/components/ui/product-combo"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { TopBar } from "@/components/ui/top-bar"
 
-type Section = "product" | "stories" | "roadmap" | "decisions"
+type Section = "workshop" | "product" | "stories" | "roadmap" | "decisions"
 
 // El marco (MT-101, Paper «v1 · 11 · ⌘K» y portadas): barra lateral oscura con logo, Taller, combo de producto,
 // navegación, mapa de capacidades, agente trabajando, usuario y ⌘K; el panel claro con esquinas redondeadas
 // y su barra superior. En móvil, cabecera oscura con producto, copiar y menú.
-export function AppShell({ title, active, crumbs, actions, children }: { title: string; active?: Section; crumbs?: { label: string; href?: string }[]; actions?: ReactNode; children: ReactNode }) {
+// `copy`: lo que copia «Copiar para tu agente» en esta pantalla (por defecto, `mt context` del producto).
+export function AppShell({ title, active, crumbs, actions, copy, children }: { title: string; active?: Section; crumbs?: { label: string; href?: string }[]; actions?: ReactNode; copy?: string; children: ReactNode }) {
   const { props: { project, nav, notice, frame }, url } = usePage()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [paletteQuery, setPaletteQuery] = useState("")
@@ -44,7 +45,7 @@ export function AppShell({ title, active, crumbs, actions, children }: { title: 
     { key: "roadmap", label: "Roadmap", icon: "roadmap", href: nav.roadmap },
     { key: "decisions", label: "Decisiones", icon: "decision", href: nav.brief },
   ]
-  const copyText = `mt context --project ${project.key}`
+  const copyText = copy ?? `mt context --project ${project.key}`
 
   const sidebar = (
     <>
@@ -52,10 +53,17 @@ export function AppShell({ title, active, crumbs, actions, children }: { title: 
         <Logo />
         <span className="text-[15px] leading-[18px] font-medium text-sidebar-foreground">Maker Tracker</span>
       </div>
-      <a href={nav.board} className="flex items-center justify-between rounded-[7px] px-2.5 py-1.5 text-sm text-sidebar-muted hover:text-sidebar-foreground">
+      <Link
+        href={nav.workshop}
+        aria-current={active === "workshop" ? "page" : undefined}
+        className={cx(
+          "flex items-center justify-between rounded-[7px] px-2.5 py-1.5 text-sm",
+          active === "workshop" ? "bg-sidebar-accent text-sidebar-active" : "text-sidebar-muted hover:text-sidebar-foreground",
+        )}
+      >
         <span className="flex items-center gap-2.5"><Icon name="taller" />Taller</span>
-        <span className="font-mono text-label">{frame.taller}</span>
-      </a>
+        {frame.taller > 0 && <span className="font-mono text-label text-signal">{frame.taller}</span>}
+      </Link>
       <ProductCombo products={frame.products} current={project.key} shortcut="p" />
       <nav aria-label="Producto" className="flex flex-col gap-px">
         {links.map((link) => {
