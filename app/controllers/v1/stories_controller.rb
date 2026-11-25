@@ -18,7 +18,7 @@ module V1
 
     # «Marcar como Lista»: solo de Definiendo y si ya no le falta nada (como en el taller).
     def ready
-      return back("#{@story.reference} ya no está pendiente de tu OK") unless reviewable?(@story)
+      return back("#{@story.reference} ya no está pendiente de tu OK") unless @story.reviewable?
 
       @story.move_to!("ready", actor: Current.actor)
       back("#{@story.reference} está Lista para construir")
@@ -43,11 +43,18 @@ module V1
       back("Escribe algo para comentar.")
     end
 
-    # «Enlazar» la capacidad candidata de una Hecha que se cerró sin decir cuáles cambia.
+    # «Enlazar» la capacidad candidata de una Hecha que se cerró sin decir cuáles cambia. Solo
+    # entonces, y leyendo las capacidades bajo el bloqueo. La página sigue pendiente hasta que se edite.
     def link_capability
       page = @project.pages.documentation.find_by!(slug: params[:slug])
-      @story.edit!({ capabilities: (@story.capabilities + [ page.slug ]).uniq }, actor: Current.actor)
-      back("#{@story.reference} cambia «#{page.title}»")
+      linked = @story.with_lock do
+        next false unless @story.closed_without_capabilities?
+
+        @story.edit!({ capabilities: [ *@story.capabilities, page.slug ].uniq }, actor: Current.actor)
+      end
+      return back("#{@story.reference} ya no tiene la documentación pendiente") unless linked
+
+      back("#{@story.reference} cambia «#{page.title}». Falta que la página lo cuente.")
     end
 
     private
@@ -57,10 +64,6 @@ module V1
     end
 
     def back(notice) = redirect_to(project_v1_story_path(@project, @story.number), notice: notice)
-
-    def reviewable?(story)
-      story.defining? && story.criteria? && story.open_questions_asked.empty? && story.readiness_problems.empty?
-    end
 
     def story_props
       story = @project.stories.includes(:milestone, :claimed_by, questions: :actor).find(@story.id)
@@ -74,8 +77,8 @@ module V1
         building: building(story),
         closed: closed(story),
         sentence: reading.sentence,
-        question: question_props(story),
-        ready_url: (project_v1_story_ready_path(@project, story.number) if story.defining? || story.idea?),
+        question: open_question(story),
+        ready_url: (project_v1_story_ready_path(@project, story.number) if story.defining?),
         ready_blockers: ready_blockers(story),
         changes: reading.changes.map { it.except(:slug).merge(url: project_v1_capability_path(@project, it[:slug])) },
         changes_text: reading.changes_text,
@@ -112,42 +115,47 @@ module V1
       { at: close&.occurred_at&.iso8601, commits: close ? close.commits.map(&:short) : [] }
     end
 
-    def question_props(story)
+    # La pregunta abierta de arriba: la bloqueante, si hay.
+    def open_question(story)
       question = story.open_questions_asked.max_by { it.blocking? ? 1 : 0 } or return
-      { id: question.id, title: question.title, context: question.context.presence, actor: question.actor.name,
-        blocking: question.blocking?, recommended: question.recommended,
-        options: question.options.each_with_index.map { |text, index| { value: (index + 1).to_s, label: text } },
-        answer_url: project_v1_story_answer_path(@project, story.number) }
+      question_props(question, answer_url: project_v1_story_answer_path(@project, story.number))
     end
 
     def ready_blockers(story)
-      return [] unless story.defining? || story.idea?
+      return [] unless story.defining?
 
       [ ("Aún no tiene criterios de aceptación." unless story.criteria?), *story.readiness_issues ].compact
     end
 
     # Hecha con la documentación pendiente (MT-91): o se cerró sin decir qué capacidades cambia (con la
-    # que más encaja para enlazarla) o sin actualizar las páginas de las que sí dijo.
+    # que más encaja para enlazarla), o sin actualizar las páginas de las que sí dijo, o se enlazaron
+    # después del cierre («Enlazar») y aún no se han editado.
     def documentation(story)
-      prompt = documentation_prompt(story)
       if story.closed_without_capabilities?
         candidate = candidate_capability(story)
-        { kind: "unlinked", prompt: prompt,
+        { kind: "unlinked", prompt: documentation_prompt(story, relink: false),
           candidate: candidate && { title: candidate.title, icon: candidate.icon, area: candidate.area,
                                     link_url: project_v1_story_capability_path(@project, story.number, slug: candidate.slug) } }
-      elsif (pages = story.pending_documentation).any?
-        { kind: "outdated", prompt: prompt, pages: pages.map { { title: it.title, icon: it.icon, url: project_v1_capability_path(@project, it.slug) } } }
+      else
+        pending = story.pending_documentation
+        pages = pending | story.linked_after_close_undocumented
+        return if pages.empty?
+
+        { kind: "outdated", prompt: documentation_prompt(story, relink: pending.any?), relink: pending.any?,
+          pages: pages.map { { title: it.title, icon: it.icon, url: project_v1_capability_path(@project, it.slug) } } }
       end
     end
 
-    def documentation_prompt(story)
-      <<~PROMPT.strip
-        Documenta #{story.reference} («#{story.title}») en #{@project.name}: ya está Hecha y las páginas del producto aún no lo cuentan.
-        1. Léela con `mt show #{story.reference}` y la documentación con `mt doc`.
-        2. Si no dice qué capacidades cambia, añádelas con `mt edit #{story.reference}` (propiedad `capabilities`).
-        3. Actualiza cada página con `mt doc edit <slug> --file <f.md>` contando cómo queda.
-        4. Vuelve a hacer `mt done #{story.reference}` para enlazarlas al cierre.
-      PROMPT
+    # El paso 4 solo si hay pendientes del cierre: `mt done` enlaza esas; las enlazadas después basta con editarlas.
+    def documentation_prompt(story, relink:)
+      steps = [
+        "Léela con `mt show #{story.reference}` y la documentación con `mt doc`.",
+        "Si no dice qué capacidades cambia, añádelas con `mt edit #{story.reference}` (propiedad `capabilities`).",
+        "Actualiza cada página con `mt doc edit <slug> --file <f.md>` contando cómo queda.",
+        ("Vuelve a hacer `mt done #{story.reference}` para enlazarlas al cierre." if relink)
+      ].compact
+      [ "Documenta #{story.reference} («#{story.title}») en #{@project.name}: ya está Hecha y las páginas del producto aún no lo cuentan.",
+        *steps.each_with_index.map { |step, index| "#{index + 1}. #{step}" } ].join("\n")
     end
 
     # La página que más palabras comparte con el título y la frase de la historia (el título pesa más).
@@ -198,9 +206,12 @@ module V1
     end
 
     def comment_props(comment)
-      reading = Page::Reading.new(comment.body)
-      blocks = [ (reading.lead && { type: "paragraph", text: reading.lead }), *reading.sections.flat_map { [ (it[:title] && { type: "heading", text: it[:title] }), *it[:blocks] ] } ].compact
-      { id: comment.id, actor: comment.actor.name, agent: comment.actor.agent?, at: comment.created_at.iso8601, blocks: blocks }
+      { id: comment.id, actor: comment.actor.name, agent: comment.actor.agent?, at: comment.created_at.iso8601, blocks: comment_blocks(comment.body) }
+    end
+
+    # El comentario tal cual, en bloques: sus `##` como subtítulos.
+    def comment_blocks(body)
+      Page::Reading.new(body, plain: true).sections.flat_map { [ (it[:title] && { type: "heading", text: it[:title] }), *it[:blocks] ].compact }
     end
   end
 end

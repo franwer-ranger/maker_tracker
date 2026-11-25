@@ -26,7 +26,7 @@ module V1
     # una pantalla vieja o un POST a mano no deben devolver a Lista una historia en curso o hecha.
     def ready
       story = @project.stories.find_by!(number: params[:number])
-      unless reviewable?(story)
+      unless story.reviewable?
         return redirect_to project_v1_workshop_path(@project), notice: "#{story.reference} ya no está pendiente de tu OK"
       end
       story.move_to!("ready", actor: Current.actor)
@@ -48,10 +48,6 @@ module V1
 
     private
 
-    def reviewable?(story)
-      story.defining? && story.criteria? && story.open_questions_asked.empty? && story.readiness_problems.empty?
-    end
-
     def milestone_label(story, current)
       story.milestone && [ story.milestone.code, story.milestone == current ? "Ahora" : nil ].compact.join(" ")
     end
@@ -70,10 +66,7 @@ module V1
       when :review then props[:ready_url] = project_v1_workshop_story_ready_path(@project, story.number)
       when :answer
         if (question = item.question)
-          props[:question] = { id: question.id, title: question.title, context: question.context.presence, actor: question.actor.name,
-                               blocking: question.blocking?, recommended: question.recommended,
-                               options: question.options.each_with_index.map { |text, index| { value: (index + 1).to_s, label: text } },
-                               answer_url: project_v1_workshop_story_answer_path(@project, story.number) }
+          props[:question] = question_props(question, answer_url: project_v1_workshop_story_answer_path(@project, story.number))
         end
       end
       props
