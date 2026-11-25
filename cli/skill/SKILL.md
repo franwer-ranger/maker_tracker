@@ -93,6 +93,29 @@ Agents also write the backlog, directly and on the record (every change is logge
 - **Milestones and brief**: `mt milestone create|edit|close|reopen`, `mt brief` to read it and `mt brief --file f.md` to replace it (keep its `version:` frontmatter), `mt milestone show M2` to read a milestone with its version.
 - **Documentation** (how the product is today, by capability): `mt doc` lists the pages (the cover, which is the brief, the capabilities and the cross-cutting pages) and `mt context` ends the brief with their index. `mt doc board > f.md`, change it and `mt doc edit board --file f.md` (same `version:` and `CONFLICT` as `mt edit`). When a story changes how a capability works, it lists it in `capabilities:` and you update its page in the same story, before `mt done`. `mt doc create <slug> --title "…" [--type crosscutting] [--area …]` and `mt doc delete <slug>` only after asking.
 
+## Writing a capability page
+
+The web splits a capability page from its markdown, so the format matters (`mt doc --help` has it too):
+
+- **Opening sentence**: the first paragraph, before any `##` (or the first one of `## Qué hace hoy`): what the capability does, in one sentence.
+- **Screenshots**: a line that is only an image attached to the page (`mt attach board c1.png`) goes to the walkthrough, in upload order.
+- **`## Cómo funciona`**: one rule per `###` (title, then its text) or per bullet (`- **Title**: text`). Cite the decisions (`D-52`): they go to the side.
+- **`## ¿Qué pasa si…?`**: one question per `###` or per bullet (`- **¿…?** answer`).
+- Those two only split into entries if they hold nothing else: an intro, a closing or code turns the whole section into prose. Any other `##` is prose.
+
+```markdown
+Una frase que dice qué hace la capacidad.
+
+## Cómo funciona
+- **Se ordena a mano**: arrastrando las tarjetas. D-12
+
+## ¿Qué pasa si…?
+### ¿… muevo una historia hecha?
+Vuelve a su sitio.
+```
+
+**Before calling a page done, run `mt doc lint <slug>`** (or `--all`): it reads it as the web will and fails (exit 1) on a missing opening sentence, cited decisions or stories that do not exist, or images that do not load; warnings (sections that will show as prose, superseded decisions, images that are not the page's attachments) say it can be better. Fix the errors before `mt done`.
+
 ## Onboard an existing project
 
 When asked to bring the current repo to Maker Tracker ("lleva este proyecto a Maker Tracker: la visión, las decisiones y todo"). Whoever defines the product decides; you propose.
