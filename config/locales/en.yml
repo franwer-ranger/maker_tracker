@@ -17,6 +17,7 @@ en:
       reserved_slug: "is a subcommand of mt doc (%{value}); pick another"
       cover_kind: "can't change to or from cover: the cover is the brief"
       cover_body_only: "can't change on the cover: the cover only changes its body (the brief)"
+      already_superseded: "%{decision} is already superseded by %{by}: supersede %{by} instead"
       cover_not_capability: "can't include the cover: a decision governs capabilities and cross-cutting pages"
       not_page_slugs: "must be page slugs (editor, board)"
       missing_pages: "includes pages that don't exist in the project's documentation (%{slugs}): create them first with mt doc create"

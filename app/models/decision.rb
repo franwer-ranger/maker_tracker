@@ -17,6 +17,7 @@ class Decision < ApplicationRecord
 
   validates :title, presence: true
   validate :story_and_supersedes_in_same_project
+  validate :supersedes_in_force, on: :create
   validate :capabilities_are_documentation_of_project
 
   def readonly? = persisted? || super
@@ -28,6 +29,14 @@ class Decision < ApplicationRecord
   def story_and_supersedes_in_same_project
     errors.add(:story, :other_project) if story && story.project_id != project_id
     errors.add(:supersedes, :other_project) if supersedes && supersedes.project_id != project_id
+  end
+
+  # Solo se sustituye la vigente (MT-114): así hay una sola cadena de qué
+  # decisión manda. Las que ya se sustituyeron dos veces se quedan como están.
+  def supersedes_in_force
+    return unless supersedes && (by = Decision.find_by(supersedes_id: supersedes.id))
+
+    errors.add(:base, :already_superseded, decision: supersedes.reference, by: by.reference)
   end
 
   def capabilities_are_documentation_of_project

@@ -22,7 +22,8 @@ module V1
     end
 
     # «Nueva decisión»: el porqué, las capacidades que rige y, si cambia otra, cuál. Una
-    # pantalla vieja no sustituye dos veces la misma: se mira bajo el bloqueo del proyecto.
+    # pantalla vieja no sustituye dos veces la misma: el modelo lo mira (MT-114) bajo el
+    # bloqueo del proyecto.
     # Lo que no vale vuelve al diálogo como `errors` de Inertia (`base`), sin perder lo escrito.
     def create
       attributes = params.slice(:title, :why, :supersedes, :capabilities).permit(:title, :why, :supersedes, capabilities: [])
@@ -35,8 +36,6 @@ module V1
           "No existe la capacidad #{(slugs - pages.map(&:slug)).join(', ')}."
         elsif attributes[:supersedes].present? && supersedes.nil?
           "D-#{attributes[:supersedes]} no existe."
-        elsif supersedes&.superseded_by
-          "#{supersedes.reference} ya está sustituida por #{supersedes.superseded_by.reference}."
         end
         next if problem
 
