@@ -54,7 +54,9 @@ Rails.application.routes.draw do
         end
       end
       match "check", to: "checks#show", via: %i[get post]
-      resources :milestones, param: :code, only: %i[create show update] do
+      # Un hito se cita por su título, que puede llevar punto («Publicar v0.1», «v1.json»): sin constraints,
+      # Rails toma lo que sigue al punto como formato (MT-77). Lo mismo para el slug de las páginas.
+      resources :milestones, param: :code, only: %i[create show update], constraints: { code: %r{[^/]+} } do
         member do
           post :reorder
           post :close
@@ -62,7 +64,7 @@ Rails.application.routes.draw do
         end
       end
       resource :brief, only: %i[show update]
-      resources :pages, path: "docs", param: :slug, only: %i[index show create update destroy] do
+      resources :pages, path: "docs", param: :slug, only: %i[index show create update destroy], constraints: { slug: %r{[^/]+}, page_slug: %r{[^/]+} } do
         resources :attachments, only: :create
       end
     end
